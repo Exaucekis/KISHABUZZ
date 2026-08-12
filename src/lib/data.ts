@@ -1,0 +1,345 @@
+import { prisma } from "@/lib/prisma";
+
+export async function getSettings() {
+  return (
+    (await prisma.siteSetting.findUnique({ where: { id: "main" } })) ?? {
+      id: "main",
+      siteTitle: "KISHA BUZZ",
+      tagline:
+        "Média, culture et contenus qui donnent une voix aux histoires, aux talents et aux événements.",
+      aboutShort:
+        "KISHA BUZZ est une plateforme média et professionnelle dédiée à la communication, aux chroniques, aux productions et à la couverture culturelle.",
+      aboutLong: "",
+      phone: "0974105940",
+      email: "",
+      address: "",
+      whatsappEnabled: false,
+      socialFacebook: "",
+      socialInstagram: "",
+      socialYoutube: "",
+      socialX: "",
+      socialTiktok: "",
+      metaTitle: "KISHA BUZZ — Média, culture & contenus",
+      metaDescription:
+        "Plateforme média professionnelle : chroniques, publications, portfolio médiatique et Arena Culture.",
+      heroImage: "",
+      heroVideo: "",
+      updatedAt: new Date(),
+    }
+  );
+}
+
+export async function getPageContent(key: string) {
+  return prisma.pageContent.findUnique({ where: { key } });
+}
+
+export async function getPublishedArticles(opts?: {
+  contentType?: string | string[];
+  take?: number;
+  skip?: number;
+  categorySlug?: string;
+}) {
+  const types = opts?.contentType
+    ? Array.isArray(opts.contentType)
+      ? opts.contentType
+      : [opts.contentType]
+    : undefined;
+
+  return prisma.article.findMany({
+    where: {
+      status: "PUBLISHED",
+      ...(types ? { contentType: { in: types } } : {}),
+      ...(opts?.categorySlug
+        ? { category: { slug: opts.categorySlug } }
+        : {}),
+      OR: [{ publishedAt: { lte: new Date() } }, { publishedAt: null }],
+    },
+    include: { category: true, tags: { include: { tag: true } } },
+    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+    take: opts?.take,
+    skip: opts?.skip,
+  });
+}
+
+export async function getArticleBySlug(slug: string) {
+  return prisma.article.findFirst({
+    where: { slug, status: "PUBLISHED" },
+    include: { category: true, tags: { include: { tag: true } } },
+  });
+}
+
+export async function getPublishedShows(opts?: { take?: number; featured?: boolean }) {
+  return prisma.arenaShow.findMany({
+    where: {
+      status: "PUBLISHED",
+      ...(opts?.featured ? { isFeatured: true } : {}),
+    },
+    include: {
+      season: true,
+      guests: { include: { guest: true } },
+      media: { where: { visible: true } },
+    },
+    orderBy: [{ airDate: "desc" }, { number: "desc" }],
+    take: opts?.take,
+  });
+}
+
+export async function getGuestOfTheWeek() {
+  return prisma.arenaShow.findFirst({
+    where: { status: "PUBLISHED", isGuestOfWeek: true },
+    include: {
+      guests: { include: { guest: true } },
+      season: true,
+    },
+    orderBy: { airDate: "desc" },
+  });
+}
+
+export async function getShowBySlug(slug: string) {
+  return prisma.arenaShow.findFirst({
+    where: { slug, status: "PUBLISHED" },
+    include: {
+      season: true,
+      guests: { include: { guest: true } },
+      media: { where: { visible: true }, orderBy: { createdAt: "desc" } },
+    },
+  });
+}
+
+export async function getVisiblePartners() {
+  return prisma.partner.findMany({
+    where: { visible: true },
+    orderBy: [{ order: "asc" }, { name: "asc" }],
+  });
+}
+
+export async function getVisibleDomains() {
+  return prisma.domain.findMany({
+    where: { visible: true },
+    orderBy: { order: "asc" },
+  });
+}
+
+export async function getGallery(opts?: {
+  kind?: "IMAGE" | "VIDEO";
+  category?: string;
+  take?: number;
+}) {
+  return prisma.mediaAsset.findMany({
+    where: {
+      visible: true,
+      ...(opts?.kind ? { kind: opts.kind } : {}),
+      ...(opts?.category ? { category: opts.category as never } : {}),
+    },
+    include: { arenaShow: true, portfolioItem: true },
+    orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+    take: opts?.take,
+  });
+}
+
+export async function getPortfolio(opts?: { type?: string; take?: number }) {
+  return prisma.portfolioItem.findMany({
+    where: {
+      status: "PUBLISHED",
+      ...(opts?.type ? { type: opts.type } : {}),
+    },
+    include: { media: { where: { visible: true } } },
+    orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+    take: opts?.take,
+  });
+}
+
+export async function getCategories(type?: string) {
+  return prisma.category.findMany({
+    where: type ? { type } : undefined,
+    orderBy: { name: "asc" },
+  });
+}
+
+export async function getPortfolioBySlug(slug: string) {
+  return prisma.portfolioItem.findFirst({
+    where: { slug, status: "PUBLISHED" },
+    include: { media: { where: { visible: true }, orderBy: { createdAt: "desc" } } },
+  });
+}
+
+export async function getRelatedArticles(
+  article: { id: string; categoryId?: string | null; contentType: string },
+  take = 3
+) {
+  return prisma.article.findMany({
+    where: {
+      status: "PUBLISHED",
+      id: { not: article.id },
+      OR: [
+        ...(article.categoryId ? [{ categoryId: article.categoryId }] : []),
+        { contentType: article.contentType },
+      ],
+    },
+    include: { category: true },
+    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+    take,
+  });
+}
+
+export async function getArenaGuests() {
+  return prisma.arenaGuest.findMany({
+    include: {
+      appearances: {
+        include: {
+          show: { select: { id: true, title: true, slug: true, status: true, airDate: true } },
+        },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+}
+
+export async function getArenaSeasons() {
+  return prisma.arenaSeason.findMany({
+    orderBy: [{ year: "desc" }, { number: "desc" }],
+    include: { _count: { select: { shows: true } } },
+  });
+}
+
+export async function getArchivedShows(opts?: {
+  year?: number;
+  seasonId?: string;
+  take?: number;
+}) {
+  return prisma.arenaShow.findMany({
+    where: {
+      status: "PUBLISHED",
+      ...(opts?.seasonId ? { seasonId: opts.seasonId } : {}),
+      ...(opts?.year
+        ? {
+            OR: [
+              { season: { year: opts.year } },
+              {
+                airDate: {
+                  gte: new Date(`${opts.year}-01-01`),
+                  lt: new Date(`${opts.year + 1}-01-01`),
+                },
+              },
+            ],
+          }
+        : {}),
+    },
+    include: {
+      season: true,
+      guests: { include: { guest: true } },
+    },
+    orderBy: [{ airDate: "desc" }, { number: "desc" }],
+    take: opts?.take,
+  });
+}
+
+export async function getUpcomingShow() {
+  const now = new Date();
+  return prisma.arenaShow.findFirst({
+    where: {
+      status: "PUBLISHED",
+      airDate: { gt: now },
+    },
+    include: {
+      season: true,
+      guests: { include: { guest: true } },
+    },
+    orderBy: { airDate: "asc" },
+  });
+}
+
+export async function searchAll(q: string) {
+  const query = q.trim();
+  if (!query || query.length < 2) {
+    return {
+      articles: [],
+      shows: [],
+      guests: [],
+      portfolio: [],
+      partners: [],
+      media: [],
+    };
+  }
+
+  const [articles, shows, guests, portfolio, partners, media] = await Promise.all([
+    prisma.article.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: [
+          { title: { contains: query } },
+          { excerpt: { contains: query } },
+          { content: { contains: query } },
+        ],
+      },
+      take: 12,
+      orderBy: { publishedAt: "desc" },
+    }),
+    prisma.arenaShow.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: [
+          { title: { contains: query } },
+          { theme: { contains: query } },
+          { description: { contains: query } },
+        ],
+      },
+      take: 12,
+      include: { guests: { include: { guest: true } } },
+    }),
+    prisma.arenaGuest.findMany({
+      where: {
+        OR: [{ name: { contains: query } }, { profession: { contains: query } }],
+      },
+      take: 12,
+    }),
+    prisma.portfolioItem.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: [{ title: { contains: query } }, { description: { contains: query } }],
+      },
+      take: 12,
+    }),
+    prisma.partner.findMany({
+      where: {
+        visible: true,
+        OR: [{ name: { contains: query } }, { description: { contains: query } }],
+      },
+      take: 12,
+    }),
+    prisma.mediaAsset.findMany({
+      where: {
+        visible: true,
+        OR: [{ title: { contains: query } }, { description: { contains: query } }],
+      },
+      take: 12,
+    }),
+  ]);
+
+  return { articles, shows, guests, portfolio, partners, media };
+}
+
+export async function getArenaPhotoAlbums() {
+  return prisma.photoAlbum.findMany({
+    where: { visible: true },
+    include: {
+      photos: {
+        where: { visible: true, kind: "IMAGE" },
+        orderBy: { createdAt: "asc" },
+      },
+    },
+    orderBy: [{ order: "asc" }, { date: "desc" }, { createdAt: "desc" }],
+  });
+}
+
+export async function getArenaPhotoAlbumBySlug(slug: string) {
+  return prisma.photoAlbum.findFirst({
+    where: { slug, visible: true },
+    include: {
+      photos: {
+        where: { visible: true, kind: "IMAGE" },
+        orderBy: { createdAt: "asc" },
+      },
+    },
+  });
+}

@@ -1,0 +1,248 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         String    @default("ADMIN") // ADMIN | EDITOR | AUTHOR
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  articles     Article[]
+}
+
+model SiteSetting {
+  id              String   @id @default("main")
+  siteTitle       String   @default("KISHA BUZZ")
+  tagline         String   @default("")
+  aboutShort      String   @default("")
+  aboutLong       String   @default("")
+  phone           String   @default("0974105940")
+  email           String   @default("")
+  address         String   @default("")
+  whatsappEnabled Boolean  @default(false)
+  socialFacebook  String   @default("")
+  socialInstagram String   @default("")
+  socialYoutube   String   @default("")
+  socialX         String   @default("")
+  socialTiktok    String   @default("")
+  metaTitle       String   @default("KISHA BUZZ — Média, culture & contenus")
+  metaDescription String   @default("Plateforme média professionnelle : chroniques, publications, portfolio et Arena Culture.")
+  heroImage       String   @default("")
+  heroVideo       String   @default("")
+  updatedAt       DateTime @updatedAt
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String    @default("")
+  type        String    @default("publication")
+  articles    Article[]
+  createdAt   DateTime  @default(now())
+}
+
+model Tag {
+  id       String       @id @default(cuid())
+  name     String
+  slug     String       @unique
+  articles ArticleTag[]
+}
+
+model Article {
+  id              String       @id @default(cuid())
+  title           String
+  slug            String       @unique
+  excerpt         String       @default("")
+  content         String       @default("")
+  coverImage      String       @default("")
+  contentType     String       @default("ARTICLE") // ARTICLE | CHRONIQUE | ANALYSIS | ...
+  status          String       @default("DRAFT") // DRAFT | SCHEDULED | PUBLISHED | ARCHIVED
+  publishedAt     DateTime?
+  scheduledAt     DateTime?
+  metaTitle       String       @default("")
+  metaDescription String       @default("")
+  views           Int          @default(0)
+  authorId        String?
+  author          User?        @relation(fields: [authorId], references: [id])
+  authorName      String       @default("KISHA BUZZ")
+  categoryId      String?
+  category        Category?    @relation(fields: [categoryId], references: [id])
+  tags            ArticleTag[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model ArticleTag {
+  articleId String
+  tagId     String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+}
+
+model ArenaSeason {
+  id          String      @id @default(cuid())
+  number      Int
+  title       String
+  year        Int
+  description String      @default("")
+  shows       ArenaShow[]
+  createdAt   DateTime    @default(now())
+
+  @@unique([number, year])
+}
+
+model ArenaGuest {
+  id          String           @id @default(cuid())
+  name        String
+  slug        String           @unique
+  profession  String           @default("")
+  bio         String           @default("")
+  photo       String           @default("")
+  appearances ArenaShowGuest[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model ArenaShow {
+  id            String           @id @default(cuid())
+  number        Int
+  title         String
+  slug          String           @unique
+  theme         String           @default("")
+  description   String           @default("")
+  airDate       DateTime?
+  airTime       String           @default("")
+  poster        String           @default("")
+  videoUrl      String           @default("")
+  status        String           @default("DRAFT")
+  isFeatured    Boolean          @default(false)
+  isGuestOfWeek Boolean          @default(false)
+  seasonId      String?
+  season        ArenaSeason?     @relation(fields: [seasonId], references: [id])
+  guests        ArenaShowGuest[]
+  media         MediaAsset[]
+  views         Int              @default(0)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model ArenaShowGuest {
+  showId  String
+  guestId String
+  role    String     @default("invité")
+  show    ArenaShow  @relation(fields: [showId], references: [id], onDelete: Cascade)
+  guest   ArenaGuest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@id([showId, guestId])
+}
+
+model PortfolioItem {
+  id          String       @id @default(cuid())
+  title       String
+  slug        String       @unique
+  description String       @default("")
+  type        String       @default("MEDIA_ACTIVITY")
+  date        DateTime?
+  location    String       @default("")
+  client      String       @default("")
+  coverImage  String       @default("")
+  link        String       @default("")
+  status      String       @default("DRAFT")
+  media       MediaAsset[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model MediaAsset {
+  id              String         @id @default(cuid())
+  title           String
+  description     String         @default("")
+  kind            String         @default("IMAGE") // IMAGE | VIDEO
+  url             String
+  thumbnail       String         @default("")
+  category        String         @default("") // ACTIVITES | EMISSIONS | ...
+  visible         Boolean        @default(true)
+  date            DateTime?
+  arenaShowId     String?
+  arenaShow       ArenaShow?     @relation(fields: [arenaShowId], references: [id])
+  portfolioItemId String?
+  portfolioItem   PortfolioItem? @relation(fields: [portfolioItemId], references: [id])
+  albumId         String?
+  album           PhotoAlbum?    @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+// Album photos Arena Grand Culture — un album = un invité du jour
+model PhotoAlbum {
+  id            String       @id @default(cuid())
+  title         String
+  slug          String       @unique
+  guestName     String
+  description   String       @default("")
+  coverImage    String       @default("")
+  emissionLabel String       @default("Arena Grand Culture")
+  date          DateTime?
+  visible       Boolean      @default(true)
+  order         Int          @default(0)
+  photos        MediaAsset[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Partner {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String   @default("")
+  logo        String   @default("")
+  website     String   @default("")
+  project     String   @default("")
+  visible     Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ContactRequest {
+  id                String   @id @default(cuid())
+  name              String
+  organization      String   @default("")
+  phone             String   @default("")
+  email             String
+  subject           String
+  collaborationType String   @default("OTHER")
+  message           String
+  status            String   @default("NEW")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Domain {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String  @default("")
+  icon        String  @default("")
+  order       Int     @default(0)
+  visible     Boolean @default(true)
+}
+
+model PageContent {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  title     String   @default("")
+  body      String   @default("")
+  updatedAt DateTime @updatedAt
+}
