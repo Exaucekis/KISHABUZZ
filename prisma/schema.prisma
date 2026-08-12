@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -33,8 +34,8 @@ model SiteSetting {
   socialYoutube   String   @default("")
   socialX         String   @default("")
   socialTiktok    String   @default("")
-  metaTitle       String   @default("KISHA BUZZ — Média, culture & contenus")
-  metaDescription String   @default("Plateforme média professionnelle : chroniques, publications, portfolio et Arena Culture.")
+  metaTitle       String   @default("KISHA BUZZ - Media, culture & contenus")
+  metaDescription String   @default("Plateforme media professionnelle : chroniques, publications, portfolio et Arena Culture.")
   heroImage       String   @default("")
   heroVideo       String   @default("")
   updatedAt       DateTime @updatedAt
