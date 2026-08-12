@@ -13,6 +13,6 @@
 
 ## Après Deploy
 - [ ] Seed admin (`npm run db:seed` avec env prod)
-- [ ] Seeds Arena optionnels (TerminusBoy, albums, DISHA)
+- [ ] Seeds Arena optionnels (TerminusBoy, albums, Kishabuzz)
 - [ ] Test `/` `/arena-culture` `/admin/login`
 - [ ] Mettre à jour `AUTH_URL` + `NEXT_PUBLIC_SITE_URL` si domaine custom

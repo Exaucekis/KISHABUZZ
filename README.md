@@ -44,7 +44,7 @@ npm run db:seed
 # optionnel : albums / vidéo
 npx tsx prisma/seed-terminusboy.ts
 npx tsx prisma/seed-arena-albums.ts
-npx tsx prisma/seed-disha-video.ts
+npx tsx prisma/seed-kishabuzz-video.ts
 npx tsx prisma/seed-gaz-mawete-album.ts
 npx tsx prisma/seed-innoss-b-album.ts
 npm run dev
@@ -119,12 +119,12 @@ npx vercel env pull .env.production.local
 npx dotenv -e .env.production.local -- npm run db:seed
 npx dotenv -e .env.production.local -- npx tsx prisma/seed-terminusboy.ts
 npx dotenv -e .env.production.local -- npx tsx prisma/seed-arena-albums.ts
-npx dotenv -e .env.production.local -- npx tsx prisma/seed-disha-video.ts
+npx dotenv -e .env.production.local -- npx tsx prisma/seed-kishabuzz-video.ts
 npx dotenv -e .env.production.local -- npx tsx prisma/seed-gaz-mawete-album.ts
 npx dotenv -e .env.production.local -- npx tsx prisma/seed-innoss-b-album.ts
 ```
 
-Les médias dans `/public` (affiches, albums, vidéo DISHA) sont déployés avec le site.
+Les médias dans `/public` (affiches, albums, vidéo Kishabuzz) sont déployés avec le site.
 
 ### Étape E — Domaine custom (optionnel)
 

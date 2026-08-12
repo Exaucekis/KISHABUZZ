@@ -41,4 +41,4 @@ Puis les seeds Arena si besoin (`seed-terminusboy`, albums, vidéo).
 - [ ] `/arena-culture` OK
 - [ ] `/admin/login` avec le compte seed
 - [ ] Images `/public/arena/...` visibles
-- [ ] Vidéo DISHA lisible
+- [ ] Vidéo Kishabuzz lisible
