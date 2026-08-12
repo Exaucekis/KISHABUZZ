@@ -1,0 +1,6 @@
+.env
+.env.*
+!.env.example
+.build-*.log
+.vercel-*.txt
+.vercel-deploy.log

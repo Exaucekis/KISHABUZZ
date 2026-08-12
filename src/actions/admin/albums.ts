@@ -12,7 +12,7 @@ import {
   type AdminActionState,
 } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
-import { slugify } from "@/lib/utils";
+import { createSlug } from "@/lib/utils";
 
 const albumSchema = z.object({
   guestName: z.string().min(2).max(160),
@@ -48,7 +48,7 @@ export async function savePhotoAlbum(
 
   const guestName = parsed.data.guestName;
   const title = parsed.data.title || `${guestName} · Arena Grand Culture`;
-  const baseSlug = slugify(guestName) || "invite";
+  const baseSlug = createSlug(guestName) || "invite";
   let slug = baseSlug;
 
   const existingSlug = await prisma.photoAlbum.findUnique({ where: { slug } });
