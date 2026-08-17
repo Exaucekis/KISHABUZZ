@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { revalidatePublic } from "@/lib/cache";
 import {
   formBool,
   formString,
@@ -70,6 +71,6 @@ export async function saveSettings(
   });
 
   revalidatePath("/admin/settings");
-  revalidatePath("/");
+  revalidatePublic();
   return { ok: true, message: "Paramètres enregistrés." };
 }

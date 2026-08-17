@@ -6,7 +6,7 @@ import "./globals.css";
 const syne = Syne({
   variable: "--font-syne",
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["700", "800"],
   display: "swap",
   preload: true,
 });
@@ -14,7 +14,7 @@ const syne = Syne({
 const figtree = Figtree({
   variable: "--font-figtree",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "600", "700"],
   display: "swap",
   preload: true,
 });
@@ -22,10 +22,11 @@ const figtree = Figtree({
 const newsreader = Newsreader({
   variable: "--font-newsreader",
   subsets: ["latin"],
-  weight: ["400", "600"],
+  weight: ["400"],
   style: ["normal", "italic"],
   display: "swap",
   preload: false,
+  adjustFontFallback: true,
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -38,8 +39,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: settings.metaDescription,
     icons: {
-      icon: "/brand/kisha-buzz-logo.png",
-      apple: "/brand/kisha-buzz-logo.png",
+      icon: "/brand/kisha-buzz-icon.png",
+      apple: "/brand/kisha-buzz-icon.png",
     },
     openGraph: {
       type: "website",

@@ -1,6 +1,4 @@
-"use client";
-
-import Link from "next/link";
+import Image from "next/image";
 
 export type ArtistCard = {
   name: string;
@@ -14,8 +12,6 @@ const DEFAULT_ARTISTS: ArtistCard[] = [
   { name: "Fally Ipupa", role: "Artiste", image: "/artists/fally-ipupa.jpg" },
   { name: "Innoss'B", role: "Artiste", image: "/artists/innoss-b.png" },
   { name: "Koffi Olomidé", role: "Légende", image: "/artists/koffi-olomide.jpg" },
-  { name: "Ferré Gola", role: "Artiste", image: "/artists/ferre-gola.jpg" },
-  { name: "Damso", role: "Rap / Scène", image: "/artists/damso.jpg" },
 ];
 
 export function ArtistRail({ artists = DEFAULT_ARTISTS }: { artists?: ArtistCard[] }) {
@@ -37,15 +33,13 @@ export function ArtistRail({ artists = DEFAULT_ARTISTS }: { artists?: ArtistCard
         <div className="artist-rail-track">
           {loop.map((artist, i) => (
             <article key={`${artist.name}-${i}`} className="artist-card">
-              <div className="artist-card-media">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+              <div className="artist-card-media relative">
+                <Image
                   src={artist.image}
                   alt={artist.name}
-                  loading="lazy"
-                  decoding="async"
-                  width={220}
-                  height={300}
+                  fill
+                  sizes="240px"
+                  className="object-cover"
                 />
                 <div className="artist-card-shade" />
               </div>

@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 
@@ -7,8 +5,6 @@ export function HomeHero({ tagline }: { tagline: string }) {
   return (
     <section className="hero-stage hero-stage--lite relative min-h-[100svh] overflow-hidden bg-ink text-paper">
       <div className="hero-aurora" aria-hidden />
-      <div className="hero-orb hero-orb-a" aria-hidden />
-      <div className="hero-orb hero-orb-b" aria-hidden />
 
       <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col justify-center px-4 pb-24 pt-24 sm:px-6 md:pb-20">
         <div className="flex w-full flex-col items-center text-center">

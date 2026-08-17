@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { revalidatePublic } from "@/lib/cache";
 import {
   formBool,
   formDate,
@@ -116,6 +117,7 @@ export async function saveArenaShow(
 
   revalidatePath("/admin/arena");
   revalidatePath("/arena-culture");
+  revalidatePublic();
   redirect(`/admin/arena/${show.id}`);
 }
 
@@ -126,6 +128,7 @@ export async function deleteArenaShow(formData: FormData) {
   await prisma.arenaShow.delete({ where: { id } });
   revalidatePath("/admin/arena");
   revalidatePath("/arena-culture");
+  revalidatePublic();
   redirect("/admin/arena");
 }
 
@@ -137,6 +140,7 @@ export async function setArenaShowStatus(formData: FormData) {
   await prisma.arenaShow.update({ where: { id }, data: { status } });
   revalidatePath("/admin/arena");
   revalidatePath("/arena-culture");
+  revalidatePublic();
 }
 
 const guestSchema = z.object({
@@ -183,6 +187,7 @@ export async function saveArenaGuest(
 
   revalidatePath("/admin/arena/guests");
   revalidatePath("/arena-culture");
+  revalidatePublic();
   return { ok: true, message: "Invité enregistré." };
 }
 
@@ -233,6 +238,7 @@ export async function saveArenaSeason(
 
   revalidatePath("/admin/arena/seasons");
   revalidatePath("/arena-culture");
+  revalidatePublic();
   return { ok: true, message: "Saison enregistrée." };
 }
 

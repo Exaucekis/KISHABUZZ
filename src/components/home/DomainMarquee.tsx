@@ -1,5 +1,3 @@
-"use client";
-
 export function DomainMarquee({ items }: { items: string[] }) {
   if (!items.length) return null;
   const loop = [...items, ...items];

@@ -1,33 +1,137 @@
+import { unstable_cache } from "next/cache";
+import { cache } from "react";
+import { CACHE_TAGS } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 
-export async function getSettings() {
-  return (
-    (await prisma.siteSetting.findUnique({ where: { id: "main" } })) ?? {
-      id: "main",
-      siteTitle: "KISHA BUZZ",
-      tagline:
-        "Média, culture et contenus qui donnent une voix aux histoires, aux talents et aux événements.",
-      aboutShort:
-        "KISHA BUZZ est une plateforme média et professionnelle dédiée à la communication, aux chroniques, aux productions et à la couverture culturelle.",
-      aboutLong: "",
-      phone: "0974105940",
-      email: "",
-      address: "",
-      whatsappEnabled: false,
-      socialFacebook: "",
-      socialInstagram: "",
-      socialYoutube: "",
-      socialX: "",
-      socialTiktok: "",
-      metaTitle: "KISHA BUZZ — Média, culture & contenus",
-      metaDescription:
-        "Plateforme média professionnelle : chroniques, publications, portfolio médiatique et Arena Culture.",
-      heroImage: "",
-      heroVideo: "",
-      updatedAt: new Date(),
-    }
-  );
+const fallbackSettings = {
+  id: "main",
+  siteTitle: "KISHA BUZZ",
+  tagline:
+    "Média, culture et contenus qui donnent une voix aux histoires, aux talents et aux événements.",
+  aboutShort:
+    "KISHA BUZZ est une plateforme média et professionnelle dédiée à la communication, aux chroniques, aux productions et à la couverture culturelle.",
+  aboutLong: "",
+  phone: "0974105940",
+  email: "",
+  address: "",
+  whatsappEnabled: false,
+  socialFacebook: "",
+  socialInstagram: "",
+  socialYoutube: "",
+  socialX: "",
+  socialTiktok: "",
+  metaTitle: "KISHA BUZZ — Média, culture & contenus",
+  metaDescription:
+    "Plateforme média professionnelle : chroniques, publications, portfolio médiatique et Arena Culture.",
+  heroImage: "",
+  heroVideo: "",
+  updatedAt: new Date(),
+};
+
+async function loadSettings() {
+  return (await prisma.siteSetting.findUnique({ where: { id: "main" } })) ?? fallbackSettings;
 }
+
+export const getSettings = cache(
+  unstable_cache(loadSettings, ["settings"], {
+    revalidate: 60,
+    tags: [CACHE_TAGS.settings],
+  })
+);
+
+async function loadHomePageData() {
+  const [settings, feed, spotlightShow, domains, featuredAlbum, featuredVideo, about, portfolio, partners] =
+    await Promise.all([
+      loadSettings(),
+      prisma.article.findMany({
+        where: {
+          status: "PUBLISHED",
+          OR: [{ publishedAt: { lte: new Date() } }, { publishedAt: null }],
+        },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          excerpt: true,
+          coverImage: true,
+          contentType: true,
+          publishedAt: true,
+          authorName: true,
+          category: { select: { name: true } },
+        },
+        orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+        take: 6,
+      }),
+      prisma.arenaShow.findFirst({
+        where: { status: "PUBLISHED" },
+        orderBy: [{ isGuestOfWeek: "desc" }, { airDate: "desc" }],
+        select: {
+          slug: true,
+          title: true,
+          theme: true,
+          poster: true,
+          airDate: true,
+          airTime: true,
+          guests: {
+            take: 1,
+            select: {
+              guest: { select: { name: true, photo: true, profession: true } },
+            },
+          },
+        },
+      }),
+      prisma.domain.findMany({
+        where: { visible: true },
+        select: { id: true, name: true },
+        orderBy: { order: "asc" },
+      }),
+      prisma.photoAlbum.findFirst({
+        where: { visible: true },
+        orderBy: [{ order: "asc" }, { date: "desc" }],
+        select: { coverImage: true },
+      }),
+      prisma.mediaAsset.findFirst({
+        where: { visible: true, kind: "VIDEO", category: "ARENA_CULTURE" },
+        orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+        select: { title: true, description: true, url: true, thumbnail: true },
+      }),
+      prisma.pageContent.findUnique({
+        where: { key: "about.qui" },
+        select: { title: true, body: true },
+      }),
+      prisma.portfolioItem.findMany({
+        where: { status: "PUBLISHED" },
+        select: { id: true, slug: true, title: true, type: true, description: true },
+        orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+        take: 3,
+      }),
+      prisma.partner.findMany({
+        where: { visible: true },
+        select: { id: true, name: true, description: true },
+        orderBy: [{ order: "asc" }, { name: "asc" }],
+        take: 6,
+      }),
+    ]);
+
+  return {
+    settings,
+    feed,
+    spotlightShow,
+    domains,
+    featuredAlbum,
+    featuredVideo,
+    about,
+    portfolio,
+    partners,
+  };
+}
+
+export const getHomePageData = cache(
+  unstable_cache(loadHomePageData, ["home-page"], {
+    revalidate: 60,
+    tags: [CACHE_TAGS.home, CACHE_TAGS.settings],
+  })
+);
 
 export async function getPageContent(key: string) {
   return prisma.pageContent.findUnique({ where: { key } });

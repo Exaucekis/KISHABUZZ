@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { revalidatePublic } from "@/lib/cache";
 import {
   formDate,
   formOptionalId,
@@ -104,6 +105,7 @@ export async function saveArticle(
   revalidatePath("/admin/articles");
   revalidatePath("/chroniques");
   revalidatePath("/publications");
+  revalidatePublic();
   redirect(`/admin/articles/${article.id}`);
 }
 
@@ -115,6 +117,7 @@ export async function deleteArticle(formData: FormData) {
   revalidatePath("/admin/articles");
   revalidatePath("/chroniques");
   revalidatePath("/publications");
+  revalidatePublic();
   redirect("/admin/articles");
 }
 
@@ -133,4 +136,5 @@ export async function setArticleStatus(formData: FormData) {
   revalidatePath("/admin/articles");
   revalidatePath("/chroniques");
   revalidatePath("/publications");
+  revalidatePublic();
 }

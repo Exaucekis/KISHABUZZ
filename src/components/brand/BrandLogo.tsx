@@ -29,6 +29,7 @@ export function BrandLogo({ href = "/", className, size = "md", priority = false
       height={s.px}
       priority={priority}
       className={cn(s.className, "object-contain", className)}
+      sizes={`${s.px}px`}
     />
   );
 
