@@ -188,5 +188,5 @@ export async function changePasswordAction(
 }
 
 export async function signOutAction() {
-  await signOut({ redirectTo: "/" });
+  await signOut({ redirectTo: "/connexion" });
 }
