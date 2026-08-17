@@ -21,7 +21,12 @@ import {
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { cn } from "@/lib/utils";
-import { canAccessAdmin } from "@/lib/roles";
+import { canAccessAdmin, roleLabel } from "@/lib/roles";
+
+function staffNavLabel(role: string) {
+  if (!canAccessAdmin(role)) return "Compte";
+  return roleLabel(role);
+}
 
 type HeaderUser = { name: string | null; role: string } | null;
 
@@ -168,7 +173,7 @@ export function SiteHeader({
                     className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-[0.95rem] font-semibold text-paper-muted hover:bg-ink-3 hover:text-paper"
                   >
                     <User className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
-                    <span>{canAccessAdmin(user.role) ? "Tableau de bord" : "Mon compte"}</span>
+                    <span>{staffNavLabel(user.role)}</span>
                   </Link>
                 ) : (
                   <Link
@@ -253,7 +258,7 @@ export function SiteHeader({
                 href={canAccessAdmin(user.role) ? "/admin" : "/compte"}
                 className="ml-1 rounded-md border border-line px-2.5 py-2 text-[0.8rem] font-semibold text-paper hover:bg-ink-3 xl:text-sm"
               >
-                {canAccessAdmin(user.role) ? "Admin" : "Compte"}
+                {staffNavLabel(user.role)}
               </Link>
             ) : (
               <Link
@@ -272,7 +277,7 @@ export function SiteHeader({
                 href={canAccessAdmin(user.role) ? "/admin" : "/compte"}
                 className="rounded-xl border border-line px-2.5 py-2 text-xs font-semibold"
               >
-                {canAccessAdmin(user.role) ? "Admin" : "Compte"}
+                {staffNavLabel(user.role)}
               </Link>
             ) : (
               <Link

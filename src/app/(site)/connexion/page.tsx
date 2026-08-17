@@ -1,6 +1,9 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/admin/LoginForm";
 import { AuthFooterLink, AuthPageShell } from "@/components/auth/AuthPageShell";
+import { auth } from "@/lib/auth";
+import { postLoginPath } from "@/lib/roles";
 
 export const metadata = {
   title: "Connexion",
@@ -33,6 +36,11 @@ export default async function ConnexionPage({
 }) {
   const params = await searchParams;
   const callbackUrl = params.callbackUrl || "";
+  const session = await auth();
+
+  if (session?.user) {
+    redirect(postLoginPath(session.user.role, callbackUrl));
+  }
 
   return (
     <AuthPageShell

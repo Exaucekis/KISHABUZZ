@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowRight, Lock, Mail, User } from "lucide-react";
 import { registerAction, type AuthActionState } from "@/actions/auth";
 import { EmailInput } from "@/components/auth/EmailInput";
@@ -16,15 +15,13 @@ const fieldClass =
 const iconClass = "pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-paper-muted";
 
 export function RegisterForm() {
-  const router = useRouter();
   const [state, action, pending] = useActionState(registerAction, initial);
 
   useEffect(() => {
     if (state.ok && state.redirectTo) {
-      router.push(state.redirectTo);
-      router.refresh();
+      window.location.assign(state.redirectTo);
     }
-  }, [state, router]);
+  }, [state]);
 
   return (
     <form action={action} className="auth-form space-y-5" noValidate>

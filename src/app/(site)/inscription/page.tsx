@@ -1,5 +1,8 @@
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { AuthFooterLink, AuthPageShell } from "@/components/auth/AuthPageShell";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { postLoginPath } from "@/lib/roles";
 
 export const metadata = {
   title: "Créer un compte",
@@ -21,7 +24,12 @@ const ASIDE_ITEMS = [
   },
 ] as const;
 
-export default function InscriptionPage() {
+export default async function InscriptionPage() {
+  const session = await auth();
+  if (session?.user) {
+    redirect(postLoginPath(session.user.role));
+  }
+
   return (
     <AuthPageShell
       eyebrow="Espace membre"

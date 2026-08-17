@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 import { loginAction, type AuthActionState } from "@/actions/auth";
 import { EmailInput } from "@/components/auth/EmailInput";
@@ -20,15 +19,13 @@ export function LoginForm({
   callbackUrl?: string;
   variant?: "site" | "admin";
 }) {
-  const router = useRouter();
   const [state, action, pending] = useActionState(loginAction, initial);
 
   useEffect(() => {
     if (state.ok && state.redirectTo) {
-      router.push(state.redirectTo);
-      router.refresh();
+      window.location.assign(state.redirectTo);
     }
-  }, [state, router]);
+  }, [state]);
 
   const isSite = variant === "site";
   const wrap = isSite ? "auth-form space-y-5" : "admin-card w-full max-w-md";
@@ -78,6 +75,9 @@ export function LoginForm({
       </div>
 
       {!state.ok && state.message ? <p className="auth-error">{state.message}</p> : null}
+      {state.ok && state.redirectTo ? (
+        <p className="text-sm text-emerald-400">Connexion réussie, redirection…</p>
+      ) : null}
 
       <button
         type="submit"

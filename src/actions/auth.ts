@@ -33,6 +33,19 @@ export type AuthActionState = {
   fieldErrors?: Record<string, string[]>;
 };
 
+function credentialsSignInError(result: string | undefined) {
+  if (!result) return null;
+  try {
+    const url = new URL(result, "http://localhost");
+    if (url.searchParams.get("error")) {
+      return "Identifiants incorrects.";
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 export async function loginAction(
   _prev: AuthActionState,
   formData: FormData
@@ -57,12 +70,20 @@ export async function loginAction(
     select: { role: true },
   });
 
+  const destination = postLoginPath(user?.role, parsed.data.callbackUrl || null);
+
   try {
-    await signIn("credentials", {
+    const result = await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
+      redirectTo: destination,
       redirect: false,
     });
+
+    const signInError = credentialsSignInError(typeof result === "string" ? result : undefined);
+    if (signInError) {
+      return { ok: false, message: signInError };
+    }
   } catch (error) {
     if (error instanceof AuthError) {
       return { ok: false, message: "Identifiants incorrects." };
@@ -73,7 +94,7 @@ export async function loginAction(
   return {
     ok: true,
     message: "Connecté.",
-    redirectTo: postLoginPath(user?.role, parsed.data.callbackUrl || null),
+    redirectTo: destination,
   };
 }
 
@@ -111,11 +132,17 @@ export async function registerAction(
   });
 
   try {
-    await signIn("credentials", {
+    const result = await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
+      redirectTo: "/compte",
       redirect: false,
     });
+
+    const signInError = credentialsSignInError(typeof result === "string" ? result : undefined);
+    if (signInError) {
+      return { ok: true, message: "Compte créé. Connectez-vous.", redirectTo: "/connexion" };
+    }
   } catch (error) {
     if (error instanceof AuthError) {
       return { ok: true, message: "Compte créé. Connectez-vous.", redirectTo: "/connexion" };
