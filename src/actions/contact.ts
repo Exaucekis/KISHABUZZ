@@ -18,7 +18,13 @@ const contactSchema = z.object({
   name: z.string().trim().min(2, "Le nom est requis").max(120),
   organization: z.string().trim().max(160).optional().default(""),
   phone: z.string().trim().max(40).optional().default(""),
-  email: z.string().trim().email("Email invalide").max(160),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Format d'email invalide")
+    .regex(/^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/, "Format d'email invalide")
+    .max(160),
   subject: z.string().trim().min(3, "Le sujet est requis").max(200),
   collaborationType: z.enum(COLLAB_TYPES),
   message: z.string().trim().min(10, "Le message est trop court").max(5000),

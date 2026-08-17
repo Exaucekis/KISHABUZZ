@@ -1,27 +1,37 @@
-import Link from "next/link";
 import { RegisterForm } from "@/components/auth/RegisterForm";
+import { AuthFooterLink, AuthPageShell } from "@/components/auth/AuthPageShell";
 
 export const metadata = {
   title: "Créer un compte",
+  description: "Créez votre compte membre KISHA BUZZ.",
 };
+
+const ASIDE_ITEMS = [
+  {
+    label: "Compte utilisateur",
+    detail: "Accédez aux contenus, publications et à votre espace personnel.",
+  },
+  {
+    label: "Évolution des droits",
+    detail: "Un superadmin peut vous nommer auteur, éditeur ou administrateur.",
+  },
+  {
+    label: "Rejoindre le média",
+    detail: "Participez à la couverture culturelle et aux projets KISHA BUZZ.",
+  },
+] as const;
 
 export default function InscriptionPage() {
   return (
-    <section className="mx-auto flex min-h-[70vh] max-w-lg flex-col justify-center px-4 py-28">
-      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-ember-text">Espace membre</p>
-      <h1 className="mt-3 font-display text-4xl uppercase">Inscription</h1>
-      <p className="mt-3 text-sm text-paper-muted">
-        Un nouveau compte est un utilisateur. Un superadmin peut ensuite le nommer admin, éditeur ou auteur.
-      </p>
-      <div className="mt-8">
-        <RegisterForm />
-      </div>
-      <p className="mt-6 text-sm text-paper-muted">
-        Déjà inscrit ?{" "}
-        <Link href="/connexion" className="font-semibold text-ember-text">
-          Se connecter
-        </Link>
-      </p>
-    </section>
+    <AuthPageShell
+      eyebrow="Espace membre"
+      title="Inscription"
+      description="Créez votre compte en quelques secondes. Chaque nouvelle inscription démarre en tant qu'utilisateur — les rôles avancés sont attribués par un superadmin."
+      asideTitle="Rejoindre"
+      asideItems={[...ASIDE_ITEMS]}
+      footer={<AuthFooterLink prompt="Déjà inscrit ?" href="/connexion" label="Se connecter" />}
+    >
+      <RegisterForm />
+    </AuthPageShell>
   );
 }

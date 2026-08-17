@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { changePasswordAction, type AuthActionState } from "@/actions/auth";
+import { PasswordInput } from "@/components/auth/PasswordInput";
 
 const initial: AuthActionState = { ok: false, message: "" };
 const fieldClass = "w-full border border-line bg-ink-2 px-4 py-3 text-paper focus-ring";
@@ -16,10 +17,9 @@ export function ChangePasswordForm() {
         <label htmlFor="currentPassword" className="block text-sm text-paper-muted">
           Mot de passe actuel
         </label>
-        <input
+        <PasswordInput
           id="currentPassword"
           name="currentPassword"
-          type="password"
           required
           minLength={6}
           className={fieldClass}
@@ -30,10 +30,9 @@ export function ChangePasswordForm() {
         <label htmlFor="nextPassword" className="block text-sm text-paper-muted">
           Nouveau mot de passe
         </label>
-        <input
+        <PasswordInput
           id="nextPassword"
           name="nextPassword"
-          type="password"
           required
           minLength={6}
           className={fieldClass}
@@ -44,10 +43,9 @@ export function ChangePasswordForm() {
         <label htmlFor="confirmPassword" className="block text-sm text-paper-muted">
           Confirmer
         </label>
-        <input
+        <PasswordInput
           id="confirmPassword"
           name="confirmPassword"
-          type="password"
           required
           minLength={6}
           className={fieldClass}

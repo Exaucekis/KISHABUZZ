@@ -3,6 +3,8 @@
 import { useActionState } from "react";
 import { deleteUser, saveUser } from "@/actions/admin/users";
 import { SubmitButton } from "@/components/admin/SubmitButton";
+import { EmailInput } from "@/components/auth/EmailInput";
+import { PasswordInput } from "@/components/auth/PasswordInput";
 import { ROLE_LABELS, ROLES, type Role } from "@/lib/roles";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -27,7 +29,7 @@ export function UsersManager({
 
   return (
     <div className="space-y-8">
-      <form action={action} className="admin-card space-y-3">
+      <form action={action} className="admin-card space-y-3" noValidate>
         <h2 className="font-[family-name:var(--font-syne)] text-lg font-bold">Nouveau compte</h2>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="admin-field">
@@ -36,11 +38,11 @@ export function UsersManager({
           </div>
           <div className="admin-field">
             <label htmlFor="email">Email</label>
-            <input id="email" name="email" type="email" required />
+            <EmailInput id="email" name="email" required autoComplete="email" />
           </div>
           <div className="admin-field">
             <label htmlFor="password">Mot de passe</label>
-            <input id="password" name="password" type="password" required minLength={6} />
+            <PasswordInput id="password" name="password" required minLength={6} autoComplete="new-password" />
           </div>
           <div className="admin-field">
             <label htmlFor="role">Rôle</label>
@@ -62,7 +64,7 @@ export function UsersManager({
       <div className="space-y-4">
         {users.map((user) => (
           <article key={user.id} className="admin-card space-y-3">
-            <form action={action} className="grid gap-3 md:grid-cols-2">
+            <form action={action} className="grid gap-3 md:grid-cols-2" noValidate>
               <input type="hidden" name="id" value={user.id} />
               <div className="admin-field">
                 <label>Nom</label>
@@ -70,11 +72,11 @@ export function UsersManager({
               </div>
               <div className="admin-field">
                 <label>Email</label>
-                <input name="email" type="email" defaultValue={user.email} required />
+                <EmailInput name="email" defaultValue={user.email} required autoComplete="email" />
               </div>
               <div className="admin-field">
                 <label>Nouveau mot de passe</label>
-                <input name="password" type="password" minLength={6} placeholder="Laisser vide pour ne pas changer" />
+                <PasswordInput name="password" minLength={6} placeholder="Laisser vide pour ne pas changer" autoComplete="new-password" />
               </div>
               <div className="admin-field">
                 <label>Rôle</label>

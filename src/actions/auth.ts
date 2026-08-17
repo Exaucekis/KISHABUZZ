@@ -7,15 +7,22 @@ import { signIn, signOut, auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { postLoginPath } from "@/lib/roles";
 
+const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email("Format d'email invalide")
+  .regex(/^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/, "Format d'email invalide");
+
 const credentialsSchema = z.object({
-  email: z.string().email(),
+  email: emailSchema,
   password: z.string().min(6),
   callbackUrl: z.string().optional(),
 });
 
 const registerSchema = z.object({
   name: z.string().min(2, "Nom trop court").max(120),
-  email: z.string().email("Email invalide"),
+  email: emailSchema,
   password: z.string().min(6, "Au moins 6 caractères"),
 });
 
@@ -37,7 +44,12 @@ export async function loginAction(
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Email ou mot de passe invalide." };
+    const emailError = parsed.error.flatten().fieldErrors.email?.[0];
+    return {
+      ok: false,
+      message: emailError || "Email ou mot de passe invalide.",
+      fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+    };
   }
 
   const user = await prisma.user.findUnique({

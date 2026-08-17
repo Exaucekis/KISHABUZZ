@@ -6,6 +6,7 @@ import {
   submitContact,
   type ContactActionState,
 } from "@/actions/contact";
+import { EmailInput } from "@/components/auth/EmailInput";
 
 const TYPES = [
   "MEDIA",
@@ -24,7 +25,7 @@ export function ContactForm() {
   const [state, action, pending] = useActionState(submitContact, initial);
 
   return (
-    <form action={action} className="space-y-5">
+    <form action={action} className="space-y-5" noValidate>
       <div className="grid gap-5 md:grid-cols-2">
         <Field
           label="Nom complet"
@@ -43,13 +44,21 @@ export function ContactForm() {
           type="tel"
           error={state.fieldErrors?.phone?.[0]}
         />
-        <Field
-          label="Email"
-          name="email"
-          type="email"
-          required
-          error={state.fieldErrors?.email?.[0]}
-        />
+        <div>
+          <label htmlFor="email" className="mb-2 block text-sm text-paper-muted">
+            Email *
+          </label>
+          <EmailInput
+            id="email"
+            name="email"
+            required
+            autoComplete="email"
+            className="w-full border border-line bg-ink-2 px-4 py-3 text-paper focus-ring"
+          />
+          {state.fieldErrors?.email?.[0] ? (
+            <p className="mt-1 text-sm text-red-400">{state.fieldErrors.email[0]}</p>
+          ) : null}
+        </div>
       </div>
 
       <Field

@@ -14,7 +14,12 @@ import { ROLES, isRole } from "@/lib/roles";
 
 const userSchema = z.object({
   name: z.string().min(2).max(120),
-  email: z.string().email(),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Format d'email invalide")
+    .regex(/^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/, "Format d'email invalide"),
   password: z.string().min(6).optional().or(z.literal("")),
   role: z.enum(ROLES),
 });
