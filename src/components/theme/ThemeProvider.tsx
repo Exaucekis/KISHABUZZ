@@ -25,20 +25,19 @@ function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle("light", theme === "light");
 }
 
+function readTheme(): Theme {
+  if (typeof window === "undefined") return "dark";
+  const stored = window.localStorage.getItem("kb-theme");
+  if (stored === "light" || stored === "dark") return stored;
+  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
+  const [theme, setThemeState] = useState<Theme>(readTheme);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("kb-theme") as Theme | null;
-    const preferred =
-      stored === "light" || stored === "dark"
-        ? stored
-        : window.matchMedia("(prefers-color-scheme: light)").matches
-          ? "light"
-          : "dark";
-    setThemeState(preferred);
-    applyTheme(preferred);
-  }, []);
+    applyTheme(theme);
+  }, [theme]);
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);

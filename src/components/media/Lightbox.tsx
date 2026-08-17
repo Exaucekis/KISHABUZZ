@@ -17,8 +17,7 @@ type Props = {
 };
 
 export function Lightbox({ items, index, onClose, onChange }: Props) {
-  const [zoom, setZoom] = useState(1);
-  const open = index !== null && items[index];
+  const open = index !== null && Boolean(items[index]);
 
   useEffect(() => {
     if (!open) return;
@@ -36,12 +35,34 @@ export function Lightbox({ items, index, onClose, onChange }: Props) {
     };
   }, [open, index, items.length, onChange, onClose]);
 
-  useEffect(() => {
-    setZoom(1);
-  }, [index]);
-
   if (!open || index === null) return null;
-  const item = items[index];
+
+  return (
+    <LightboxStage
+      key={index}
+      item={items[index]}
+      index={index}
+      count={items.length}
+      onClose={onClose}
+      onChange={onChange}
+    />
+  );
+}
+
+function LightboxStage({
+  item,
+  index,
+  count,
+  onClose,
+  onChange,
+}: {
+  item: Item;
+  index: number;
+  count: number;
+  onClose: () => void;
+  onChange: (index: number) => void;
+}) {
+  const [zoom, setZoom] = useState(1);
 
   const share = async () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -95,12 +116,12 @@ export function Lightbox({ items, index, onClose, onChange }: Props) {
         </button>
       </div>
 
-      {items.length > 1 ? (
+      {count > 1 ? (
         <>
           <button
             type="button"
             className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full border border-white/20 p-3 text-white"
-            onClick={() => onChange((index - 1 + items.length) % items.length)}
+            onClick={() => onChange((index - 1 + count) % count)}
             aria-label="Précédent"
           >
             <ChevronLeft className="h-6 w-6" />
@@ -108,7 +129,7 @@ export function Lightbox({ items, index, onClose, onChange }: Props) {
           <button
             type="button"
             className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-white/20 p-3 text-white"
-            onClick={() => onChange((index + 1) % items.length)}
+            onClick={() => onChange((index + 1) % count)}
             aria-label="Suivant"
           >
             <ChevronRight className="h-6 w-6" />

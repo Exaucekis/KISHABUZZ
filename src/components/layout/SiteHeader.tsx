@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   Menu,
@@ -21,6 +21,7 @@ import {
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserAccountMenu } from "@/components/layout/UserAccountMenu";
+import { useIsClient } from "@/lib/use-is-client";
 import { cn } from "@/lib/utils";
 
 type HeaderUser = { name: string | null; role: string } | null;
@@ -53,13 +54,19 @@ export function SiteHeader({
   user?: HeaderUser;
 } = {}) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const [openForPath, setOpenForPath] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useIsClient();
   const menuId = useId();
   const isArena = pathname.startsWith("/arena-culture");
-
-  useEffect(() => setMounted(true), []);
+  const open = openForPath === pathname;
+  const setOpen = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      const next = typeof value === "function" ? value(openForPath === pathname) : value;
+      setOpenForPath(next ? pathname : null);
+    },
+    [openForPath, pathname]
+  );
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -69,15 +76,11 @@ export function SiteHeader({
   }, []);
 
   useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") setOpenForPath(null);
     };
     window.addEventListener("keydown", onKey);
     return () => {

@@ -49,7 +49,7 @@ function parseArticle(formData: FormData) {
 }
 
 async function uniqueArticleSlug(base: string, excludeId?: string) {
-  let slug = createSlug(base);
+  const slug = createSlug(base);
   let i = 0;
   while (true) {
     const candidate = i === 0 ? slug : `${slug}-${i}`;

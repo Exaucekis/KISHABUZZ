@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { ChevronDown, LayoutDashboard, Sparkles, User } from "lucide-react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { useIsClient } from "@/lib/use-is-client";
 import { cn } from "@/lib/utils";
 import { canAccessAdmin, canManageUsers, roleLabel } from "@/lib/roles";
 
@@ -38,7 +39,7 @@ function roleBadgeClass(role: string) {
 export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useIsClient();
   const [coords, setCoords] = useState({ top: 0, right: 0 });
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -47,8 +48,6 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
   const showDashboard = canAccessAdmin(user.role);
   const showUsers = canManageUsers(user.role);
   const initials = userInitials(user.name, user.role);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open || variant !== "desktop") return;
