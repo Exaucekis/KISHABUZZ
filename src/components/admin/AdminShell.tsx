@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { canManageUsers, roleLabel } from "@/lib/roles";
 
 const NAV = [
   { href: "/admin", label: "Tableau de bord", exact: true },
@@ -19,10 +20,19 @@ const NAV = [
   { href: "/admin/categories", label: "Catégories" },
   { href: "/admin/domains", label: "Domaines" },
   { href: "/admin/pages", label: "Pages" },
+  { href: "/admin/users", label: "Utilisateurs", superadmin: true },
   { href: "/admin/settings", label: "Paramètres" },
 ];
 
-export function AdminShell({ children }: { children: React.ReactNode }) {
+export function AdminShell({
+  children,
+  role,
+  userName,
+}: {
+  children: React.ReactNode;
+  role?: string;
+  userName?: string | null;
+}) {
   const pathname = usePathname();
   const isLogin = pathname === "/admin/login";
 
@@ -41,7 +51,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
-          {NAV.map((item) => {
+          {NAV.filter((item) => !item.superadmin || canManageUsers(role)).map((item) => {
             let active = false;
             if (item.exact) {
               active = pathname === item.href;
@@ -72,6 +82,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         <div className="border-t border-white/10 p-3">
+          {userName ? (
+            <p className="mb-3 px-1 text-xs text-[#9aa3b5]">
+              <span className="block truncate font-semibold text-white">{userName}</span>
+              {roleLabel(role)}
+            </p>
+          ) : null}
           <Link href="/" className="admin-btn admin-btn-ghost mb-2 w-full text-xs">
             Voir le site
           </Link>

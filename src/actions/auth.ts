@@ -1,0 +1,153 @@
+"use server";
+
+import bcrypt from "bcryptjs";
+import { AuthError } from "next-auth";
+import { z } from "zod";
+import { signIn, signOut, auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { postLoginPath } from "@/lib/roles";
+
+const credentialsSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  callbackUrl: z.string().optional(),
+});
+
+const registerSchema = z.object({
+  name: z.string().min(2, "Nom trop court").max(120),
+  email: z.string().email("Email invalide"),
+  password: z.string().min(6, "Au moins 6 caractères"),
+});
+
+export type AuthActionState = {
+  ok: boolean;
+  message: string;
+  redirectTo?: string;
+  fieldErrors?: Record<string, string[]>;
+};
+
+export async function loginAction(
+  _prev: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  const parsed = credentialsSchema.safeParse({
+    email: String(formData.get("email") || "").trim().toLowerCase(),
+    password: String(formData.get("password") || ""),
+    callbackUrl: String(formData.get("callbackUrl") || ""),
+  });
+
+  if (!parsed.success) {
+    return { ok: false, message: "Email ou mot de passe invalide." };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: parsed.data.email },
+    select: { role: true },
+  });
+
+  try {
+    await signIn("credentials", {
+      email: parsed.data.email,
+      password: parsed.data.password,
+      redirect: false,
+    });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return { ok: false, message: "Identifiants incorrects." };
+    }
+    throw error;
+  }
+
+  return {
+    ok: true,
+    message: "Connecté.",
+    redirectTo: postLoginPath(user?.role, parsed.data.callbackUrl || null),
+  };
+}
+
+export async function registerAction(
+  _prev: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  const parsed = registerSchema.safeParse({
+    name: String(formData.get("name") || "").trim(),
+    email: String(formData.get("email") || "").trim().toLowerCase(),
+    password: String(formData.get("password") || ""),
+  });
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: "Veuillez corriger le formulaire.",
+      fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+    };
+  }
+
+  const exists = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+  if (exists) {
+    return { ok: false, message: "Un compte existe déjà avec cet email." };
+  }
+
+  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+  await prisma.user.create({
+    data: {
+      name: parsed.data.name,
+      email: parsed.data.email,
+      passwordHash,
+      role: "USER",
+    },
+  });
+
+  try {
+    await signIn("credentials", {
+      email: parsed.data.email,
+      password: parsed.data.password,
+      redirect: false,
+    });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return { ok: true, message: "Compte créé. Connectez-vous.", redirectTo: "/connexion" };
+    }
+    throw error;
+  }
+
+  return { ok: true, message: "Compte créé.", redirectTo: "/compte" };
+}
+
+export async function changePasswordAction(
+  _prev: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { ok: false, message: "Connectez-vous d’abord." };
+  }
+
+  const currentPassword = String(formData.get("currentPassword") || "");
+  const nextPassword = String(formData.get("nextPassword") || "");
+  const confirmPassword = String(formData.get("confirmPassword") || "");
+
+  if (nextPassword.length < 6) {
+    return { ok: false, message: "Le nouveau mot de passe doit faire au moins 6 caractères." };
+  }
+  if (nextPassword !== confirmPassword) {
+    return { ok: false, message: "La confirmation ne correspond pas." };
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (!user) return { ok: false, message: "Compte introuvable." };
+
+  const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!valid) return { ok: false, message: "Mot de passe actuel incorrect." };
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash: await bcrypt.hash(nextPassword, 12) },
+  });
+
+  return { ok: true, message: "Mot de passe mis à jour." };
+}
+
+export async function signOutAction() {
+  await signOut({ redirectTo: "/" });
+}

@@ -1,4 +1,6 @@
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { canAccessAdmin, canManageUsers } from "@/lib/roles";
 
 export type AdminActionState = {
   ok: boolean;
@@ -10,7 +12,18 @@ export type AdminActionState = {
 export async function requireAdmin() {
   const session = await auth();
   if (!session?.user?.id) {
-    throw new Error("Non autorisé");
+    redirect("/connexion");
+  }
+  if (!canAccessAdmin(session.user.role)) {
+    redirect("/compte");
+  }
+  return session;
+}
+
+export async function requireSuperAdmin() {
+  const session = await requireAdmin();
+  if (!canManageUsers(session.user.role)) {
+    redirect("/admin");
   }
   return session;
 }

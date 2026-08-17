@@ -1,53 +1,56 @@
 "use client";
 
-import { useActionState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { SubmitButton } from "@/components/admin/SubmitButton";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { loginAction, type AuthActionState } from "@/actions/auth";
 
-type State = { ok: boolean; message: string };
+const initial: AuthActionState = { ok: false, message: "" };
 
-async function loginAction(_prev: State, formData: FormData): Promise<State> {
-  const email = String(formData.get("email") || "");
-  const password = String(formData.get("password") || "");
-  const callbackUrl = String(formData.get("callbackUrl") || "/admin");
+const fieldClass =
+  "w-full border border-line bg-ink-2 px-4 py-3 text-paper focus-ring";
 
-  const result = await signIn("credentials", {
-    email,
-    password,
-    redirect: false,
-  });
-
-  if (result?.error) {
-    return { ok: false, message: "Identifiants incorrects." };
-  }
-
-  return { ok: true, message: callbackUrl };
-}
-
-export function LoginForm() {
+export function LoginForm({
+  callbackUrl = "",
+  variant = "site",
+}: {
+  callbackUrl?: string;
+  variant?: "site" | "admin";
+}) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/admin";
+  const [state, action, pending] = useActionState(loginAction, initial);
 
-  const [state, action] = useActionState(async (prev: State, formData: FormData) => {
-    const result = await loginAction(prev, formData);
-    if (result.ok) {
-      router.push(result.message || "/admin");
+  useEffect(() => {
+    if (state.ok && state.redirectTo) {
+      router.push(state.redirectTo);
       router.refresh();
     }
-    return result;
-  }, { ok: false, message: "" });
+  }, [state, router]);
+
+  const wrap =
+    variant === "admin"
+      ? "admin-card w-full max-w-md"
+      : "w-full max-w-md space-y-5 border border-line bg-ink-2 p-6";
 
   return (
-    <form action={action} className="admin-card w-full max-w-md">
+    <form action={action} className={wrap}>
       <input type="hidden" name="callbackUrl" value={callbackUrl} />
-      <div className="admin-field">
-        <label htmlFor="email">Email</label>
-        <input id="email" name="email" type="email" required autoComplete="username" />
+      <div className={variant === "admin" ? "admin-field" : "space-y-2"}>
+        <label htmlFor="email" className="mb-2 block text-sm text-paper-muted">
+          Email
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          autoComplete="username"
+          className={variant === "admin" ? undefined : fieldClass}
+        />
       </div>
-      <div className="admin-field">
-        <label htmlFor="password">Mot de passe</label>
+      <div className={variant === "admin" ? "admin-field" : "space-y-2"}>
+        <label htmlFor="password" className="mb-2 block text-sm text-paper-muted">
+          Mot de passe
+        </label>
         <input
           id="password"
           name="password"
@@ -55,12 +58,23 @@ export function LoginForm() {
           required
           minLength={6}
           autoComplete="current-password"
+          className={variant === "admin" ? undefined : fieldClass}
         />
       </div>
       {!state.ok && state.message ? (
-        <p className="mb-3 text-sm text-red-300">{state.message}</p>
+        <p className="text-sm text-red-400">{state.message}</p>
       ) : null}
-      <SubmitButton className="w-full">Se connecter</SubmitButton>
+      <button
+        type="submit"
+        disabled={pending}
+        className={
+          variant === "admin"
+            ? "admin-btn admin-btn-primary w-full disabled:opacity-60"
+            : "inline-flex w-full items-center justify-center rounded-md bg-ember px-5 py-3 text-sm font-bold uppercase tracking-wide text-on-ember disabled:opacity-60"
+        }
+      >
+        {pending ? "Connexion…" : "Se connecter"}
+      </button>
     </form>
   );
 }

@@ -16,10 +16,14 @@ import {
   Briefcase,
   Handshake,
   Mail,
+  LogIn,
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { cn } from "@/lib/utils";
+import { canAccessAdmin } from "@/lib/roles";
+
+type HeaderUser = { name: string | null; role: string } | null;
 
 const links = [
   { href: "/", label: "Accueil", icon: Home },
@@ -42,7 +46,12 @@ const desktopLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function SiteHeader(_props: { siteTitle?: string } = {}) {
+export function SiteHeader({
+  user = null,
+}: {
+  siteTitle?: string;
+  user?: HeaderUser;
+} = {}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -151,6 +160,27 @@ export function SiteHeader(_props: { siteTitle?: string } = {}) {
                   </li>
                 );
               })}
+              <li>
+                {user ? (
+                  <Link
+                    href={canAccessAdmin(user.role) ? "/admin" : "/compte"}
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-[0.95rem] font-semibold text-paper-muted hover:bg-ink-3 hover:text-paper"
+                  >
+                    <User className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+                    <span>{canAccessAdmin(user.role) ? "Tableau de bord" : "Mon compte"}</span>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/connexion"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 rounded-xl bg-ember px-3.5 py-3 text-[0.95rem] font-semibold text-on-ember"
+                  >
+                    <LogIn className="h-4 w-4 shrink-0" aria-hidden />
+                    <span>Connexion</span>
+                  </Link>
+                )}
+              </li>
             </ul>
           </nav>
 
@@ -218,9 +248,41 @@ export function SiteHeader(_props: { siteTitle?: string } = {}) {
               <Search className="h-4 w-4" />
             </Link>
             <ThemeToggle className="ml-1" />
+            {user ? (
+              <Link
+                href={canAccessAdmin(user.role) ? "/admin" : "/compte"}
+                className="ml-1 rounded-md border border-line px-2.5 py-2 text-[0.8rem] font-semibold text-paper hover:bg-ink-3 xl:text-sm"
+              >
+                {canAccessAdmin(user.role) ? "Admin" : "Compte"}
+              </Link>
+            ) : (
+              <Link
+                href="/connexion"
+                className="ml-1 inline-flex items-center gap-1.5 rounded-md border border-line px-2.5 py-2 text-[0.8rem] font-semibold text-paper hover:bg-ink-3 xl:text-sm"
+              >
+                <LogIn className="h-3.5 w-3.5" aria-hidden />
+                Connexion
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-2 lg:hidden">
+            {user ? (
+              <Link
+                href={canAccessAdmin(user.role) ? "/admin" : "/compte"}
+                className="rounded-xl border border-line px-2.5 py-2 text-xs font-semibold"
+              >
+                {canAccessAdmin(user.role) ? "Admin" : "Compte"}
+              </Link>
+            ) : (
+              <Link
+                href="/connexion"
+                className="inline-flex items-center gap-1 rounded-xl bg-ember px-2.5 py-2 text-xs font-bold text-on-ember"
+              >
+                <LogIn className="h-3.5 w-3.5" aria-hidden />
+                Login
+              </Link>
+            )}
             <ThemeToggle />
             <button
               type="button"
