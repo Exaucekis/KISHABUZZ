@@ -5,16 +5,20 @@ import { changePasswordAction, type AuthActionState } from "@/actions/auth";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 
 const initial: AuthActionState = { ok: false, message: "" };
-const fieldClass = "w-full border border-line bg-ink-2 px-4 py-3 text-paper focus-ring";
+const fieldClass =
+  "auth-field w-full rounded-lg border border-line/80 bg-ink/60 px-4 py-3.5 text-paper placeholder:text-paper-muted/70 focus-ring";
 
 export function ChangePasswordForm() {
   const [state, action, pending] = useActionState(changePasswordAction, initial);
 
   return (
-    <form action={action} className="mt-8 space-y-4 border border-line bg-ink-2 p-6">
-      <h2 className="font-display text-2xl">Changer le mot de passe</h2>
+    <form action={action} className="account-card mt-8 space-y-4 p-6">
+      <div className="border-b border-line/70 pb-4">
+        <h2 className="font-display text-xl uppercase">Sécurité</h2>
+        <p className="mt-1 text-sm text-paper-muted">Mettez à jour votre mot de passe régulièrement.</p>
+      </div>
       <div className="space-y-2">
-        <label htmlFor="currentPassword" className="block text-sm text-paper-muted">
+        <label htmlFor="currentPassword" className="auth-label">
           Mot de passe actuel
         </label>
         <PasswordInput
@@ -27,7 +31,7 @@ export function ChangePasswordForm() {
         />
       </div>
       <div className="space-y-2">
-        <label htmlFor="nextPassword" className="block text-sm text-paper-muted">
+        <label htmlFor="nextPassword" className="auth-label">
           Nouveau mot de passe
         </label>
         <PasswordInput
@@ -40,7 +44,7 @@ export function ChangePasswordForm() {
         />
       </div>
       <div className="space-y-2">
-        <label htmlFor="confirmPassword" className="block text-sm text-paper-muted">
+        <label htmlFor="confirmPassword" className="auth-label">
           Confirmer
         </label>
         <PasswordInput
@@ -53,12 +57,12 @@ export function ChangePasswordForm() {
         />
       </div>
       {state.message ? (
-        <p className={`text-sm ${state.ok ? "text-emerald-400" : "text-red-400"}`}>{state.message}</p>
+        <p className={`text-sm ${state.ok ? "text-emerald-400" : "auth-error"}`}>{state.message}</p>
       ) : null}
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex rounded-md bg-ember px-5 py-3 text-sm font-bold uppercase tracking-wide text-on-ember disabled:opacity-60"
+        className="btn-interactive inline-flex rounded-lg bg-ember px-5 py-3 text-sm font-bold uppercase tracking-wide text-on-ember disabled:opacity-60"
       >
         {pending ? "Enregistrement…" : "Enregistrer le mot de passe"}
       </button>

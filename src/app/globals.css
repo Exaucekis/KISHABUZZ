@@ -1534,6 +1534,17 @@ html[data-theme="light"] .auth-feature-item {
   -webkit-backdrop-filter: blur(16px);
 }
 
+.user-menu-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--ember-text), var(--gold), transparent);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
 .user-menu-profile-card {
   display: flex;
   align-items: center;
@@ -1716,4 +1727,180 @@ html[data-theme="light"] .auth-feature-item {
 
 .account-action-card--primary {
   border-color: color-mix(in srgb, var(--ember-text) 28%, var(--line));
+}
+
+/* ——— Page compte premium ——— */
+.account-page {
+  background: var(--ink);
+}
+
+.account-page-aurora {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 45% at 20% 10%, rgba(198, 255, 0, 0.08), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 20%, rgba(176, 138, 46, 0.1), transparent 65%);
+  opacity: 0.9;
+}
+
+.account-hero {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--ink-2) 88%, transparent);
+  padding: 1.25rem 1.35rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.account-card {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--ink-2) 92%, transparent);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+}
+
+/* ——— Dialogues de confirmation ——— */
+.confirm-dialog-root {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.confirm-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: user-menu-fade-in 0.22s ease forwards;
+}
+
+.confirm-dialog-panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 22rem);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line) 90%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--ink-2) 96%, transparent);
+  padding: 1.35rem 1.35rem 1.15rem;
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  animation: confirm-dialog-in 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.confirm-dialog-panel--danger .confirm-dialog-glow {
+  background: linear-gradient(90deg, #ef4444, #f59e0b, transparent);
+}
+
+.confirm-dialog-glow {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--ember-text), var(--gold), transparent);
+}
+
+.confirm-dialog-title {
+  font-family: var(--font-syne), sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--paper);
+}
+
+.confirm-dialog-desc {
+  margin-top: 0.65rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--paper-muted);
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  margin-top: 1.25rem;
+}
+
+.confirm-dialog-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 7.5rem;
+  border-radius: 0.55rem;
+  padding: 0.62rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: transform 0.18s ease, background 0.18s ease, opacity 0.18s ease;
+}
+
+.confirm-dialog-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.confirm-dialog-btn--ghost {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--paper-muted);
+}
+
+.confirm-dialog-btn--ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink-3) 80%, transparent);
+  color: var(--paper);
+}
+
+.confirm-dialog-btn--primary {
+  border: 0;
+  background: var(--ember);
+  color: var(--on-ember);
+}
+
+.confirm-dialog-btn--danger {
+  border: 0;
+  background: #dc2626;
+  color: #fff;
+}
+
+.confirm-dialog-btn--primary:hover:not(:disabled),
+.confirm-dialog-btn--danger:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+@keyframes confirm-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confirm-dialog-panel {
+    animation: none;
+  }
+
+  .confirm-dialog-btn--primary:hover:not(:disabled),
+  .confirm-dialog-btn--danger:hover:not(:disabled) {
+    transform: none;
+  }
 }
