@@ -45,5 +45,5 @@ export function postLoginPath(role: string | null | undefined, callbackUrl?: str
     return canAccessAdmin(role) ? next : "/compte";
   }
   if (next) return next;
-  return canAccessAdmin(role) ? "/admin" : "/compte";
+  return "/compte";
 }

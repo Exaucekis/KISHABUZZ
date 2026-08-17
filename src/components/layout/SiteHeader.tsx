@@ -20,13 +20,8 @@ import {
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { UserAccountMenu } from "@/components/layout/UserAccountMenu";
 import { cn } from "@/lib/utils";
-import { canAccessAdmin, roleLabel } from "@/lib/roles";
-
-function staffNavLabel(role: string) {
-  if (!canAccessAdmin(role)) return "Compte";
-  return roleLabel(role);
-}
 
 type HeaderUser = { name: string | null; role: string } | null;
 
@@ -167,14 +162,11 @@ export function SiteHeader({
               })}
               <li>
                 {user ? (
-                  <Link
-                    href={canAccessAdmin(user.role) ? "/admin" : "/compte"}
-                    onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-[0.95rem] font-semibold text-paper-muted hover:bg-ink-3 hover:text-paper"
-                  >
-                    <User className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
-                    <span>{staffNavLabel(user.role)}</span>
-                  </Link>
+                  <UserAccountMenu
+                    user={user}
+                    variant="mobile"
+                    onNavigate={() => setOpen(false)}
+                  />
                 ) : (
                   <Link
                     href="/connexion"
@@ -242,7 +234,7 @@ export function SiteHeader({
               )}
             >
               <Mic2 className="h-3.5 w-3.5" aria-hidden />
-              <span className={isArena ? "" : ""}>Arena</span>
+              <span>Arena</span>
               <span className="hidden xl:inline">Culture</span>
             </Link>
             <Link
@@ -254,12 +246,7 @@ export function SiteHeader({
             </Link>
             <ThemeToggle className="ml-1" />
             {user ? (
-              <Link
-                href={canAccessAdmin(user.role) ? "/admin" : "/compte"}
-                className="ml-1 rounded-md border border-line px-2.5 py-2 text-[0.8rem] font-semibold text-paper hover:bg-ink-3 xl:text-sm"
-              >
-                {staffNavLabel(user.role)}
-              </Link>
+              <UserAccountMenu user={user} />
             ) : (
               <Link
                 href="/connexion"
@@ -273,12 +260,7 @@ export function SiteHeader({
 
           <div className="flex items-center gap-2 lg:hidden">
             {user ? (
-              <Link
-                href={canAccessAdmin(user.role) ? "/admin" : "/compte"}
-                className="rounded-xl border border-line px-2.5 py-2 text-xs font-semibold"
-              >
-                {staffNavLabel(user.role)}
-              </Link>
+              <UserAccountMenu user={user} />
             ) : (
               <Link
                 href="/connexion"

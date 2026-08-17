@@ -1483,3 +1483,39 @@ html[data-theme="light"] .auth-feature-item {
     padding-right: 1.25rem;
   }
 }
+
+.user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border-radius: 0.45rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--paper);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.user-menu-item:hover {
+  background: color-mix(in srgb, var(--ink-3) 88%, transparent);
+}
+
+.account-action-card {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--ink-2);
+  padding: 1rem 1.1rem;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.account-action-card:hover {
+  border-color: color-mix(in srgb, var(--ember-text) 35%, var(--line));
+  background: color-mix(in srgb, var(--ink-3) 70%, var(--ink-2));
+}
+
+.account-action-card--primary {
+  border-color: color-mix(in srgb, var(--ember-text) 28%, var(--line));
+}
