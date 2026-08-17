@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
-import { ChevronDown, LayoutDashboard, Sparkles, User } from "lucide-react";
-import { SignOutButton } from "@/components/auth/SignOutButton";
+import Link from "next/link";
+import { ChevronDown, LayoutDashboard, LogOut, Sparkles, User } from "lucide-react";
+import { signOutAction } from "@/actions/auth";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useIsClient } from "@/lib/use-is-client";
 import { cn } from "@/lib/utils";
 import { canAccessAdmin, canManageUsers, roleLabel } from "@/lib/roles";
@@ -36,31 +37,38 @@ function roleBadgeClass(role: string) {
   }
 }
 
+function menuPosition(trigger: HTMLElement | null) {
+  const rect = trigger?.getBoundingClientRect();
+  if (!rect) return { top: 64, right: 12 };
+  return {
+    top: rect.bottom + 10,
+    right: Math.max(12, window.innerWidth - rect.right),
+  };
+}
+
 export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [confirmOut, setConfirmOut] = useState(false);
+  const [signingOut, startSignOut] = useTransition();
   const mounted = useIsClient();
-  const [coords, setCoords] = useState({ top: 0, right: 0 });
-  const [pendingPath, setPendingPath] = useState<string | null>(null);
+  const [coords, setCoords] = useState({ top: 64, right: 12 });
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
   const label = user.name?.trim() || roleLabel(user.role);
   const showDashboard = canAccessAdmin(user.role);
   const showUsers = canManageUsers(user.role);
   const initials = userInitials(user.name, user.role);
 
+  const close = () => {
+    setOpen(false);
+    onNavigate?.();
+  };
+
   useEffect(() => {
     if (!open || variant !== "desktop") return;
 
-    const updatePosition = () => {
-      const rect = triggerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      setCoords({
-        top: rect.bottom + 10,
-        right: Math.max(12, window.innerWidth - rect.right),
-      });
-    };
-
+    const updatePosition = () => setCoords(menuPosition(triggerRef.current));
     updatePosition();
     window.addEventListener("resize", updatePosition);
     window.addEventListener("scroll", updatePosition, true);
@@ -72,25 +80,24 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
 
   useEffect(() => {
     if (!open) return;
+
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
     };
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (triggerRef.current?.contains(target)) return;
+      if (panelRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
   }, [open]);
-
-  const close = () => {
-    setOpen(false);
-    onNavigate?.();
-  };
-
-  const navigate = (href: string) => {
-    setPendingPath(href);
-    close();
-    router.push(href);
-    router.refresh();
-    window.setTimeout(() => setPendingPath(null), 1200);
-  };
 
   const profileCard = (
     <div className="user-menu-profile-card">
@@ -107,13 +114,7 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
 
   const menuItems = (
     <div className="space-y-0.5">
-      <button
-        type="button"
-        role="menuitem"
-        disabled={!!pendingPath}
-        className={cn("user-menu-item group", pendingPath === "/compte" && "user-menu-item--loading")}
-        onClick={() => navigate("/compte")}
-      >
+      <Link href="/compte" role="menuitem" className="user-menu-item group" onClick={close}>
         <span className="user-menu-icon">
           <User className="h-4 w-4" aria-hidden />
         </span>
@@ -121,18 +122,14 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
           <span className="block">Mon compte</span>
           <span className="block text-[0.72rem] font-normal text-paper-muted">Profil et mot de passe</span>
         </span>
-      </button>
+      </Link>
 
       {showDashboard ? (
-        <button
-          type="button"
+        <Link
+          href="/admin"
           role="menuitem"
-          disabled={!!pendingPath}
-          className={cn(
-            "user-menu-item group user-menu-item--accent",
-            pendingPath === "/admin" && "user-menu-item--loading"
-          )}
-          onClick={() => navigate("/admin")}
+          className="user-menu-item group user-menu-item--accent"
+          onClick={close}
         >
           <span className="user-menu-icon user-menu-icon--accent">
             <LayoutDashboard className="h-4 w-4" aria-hidden />
@@ -141,17 +138,11 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
             <span className="block">Tableau de bord</span>
             <span className="block text-[0.72rem] font-normal text-paper-muted">CMS et contenus</span>
           </span>
-        </button>
+        </Link>
       ) : null}
 
       {showUsers ? (
-        <button
-          type="button"
-          role="menuitem"
-          disabled={!!pendingPath}
-          className={cn("user-menu-item group", pendingPath === "/admin/users" && "user-menu-item--loading")}
-          onClick={() => navigate("/admin/users")}
-        >
+        <Link href="/admin/users" role="menuitem" className="user-menu-item group" onClick={close}>
           <span className="user-menu-icon">
             <Sparkles className="h-4 w-4" aria-hidden />
           </span>
@@ -159,13 +150,50 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
             <span className="block">Utilisateurs</span>
             <span className="block text-[0.72rem] font-normal text-paper-muted">Rôles et comptes</span>
           </span>
-        </button>
+        </Link>
       ) : null}
 
       <div className="my-1.5 h-px bg-line/80" role="separator" />
 
-      <SignOutButton variant="menu" onBeforeOpen={close} />
+      <button
+        type="button"
+        role="menuitem"
+        className="user-menu-item group user-menu-item--danger w-full"
+        onClick={() => {
+          setOpen(false);
+          onNavigate?.();
+          setConfirmOut(true);
+        }}
+      >
+        <span className="user-menu-icon user-menu-icon--danger">
+          <LogOut className="h-4 w-4" aria-hidden />
+        </span>
+        <span className="flex-1 text-left">
+          <span className="block">Déconnexion</span>
+          <span className="block text-[0.72rem] font-normal text-red-200/70">Quitter la session</span>
+        </span>
+      </button>
     </div>
+  );
+
+  const confirm = (
+    <ConfirmDialog
+      open={confirmOut}
+      title="Se déconnecter ?"
+      description="Vous quitterez votre session KISHA BUZZ. Vous pourrez vous reconnecter à tout moment avec votre email et mot de passe."
+      confirmLabel="Oui, me déconnecter"
+      cancelLabel="Rester connecté"
+      loading={signingOut}
+      variant="danger"
+      onCancel={() => {
+        if (!signingOut) setConfirmOut(false);
+      }}
+      onConfirm={() => {
+        startSignOut(async () => {
+          await signOutAction();
+        });
+      }}
+    />
   );
 
   if (variant === "mobile") {
@@ -173,6 +201,7 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
       <div className="user-menu-mobile space-y-1.5">
         {profileCard}
         {menuItems}
+        {confirm}
       </div>
     );
   }
@@ -181,24 +210,16 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
     mounted &&
     open &&
     createPortal(
-      <>
-        <button
-          type="button"
-          className="user-menu-backdrop user-menu-backdrop--open fixed inset-0 z-[190] border-0"
-          aria-label="Fermer le menu compte"
-          onClick={() => setOpen(false)}
-        />
-        <div
-          id={menuId}
-          role="menu"
-          className="user-menu-panel user-menu-panel--open fixed z-[200] w-[min(calc(100vw-1.5rem),18rem)]"
-          style={{ top: coords.top, right: coords.right }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="border-b border-line/80">{profileCard}</div>
-          <div className="p-1.5">{menuItems}</div>
-        </div>
-      </>,
+      <div
+        ref={panelRef}
+        id={menuId}
+        role="menu"
+        className="user-menu-panel user-menu-panel--open fixed z-[240] w-[min(calc(100vw-1.5rem),18rem)]"
+        style={{ top: coords.top, right: coords.right }}
+      >
+        <div className="border-b border-line/80">{profileCard}</div>
+        <div className="p-1.5">{menuItems}</div>
+      </div>,
       document.body
     );
 
@@ -214,7 +235,10 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
         aria-expanded={open}
         aria-haspopup="menu"
         aria-controls={menuId}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          setCoords(menuPosition(triggerRef.current));
+          setOpen((value) => !value);
+        }}
       >
         <span className="user-menu-avatar user-menu-avatar--sm" aria-hidden>
           {initials}
@@ -226,6 +250,7 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
         />
       </button>
       {dropdown}
+      {confirm}
     </>
   );
 }

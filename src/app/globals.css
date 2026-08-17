@@ -1523,6 +1523,8 @@ html[data-theme="light"] .auth-feature-item {
 }
 
 .user-menu-panel {
+  pointer-events: auto;
+  isolation: isolate;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--line) 90%, transparent);
   border-radius: 0.9rem;
@@ -1626,6 +1628,7 @@ html[data-theme="light"] .auth-feature-item {
   padding: 0.65rem 0.75rem;
   font-size: 0.875rem;
   font-weight: 600;
+  text-decoration: none;
   color: var(--paper);
   background: transparent;
   cursor: pointer;
