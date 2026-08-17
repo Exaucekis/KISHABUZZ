@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArticleCard } from "@/components/content/ArticleCard";
 import { ShareButtons } from "@/components/content/ShareButtons";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -28,6 +28,7 @@ export default async function PublicationDetailPage({ params }: Props) {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
   if (!article) notFound();
+  if (article.contentType === "CHRONIQUE") redirect(`/chroniques/${article.slug}`);
 
   const related = await getRelatedArticles(article);
   const tags = article.tags.map((t) => t.tag);

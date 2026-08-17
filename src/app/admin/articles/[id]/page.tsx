@@ -13,7 +13,10 @@ export async function generateMetadata({ params }: Props) {
 export default async function EditArticlePage({ params }: Props) {
   const { id } = await params;
   const [article, categories] = await Promise.all([
-    prisma.article.findUnique({ where: { id } }),
+    prisma.article.findUnique({
+      where: { id },
+      include: { tags: { include: { tag: true } } },
+    }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
   ]);
   if (!article) notFound();
@@ -23,7 +26,13 @@ export default async function EditArticlePage({ params }: Props) {
       <h1 className="mb-5 font-[family-name:var(--font-syne)] text-2xl font-bold">
         Éditer · {article.title}
       </h1>
-      <ArticleForm article={article} categories={categories} />
+      <ArticleForm
+        article={{
+          ...article,
+          tags: article.tags.map((row) => row.tag.name).join(", "),
+        }}
+        categories={categories}
+      />
     </div>
   );
 }

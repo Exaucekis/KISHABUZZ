@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { CACHE_TAGS } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
+import { publishDueArticles } from "@/lib/publish-scheduled";
 
 const fallbackSettings = {
   id: "main",
@@ -40,6 +41,7 @@ export const getSettings = cache(
 );
 
 async function loadHomePageData() {
+  await publishDueArticles();
   const [settings, feed, spotlightShow, domains, featuredAlbum, featuredVideo, about, portfolio, partners] =
     await Promise.all([
       loadSettings(),
@@ -143,6 +145,8 @@ export async function getPublishedArticles(opts?: {
   skip?: number;
   categorySlug?: string;
 }) {
+  await publishDueArticles();
+
   const types = opts?.contentType
     ? Array.isArray(opts.contentType)
       ? opts.contentType
@@ -166,6 +170,7 @@ export async function getPublishedArticles(opts?: {
 }
 
 export async function getArticleBySlug(slug: string) {
+  await publishDueArticles();
   return prisma.article.findFirst({
     where: { slug, status: "PUBLISHED" },
     include: { category: true, tags: { include: { tag: true } } },
@@ -354,6 +359,7 @@ export async function getUpcomingShow() {
 }
 
 export async function searchAll(q: string) {
+  await publishDueArticles();
   const query = q.trim();
   if (!query || query.length < 2) {
     return {

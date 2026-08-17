@@ -71,6 +71,19 @@ export default async function ChroniqueDetailPage({ params }: Props) {
           dangerouslySetInnerHTML={{ __html: article.content }}
         />
 
+        {article.tags.length ? (
+          <div className="mt-10 flex flex-wrap gap-2">
+            {article.tags.map((row) => (
+              <span
+                key={row.tag.id}
+                className="border border-line px-3 py-1 text-xs uppercase tracking-[0.16em] text-paper-muted"
+              >
+                {row.tag.name}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
         <div className="mt-12 border-t border-line pt-8">
           <p className="mb-4 text-xs uppercase tracking-[0.2em] text-paper-muted">Partager</p>
           <ShareButtons title={article.title} path={`/chroniques/${article.slug}`} />

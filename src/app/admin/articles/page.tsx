@@ -40,6 +40,9 @@ export default async function AdminArticlesPage({ searchParams }: Props) {
         <Link href="/admin/articles?type=CHRONIQUE" className="admin-btn admin-btn-ghost">
           Chroniques
         </Link>
+        <Link href="/admin/articles?type=ANALYSIS" className="admin-btn admin-btn-ghost">
+          Analyses
+        </Link>
       </div>
 
       <div className="admin-card overflow-x-auto p-0">
@@ -69,7 +72,10 @@ export default async function AdminArticlesPage({ searchParams }: Props) {
                   <StatusBadge status={a.status} />
                 </td>
                 <td className="whitespace-nowrap text-[#aeb6c5]">
-                  {formatDate(a.publishedAt || a.updatedAt, "d MMM yyyy")}
+                  {formatDate(
+                    a.status === "SCHEDULED" ? a.scheduledAt || a.updatedAt : a.publishedAt || a.updatedAt,
+                    "d MMM yyyy HH:mm"
+                  )}
                 </td>
                 <td>
                   <div className="flex flex-wrap gap-1">

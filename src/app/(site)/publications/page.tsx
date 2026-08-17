@@ -24,7 +24,7 @@ export default async function PublicationsPage({ searchParams }: Props) {
   const [articles, categories] = await Promise.all([
     getPublishedArticles({
       categorySlug,
-      contentType: contentType || undefined,
+      contentType: contentType || ["ARTICLE", "ANALYSIS"],
     }),
     getCategories("publication"),
   ]);

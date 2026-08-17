@@ -1,7 +1,9 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import { publishDueArticles } from "@/lib/publish-scheduled";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  await publishDueArticles();
   const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   const staticRoutes = [

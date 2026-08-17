@@ -53,3 +53,7 @@ next-env.d.ts
 /vidéo/
 /video/
 .env*
+
+# local article image uploads
+/public/uploads/articles/*
+!/public/uploads/articles/.gitkeep

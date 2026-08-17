@@ -3,6 +3,8 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { saveArticle } from "@/actions/admin/articles";
+import { ArticleEditor } from "@/components/admin/ArticleEditor";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -22,6 +24,7 @@ type Article = {
   metaDescription: string;
   authorName: string;
   categoryId: string | null;
+  tags?: string;
 };
 
 function toInputDate(d: Date | null | undefined) {
@@ -101,24 +104,31 @@ export function ArticleForm({
             type="datetime-local"
             defaultValue={toInputDate(article?.scheduledAt)}
           />
+          <p className="mt-1 text-xs text-[#9aa3b5]">
+            Statut « Programmé » + cette date : l’article passe en ligne automatiquement à l’heure dite.
+          </p>
         </div>
         <div className="admin-field md:col-span-2">
-          <label htmlFor="coverImage">Image de couverture (URL)</label>
-          <input id="coverImage" name="coverImage" defaultValue={article?.coverImage || ""} />
+          <label htmlFor="tags">Tags</label>
+          <input
+            id="tags"
+            name="tags"
+            defaultValue={article?.tags || ""}
+            placeholder="culture, musique, kinshasa"
+          />
+          <p className="mt-1 text-xs text-[#9aa3b5]">Séparés par des virgules.</p>
         </div>
+        <ImageUploadField
+          name="coverImage"
+          label="Image de couverture"
+          defaultValue={article?.coverImage || ""}
+          hint="URL ou fichier (JPG, PNG, WebP, GIF — 4 Mo max)."
+        />
         <div className="admin-field md:col-span-2">
           <label htmlFor="excerpt">Extrait</label>
           <textarea id="excerpt" name="excerpt" defaultValue={article?.excerpt || ""} />
         </div>
-        <div className="admin-field md:col-span-2">
-          <label htmlFor="content">Contenu</label>
-          <textarea
-            id="content"
-            name="content"
-            className="min-h-[16rem]"
-            defaultValue={article?.content || ""}
-          />
-        </div>
+        <ArticleEditor name="content" defaultValue={article?.content || ""} />
         <div className="admin-field">
           <label htmlFor="metaTitle">Meta titre</label>
           <input id="metaTitle" name="metaTitle" defaultValue={article?.metaTitle || ""} />

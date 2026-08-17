@@ -28,7 +28,39 @@ const articleSchema = z.object({
   metaDescription: z.string().max(500).optional().default(""),
   authorName: z.string().max(120).optional().default("KISHA BUZZ"),
   categoryId: z.string().nullable().optional(),
+  tags: z.string().optional().default(""),
 });
+
+function parseTags(raw: string) {
+  const seen = new Set<string>();
+  const tags: { name: string; slug: string }[] = [];
+  for (const part of raw.split(/[,;]/)) {
+    const name = part.trim();
+    if (!name) continue;
+    const slug = createSlug(name);
+    if (!slug || seen.has(slug)) continue;
+    seen.add(slug);
+    tags.push({ name, slug });
+  }
+  return tags;
+}
+
+async function syncArticleTags(articleId: string, raw: string) {
+  const tags = parseTags(raw);
+  await prisma.articleTag.deleteMany({ where: { articleId } });
+  if (!tags.length) return;
+
+  for (const tag of tags) {
+    const record = await prisma.tag.upsert({
+      where: { slug: tag.slug },
+      create: { name: tag.name, slug: tag.slug },
+      update: { name: tag.name },
+    });
+    await prisma.articleTag.create({
+      data: { articleId, tagId: record.id },
+    });
+  }
+}
 
 function parseArticle(formData: FormData) {
   return articleSchema.safeParse({
@@ -45,6 +77,7 @@ function parseArticle(formData: FormData) {
     metaDescription: formString(formData, "metaDescription"),
     authorName: formString(formData, "authorName") || "KISHA BUZZ",
     categoryId: formOptionalId(formData, "categoryId"),
+    tags: formString(formData, "tags"),
   });
 }
 
@@ -75,10 +108,19 @@ export async function saveArticle(
   }
 
   const data = parsed.data;
+  if (data.status === "SCHEDULED" && !data.scheduledAt) {
+    return { ok: false, message: "Indiquez une date de programmation." };
+  }
+
+  const status =
+    data.status === "SCHEDULED" && data.scheduledAt && data.scheduledAt <= new Date()
+      ? "PUBLISHED"
+      : data.status;
+
   const slug = await uniqueArticleSlug(data.slug || data.title, id || undefined);
   const publishedAt =
-    data.status === "PUBLISHED"
-      ? data.publishedAt || new Date()
+    status === "PUBLISHED"
+      ? data.publishedAt || data.scheduledAt || new Date()
       : data.publishedAt;
 
   const payload = {
@@ -88,7 +130,7 @@ export async function saveArticle(
     content: data.content || "",
     coverImage: data.coverImage || "",
     contentType: data.contentType,
-    status: data.status,
+    status,
     publishedAt,
     scheduledAt: data.scheduledAt,
     metaTitle: data.metaTitle || "",
@@ -101,6 +143,8 @@ export async function saveArticle(
   const article = id
     ? await prisma.article.update({ where: { id }, data: payload })
     : await prisma.article.create({ data: payload });
+
+  await syncArticleTags(article.id, data.tags || "");
 
   revalidatePath("/admin/articles");
   revalidatePath("/chroniques");
