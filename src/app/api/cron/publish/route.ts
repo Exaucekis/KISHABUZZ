@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { publishDueArticles } from "@/lib/publish-scheduled";
+import { expireExpiredReservations } from "@/lib/ticket-orders";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: false, message: "Non autorisé." }, { status: 401 });
   }
 
-  const published = await publishDueArticles();
-  return NextResponse.json({ ok: true, published });
+  const [published, tickets] = await Promise.all([
+    publishDueArticles(),
+    expireExpiredReservations(80),
+  ]);
+  return NextResponse.json({ ok: true, published, tickets });
 }

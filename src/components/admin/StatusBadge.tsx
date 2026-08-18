@@ -15,6 +15,9 @@ const COLORS: Record<string, string> = {
   FAILED: "bg-red-500/20 text-red-200",
   NEWSLETTER: "bg-sky-500/20 text-sky-200",
   NOTICE: "bg-violet-500/20 text-violet-200",
+  SOLD_OUT: "bg-amber-500/20 text-amber-200",
+  ENDED: "bg-slate-500/20 text-slate-300",
+  CANCELLED: "bg-red-500/20 text-red-200",
 };
 
 export function StatusBadge({ status }: { status: string }) {

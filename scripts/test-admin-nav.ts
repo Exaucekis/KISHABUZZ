@@ -24,6 +24,8 @@ assert.equal(adminNavTitle("/admin"), "Tableau de bord");
 assert.equal(adminNavTitle("/admin/articles/abc"), "Articles & chroniques");
 assert.equal(adminNavTitle("/admin/arena/albums/x"), "Albums photos");
 assert.equal(adminNavTitle("/admin/arena/videos"), "Vidéos Arena");
+assert.equal(adminNavTitle("/admin/evenements"), "Événements");
+assert.equal(adminNavTitle("/admin/evenements/new"), "Événements");
 assert.equal(adminNavTitle("/admin/newsletter"), "Newsletter");
 
 console.log("admin nav tests: ok");

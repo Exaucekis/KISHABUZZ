@@ -81,6 +81,23 @@ async function main() {
     });
   }
 
+  const eventCategories = [
+    { name: "Concert", slug: "concert", order: 1 },
+    { name: "Festival", slug: "festival", order: 2 },
+    { name: "Soirée", slug: "soiree", order: 3 },
+    { name: "Conférence", slug: "conference", order: 4 },
+    { name: "Arena Culture", slug: "arena-culture", order: 5 },
+    { name: "Autre", slug: "autre", order: 6 },
+  ];
+
+  for (const cat of eventCategories) {
+    await prisma.eventCategory.upsert({
+      where: { slug: cat.slug },
+      update: {},
+      create: cat,
+    });
+  }
+
   const pages = [
     {
       key: "about.qui",

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import {
+  CalendarDays,
   Menu,
   Search,
   X,
@@ -32,6 +33,7 @@ const links = [
   { href: "/chroniques", label: "Chroniques", icon: BookOpen },
   { href: "/publications", label: "Publications", icon: Newspaper },
   { href: "/portfolio", label: "Portfolio", icon: Briefcase },
+  { href: "/evenements", label: "Événements", icon: CalendarDays },
   { href: "/arena-culture", label: "Arena Culture", icon: Mic2, highlight: true },
   { href: "/collaborations", label: "Partenaires", icon: Handshake },
   { href: "/contact", label: "Contact", icon: Mail },
@@ -44,6 +46,7 @@ const desktopLinks = [
   { href: "/chroniques", label: "Chroniques" },
   { href: "/publications", label: "Publications" },
   { href: "/portfolio", label: "Portfolio" },
+  { href: "/evenements", label: "Événements" },
   { href: "/contact", label: "Contact" },
 ];
 

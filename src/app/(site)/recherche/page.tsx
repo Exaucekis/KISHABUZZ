@@ -24,7 +24,8 @@ export default async function RecherchePage({ searchParams }: Props) {
     results.guests.length +
     results.portfolio.length +
     results.partners.length +
-    results.media.length;
+    results.media.length +
+    results.events.length;
 
   return (
     <>
@@ -97,6 +98,21 @@ export default async function RecherchePage({ searchParams }: Props) {
                     href={`/arena-culture/emissions/${s.slug}`}
                     title={s.title}
                     meta={s.theme || undefined}
+                  />
+                ))}
+              </ResultBlock>
+            ) : null}
+
+            {results.events.length ? (
+              <ResultBlock title="Événements">
+                {results.events.map((event) => (
+                  <ResultLink
+                    key={event.id}
+                    href={`/evenements/${event.slug}`}
+                    title={event.title}
+                    meta={[event.venueName || event.city, event.startsAt ? formatDate(event.startsAt) : ""]
+                      .filter(Boolean)
+                      .join(" · ") || undefined}
                   />
                 ))}
               </ResultBlock>

@@ -6,6 +6,24 @@ export default auth((request) => {
   const { pathname } = request.nextUrl;
   const role = typeof request.auth?.user?.role === "string" ? request.auth.user.role : null;
 
+  if (pathname.startsWith("/organisateur")) {
+    if (!request.auth?.user) {
+      const loginUrl = new URL("/connexion", request.nextUrl.origin);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return NextResponse.next();
+  }
+
+  if (pathname.startsWith("/scan")) {
+    if (!request.auth?.user) {
+      const loginUrl = new URL("/connexion", request.nextUrl.origin);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return NextResponse.next();
+  }
+
   if (pathname.startsWith("/compte")) {
     if (!request.auth?.user) {
       const loginUrl = new URL("/connexion", request.nextUrl.origin);
@@ -33,5 +51,5 @@ export default auth((request) => {
 });
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*", "/compte", "/compte/:path*"],
+  matcher: ["/admin", "/admin/:path*", "/compte", "/compte/:path*", "/scan", "/scan/:path*", "/organisateur", "/organisateur/:path*"],
 };

@@ -53,6 +53,15 @@ export function statusLabel(status: string) {
     FAILED: "Échec",
     NEWSLETTER: "Newsletter",
     NOTICE: "Notification",
+    SOLD_OUT: "Complet",
+    ENDED: "Terminé",
+    CANCELLED: "Annulé",
+    PAID: "Payée",
+    AWAITING_PAYMENT: "Paiement en cours",
+    EXPIRED: "Expirée",
+    REFUNDED: "Remboursée",
+    VALID: "Valide",
+    USED: "Utilisé",
   };
   return map[status] || status;
 }

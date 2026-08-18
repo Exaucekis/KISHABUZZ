@@ -13,6 +13,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { href: "/admin/arena/videos", label: "Vidéos Arena" },
   { href: "/admin/arena/seasons", label: "Saisons" },
   { href: "/admin/arena/albums", label: "Albums photos" },
+  { href: "/admin/evenements", label: "Événements" },
   { href: "/admin/media", label: "Médias" },
   { href: "/admin/portfolio", label: "Portfolio" },
   { href: "/admin/partners", label: "Partenaires" },

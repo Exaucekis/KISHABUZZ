@@ -34,6 +34,7 @@ export default async function AdminDashboardPage() {
     arenaVideos,
     arenaAlbums,
     arenaVideoRows,
+    publishedEvents,
   ] = await Promise.all([
     prisma.article.count({ where: { status: "DRAFT" } }),
     prisma.article.count({ where: { status: "SCHEDULED" } }),
@@ -92,6 +93,7 @@ export default async function AdminDashboardPage() {
       where: { kind: "VIDEO", OR: [{ category: "ARENA_CULTURE" }, { arenaShowId: { not: null } }] },
       select: { url: true, thumbnail: true },
     }),
+    prisma.event.count({ where: { status: { in: ["PUBLISHED", "SOLD_OUT"] } } }),
   ]);
 
   const headline = editorialHeadline({
@@ -113,6 +115,7 @@ export default async function AdminDashboardPage() {
     { label: "Chroniques", value: chroniques, href: "/admin/articles?type=CHRONIQUE", hint: "Textes d’opinion." },
     { label: "Photos", value: photos, href: "/admin/media?kind=IMAGE", hint: "Galerie média." },
     { label: "Vidéos", value: videos, href: "/admin/arena/videos", hint: "Vidéos Arena et extraits." },
+    { label: "Événements", value: publishedEvents, href: "/admin/evenements", hint: "Billetterie en ligne." },
     { label: "Partenaires", value: partners, href: "/admin/partners", hint: "Collaborations." },
     { label: "Artistes à la une", value: artists, href: "/admin/artists", hint: "Bandeau d’accueil." },
     { label: "Newsletter", value: subscribers, href: "/admin/newsletter", hint: "Abonnés actifs." },
@@ -133,6 +136,9 @@ export default async function AdminDashboardPage() {
             </Link>
             <Link href="/admin/arena/new" className="admin-btn admin-btn-ghost">
               Nouvelle émission
+            </Link>
+            <Link href="/admin/evenements/new" className="admin-btn admin-btn-ghost">
+              Nouvel événement
             </Link>
             <Link href="/admin/arena/videos" className="admin-btn admin-btn-ghost">
               Vidéo Arena

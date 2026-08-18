@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { ChevronDown, LayoutDashboard, LogOut, Sparkles, User } from "lucide-react";
+import { BarChart3, ChevronDown, LayoutDashboard, LogOut, ScanLine, Sparkles, Ticket, User } from "lucide-react";
 import { signOutAction } from "@/actions/auth";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useIsClient } from "@/lib/use-is-client";
@@ -123,6 +123,40 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
           <span className="block text-[0.72rem] font-normal text-paper-muted">Profil et mot de passe</span>
         </span>
       </Link>
+
+      <Link href="/compte/billets" role="menuitem" className="user-menu-item group" onClick={close}>
+        <span className="user-menu-icon">
+          <Ticket className="h-4 w-4" aria-hidden />
+        </span>
+        <span className="flex-1 text-left">
+          <span className="block">Mes billets</span>
+          <span className="block text-[0.72rem] font-normal text-paper-muted">Événements et QR code</span>
+        </span>
+      </Link>
+
+      {showDashboard ? (
+        <Link href="/organisateur" role="menuitem" className="user-menu-item group" onClick={close}>
+          <span className="user-menu-icon">
+            <BarChart3 className="h-4 w-4" aria-hidden />
+          </span>
+          <span className="flex-1 text-left">
+            <span className="block">Espace organisateur</span>
+            <span className="block text-[0.72rem] font-normal text-paper-muted">Ventes et contrôles</span>
+          </span>
+        </Link>
+      ) : null}
+
+      {showDashboard ? (
+        <Link href="/scan" role="menuitem" className="user-menu-item group" onClick={close}>
+          <span className="user-menu-icon">
+            <ScanLine className="h-4 w-4" aria-hidden />
+          </span>
+          <span className="flex-1 text-left">
+            <span className="block">Contrôle d’entrée</span>
+            <span className="block text-[0.72rem] font-normal text-paper-muted">Scanner les billets</span>
+          </span>
+        </Link>
+      ) : null}
 
       {showDashboard ? (
         <Link

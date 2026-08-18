@@ -9,14 +9,23 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  name         String
-  passwordHash String
-  role         String    @default("USER") // SUPERADMIN | ADMIN | EDITOR | AUTHOR | USER
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  articles     Article[]
+  id              String        @id @default(cuid())
+  email           String        @unique
+  name            String
+  phone           String        @default("")
+  passwordHash    String
+  role            String        @default("USER") // SUPERADMIN | ADMIN | EDITOR | AUTHOR | USER
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  articles        Article[]
+  organizedEvents Event[]       @relation("EventOrganizer")
+  eventStaff      EventStaff[]
+  ticketOrders    TicketOrder[]
+  tickets         Ticket[]      @relation("TicketBuyer")
+  ticketScans     TicketScan[]  @relation("TicketScanStaff")
+  usedTickets     Ticket[]      @relation("TicketUsedBy")
+  eventAuditLogs  EventAuditLog[]
+  refunds         Refund[]
 }
 
 model SiteSetting {
@@ -193,6 +202,8 @@ model MediaAsset {
   portfolioItem   PortfolioItem? @relation(fields: [portfolioItemId], references: [id])
   albumId         String?
   album           PhotoAlbum?    @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  eventId         String?
+  event           Event?         @relation(fields: [eventId], references: [id], onDelete: SetNull)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 }
@@ -323,4 +334,225 @@ model AdminNotice {
   createdAt DateTime @default(now())
 
   @@index([read, createdAt])
+}
+
+model EventCategory {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String  @default("")
+  order       Int     @default(0)
+  visible     Boolean @default(true)
+  events      Event[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Event {
+  id            String         @id @default(cuid())
+  title         String
+  slug          String         @unique
+  summary       String         @default("")
+  description   String         @default("")
+  poster        String         @default("")
+  startsAt      DateTime
+  endsAt        DateTime?
+  venueName     String         @default("")
+  address       String         @default("")
+  city          String         @default("")
+  categoryId    String?
+  category      EventCategory? @relation(fields: [categoryId], references: [id])
+  organizerId   String?
+  organizer     User?          @relation("EventOrganizer", fields: [organizerId], references: [id])
+  capacity      Int            @default(0)
+  status        String         @default("DRAFT") // DRAFT | PUBLISHED | SOLD_OUT | ENDED | CANCELLED
+  currency      String         @default("CDF")
+  salesOpensAt  DateTime?
+  salesClosesAt DateTime?
+  featured      Boolean        @default(false)
+  views         Int            @default(0)
+  ticketTypes   TicketType[]
+  media         MediaAsset[]
+  orders        TicketOrder[]
+  staff         EventStaff[]
+  tickets       Ticket[]
+  scans         TicketScan[]
+  refunds       Refund[]
+  auditLogs     EventAuditLog[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([status, startsAt])
+  @@index([featured, status])
+}
+
+model TicketType {
+  id            String      @id @default(cuid())
+  eventId       String
+  event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name          String
+  description   String      @default("")
+  benefits      String      @default("")
+  price         Int         @default(0)
+  quantity      Int         @default(0)
+  soldCount     Int         @default(0)
+  reservedCount Int         @default(0)
+  maxPerOrder   Int         @default(6)
+  salesOpensAt  DateTime?
+  salesClosesAt DateTime?
+  visible       Boolean     @default(true)
+  sortOrder     Int         @default(0)
+  orderItems    OrderItem[]
+  tickets       Ticket[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([eventId, sortOrder])
+}
+
+model EventStaff {
+  eventId String
+  userId  String
+  role    String @default("MANAGER") // MANAGER | SCANNER
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, userId])
+}
+
+model TicketOrder {
+  id            String      @id @default(cuid())
+  orderNumber   String      @unique
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  eventId       String
+  event         Event       @relation(fields: [eventId], references: [id])
+  buyerName     String
+  buyerEmail    String
+  buyerPhone    String      @default("")
+  status        String      @default("PENDING") // PENDING | AWAITING_PAYMENT | PAID | FAILED | EXPIRED | CANCELLED | REFUNDED
+  reservedUntil DateTime?
+  amount        Int         @default(0)
+  currency      String      @default("CDF")
+  items         OrderItem[]
+  payment       Payment?
+  tickets       Ticket[]
+  refund        Refund?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([userId, status])
+  @@index([eventId, status])
+}
+
+model OrderItem {
+  id           String     @id @default(cuid())
+  orderId      String
+  order        TicketOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  ticketTypeId String
+  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
+  quantity     Int
+  unitPrice    Int
+}
+
+model Payment {
+  id             String         @id @default(cuid())
+  orderId        String         @unique
+  order          TicketOrder    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider       String         @default("CINETPAY")
+  transactionId  String         @unique
+  providerToken  String         @default("")
+  status         String         @default("INITIATED") // INITIATED | ACCEPTED | REFUSED | CANCELLED | EXPIRED
+  amount         Int
+  currency       String         @default("CDF")
+  paymentMethod  String         @default("")
+  rawCheckJson   String         @default("")
+  checkedAt      DateTime?
+  events         PaymentEvent[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model PaymentEvent {
+  id        String   @id @default(cuid())
+  paymentId String
+  payment   Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  kind      String   @default("NOTIFY") // NOTIFY | CHECK | RETURN
+  payload   String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([paymentId, createdAt])
+}
+
+model Ticket {
+  id            String       @id @default(cuid())
+  orderId       String
+  order         TicketOrder  @relation(fields: [orderId], references: [id])
+  ticketTypeId  String
+  ticketType    TicketType   @relation(fields: [ticketTypeId], references: [id])
+  eventId       String
+  event         Event        @relation(fields: [eventId], references: [id])
+  userId        String
+  user          User         @relation("TicketBuyer", fields: [userId], references: [id])
+  publicCode    String       @unique
+  secretHash    String
+  holderName    String
+  status        String       @default("VALID") // VALID | USED | CANCELLED | REFUNDED
+  usedAt        DateTime?
+  usedByStaffId String?
+  usedByStaff   User?        @relation("TicketUsedBy", fields: [usedByStaffId], references: [id])
+  scans         TicketScan[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([eventId, status])
+  @@index([userId, status])
+}
+
+model TicketScan {
+  id          String   @id @default(cuid())
+  ticketId    String
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id])
+  staffUserId String?
+  staff       User?    @relation("TicketScanStaff", fields: [staffUserId], references: [id])
+  result      String   // OK | ALREADY_USED | INVALID | WRONG_EVENT | UNPAID | CANCELLED | REFUNDED
+  deviceNote  String   @default("")
+  scannedAt   DateTime @default(now())
+
+  @@index([eventId, scannedAt])
+}
+
+model Refund {
+  id          String      @id @default(cuid())
+  orderId     String      @unique
+  order       TicketOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  eventId     String
+  event       Event       @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  actorId     String?
+  actor       User?       @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  amount      Int
+  currency    String      @default("CDF")
+  reason      String
+  restock     Boolean     @default(true)
+  ticketCount Int         @default(0)
+  createdAt   DateTime    @default(now())
+
+  @@index([eventId, createdAt])
+}
+
+model EventAuditLog {
+  id         String   @id @default(cuid())
+  eventId    String
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  summary    String   @default("")
+  beforeJson String   @default("")
+  afterJson  String   @default("")
+  createdAt  DateTime @default(now())
+
+  @@index([eventId, createdAt])
 }

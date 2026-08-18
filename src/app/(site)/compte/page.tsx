@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Mic2, Shield, Sparkles } from "lucide-react";
+import { BarChart3, LayoutDashboard, Mic2, ScanLine, Shield, Sparkles, Ticket } from "lucide-react";
 import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { auth } from "@/lib/auth";
 import { canAccessAdmin, canManageUsers, roleLabel } from "@/lib/roles";
+import { canAccessScan } from "@/lib/ticket-scan";
+import { canAccessOrganizerHome } from "@/lib/organizer";
 
 export const metadata = { title: "Mon compte" };
 
@@ -21,6 +23,8 @@ export default async function ComptePage() {
 
   const staff = canAccessAdmin(session.user.role);
   const superadmin = canManageUsers(session.user.role);
+  const scanner = await canAccessScan(session.user.id, session.user.role);
+  const organizer = await canAccessOrganizerHome(session.user.id, session.user.role);
   const initials = userInitials(session.user.name ?? null, session.user.role);
 
   return (
@@ -55,39 +59,64 @@ export default async function ComptePage() {
           </div>
         </div>
 
-        {(staff || superadmin) && (
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {staff ? (
-              <Link href="/admin" className="account-action-card account-action-card--primary group">
-                <LayoutDashboard className="h-5 w-5 shrink-0 text-ember-text" aria-hidden />
-                <span>
-                  <strong className="block font-semibold text-paper">Tableau de bord</strong>
-                  <span className="mt-1 block text-sm text-paper-muted">CMS, contenus, Arena Culture, médias…</span>
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <Link href="/compte/billets" className="account-action-card group">
+            <Ticket className="h-5 w-5 shrink-0 text-ember-text" aria-hidden />
+            <span>
+              <strong className="block font-semibold text-paper">Mes billets</strong>
+              <span className="mt-1 block text-sm text-paper-muted">
+                Tickets numériques, QR code et reçus d’événements
+              </span>
+            </span>
+          </Link>
+          {scanner ? (
+            <Link href="/scan" className="account-action-card group">
+              <ScanLine className="h-5 w-5 shrink-0 text-ember-text" aria-hidden />
+              <span>
+                <strong className="block font-semibold text-paper">Contrôle d’entrée</strong>
+                <span className="mt-1 block text-sm text-paper-muted">Scanner les QR codes à l’entrée</span>
+              </span>
+            </Link>
+          ) : null}
+          {organizer ? (
+            <Link href="/organisateur" className="account-action-card group">
+              <BarChart3 className="h-5 w-5 shrink-0 text-ember-text" aria-hidden />
+              <span>
+                <strong className="block font-semibold text-paper">Espace organisateur</strong>
+                <span className="mt-1 block text-sm text-paper-muted">Ventes, CA, remplissage et participants</span>
+              </span>
+            </Link>
+          ) : null}
+          {staff ? (
+            <Link href="/admin" className="account-action-card account-action-card--primary group">
+              <LayoutDashboard className="h-5 w-5 shrink-0 text-ember-text" aria-hidden />
+              <span>
+                <strong className="block font-semibold text-paper">Tableau de bord</strong>
+                <span className="mt-1 block text-sm text-paper-muted">CMS, contenus, Arena Culture, médias…</span>
+              </span>
+            </Link>
+          ) : null}
+          {staff ? (
+            <Link href="/admin/arena" className="account-action-card group">
+              <Mic2 className="h-5 w-5 shrink-0 text-ember-text" aria-hidden />
+              <span>
+                <strong className="block font-semibold text-paper">Arena Culture</strong>
+                <span className="mt-1 block text-sm text-paper-muted">
+                  Émissions, invités, vidéos et albums de l’émission spéciale
                 </span>
-              </Link>
-            ) : null}
-            {staff ? (
-              <Link href="/admin/arena" className="account-action-card group">
-                <Mic2 className="h-5 w-5 shrink-0 text-ember-text" aria-hidden />
-                <span>
-                  <strong className="block font-semibold text-paper">Arena Culture</strong>
-                  <span className="mt-1 block text-sm text-paper-muted">
-                    Émissions, invités, vidéos et albums de l’émission spéciale
-                  </span>
-                </span>
-              </Link>
-            ) : null}
-            {superadmin ? (
-              <Link href="/admin/users" className="account-action-card group">
-                <Sparkles className="h-5 w-5 shrink-0 text-ember-text" aria-hidden />
-                <span>
-                  <strong className="block font-semibold text-paper">Utilisateurs</strong>
-                  <span className="mt-1 block text-sm text-paper-muted">Créer des comptes et attribuer les rôles</span>
-                </span>
-              </Link>
-            ) : null}
-          </div>
-        )}
+              </span>
+            </Link>
+          ) : null}
+          {superadmin ? (
+            <Link href="/admin/users" className="account-action-card group">
+              <Sparkles className="h-5 w-5 shrink-0 text-ember-text" aria-hidden />
+              <span>
+                <strong className="block font-semibold text-paper">Utilisateurs</strong>
+                <span className="mt-1 block text-sm text-paper-muted">Créer des comptes et attribuer les rôles</span>
+              </span>
+            </Link>
+          ) : null}
+        </div>
 
         <div className="account-card mt-8">
           <div className="flex items-center gap-2 border-b border-line/70 px-6 py-4">

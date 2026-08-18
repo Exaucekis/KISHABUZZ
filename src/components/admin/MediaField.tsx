@@ -72,6 +72,7 @@ export function MediaField({
   focusName,
   defaultFocus = "50% 50%",
   className = "admin-field md:col-span-2",
+  onUrlChange,
 }: {
   name: string;
   label: string;
@@ -85,6 +86,7 @@ export function MediaField({
   focusName?: string;
   defaultFocus?: string;
   className?: string;
+  onUrlChange?: (url: string) => void;
 }) {
   const [url, setUrl] = useState(defaultValue);
   const [alt, setAlt] = useState(defaultAlt);
@@ -95,6 +97,11 @@ export function MediaField({
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [cropOpen, setCropOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  function applyUrl(next: string) {
+    setUrl(next);
+    onUrlChange?.(next);
+  }
 
   useEffect(() => {
     setUrl(defaultValue);
@@ -122,7 +129,7 @@ export function MediaField({
         setBusy(false);
         setOk(true);
         setMessage("Fichier envoyé.");
-        setUrl(blobUrl);
+        applyUrl(blobUrl);
         if (inputRef.current) inputRef.current.value = "";
         return;
       } catch {
@@ -137,7 +144,7 @@ export function MediaField({
     setBusy(false);
     setOk(result.ok);
     setMessage(result.message);
-    if (result.ok && result.url) setUrl(result.url);
+    if (result.ok && result.url) applyUrl(result.url);
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -147,13 +154,13 @@ export function MediaField({
   return (
     <div className={className}>
       <label htmlFor={name}>{label}</label>
-      {kind === "icon" ? <IconPicker value={url} onChange={setUrl} /> : null}
+      {kind === "icon" ? <IconPicker value={url} onChange={applyUrl} /> : null}
       <input
         id={name}
         name={name}
         value={url}
         required={required}
-        onChange={(e) => setUrl(e.target.value)}
+        onChange={(e) => applyUrl(e.target.value)}
         placeholder={PLACEHOLDERS[kind]}
       />
       <div className="admin-media-split">
@@ -190,7 +197,7 @@ export function MediaField({
         open={libraryOpen}
         kind={kind === "video" ? "video" : kind === "any" ? "any" : "image"}
         onSelect={(next) => {
-          setUrl(next);
+          applyUrl(next);
           setOk(true);
           setMessage("Média choisi dans la bibliothèque.");
         }}

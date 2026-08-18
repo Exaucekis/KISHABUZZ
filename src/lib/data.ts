@@ -446,10 +446,11 @@ export async function searchAll(q: string) {
       portfolio: [],
       partners: [],
       media: [],
+      events: [],
     };
   }
 
-  const [articles, shows, guests, portfolio, partners, media] = await Promise.all([
+  const [articles, shows, guests, portfolio, partners, media, events] = await Promise.all([
     prisma.article.findMany({
       where: {
         status: "PUBLISHED",
@@ -502,9 +503,24 @@ export async function searchAll(q: string) {
       },
       take: 12,
     }),
+    prisma.event.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: [
+          { title: { contains: query } },
+          { summary: { contains: query } },
+          { description: { contains: query } },
+          { city: { contains: query } },
+          { venueName: { contains: query } },
+        ],
+      },
+      take: 12,
+      orderBy: { startsAt: "asc" },
+      select: { id: true, slug: true, title: true, city: true, venueName: true, startsAt: true },
+    }),
   ]);
 
-  return { articles, shows, guests, portfolio, partners, media };
+  return { articles, shows, guests, portfolio, partners, media, events };
 }
 
 export async function getArenaPhotoAlbums() {
@@ -529,5 +545,47 @@ export async function getArenaPhotoAlbumBySlug(slug: string) {
         orderBy: { createdAt: "asc" },
       },
     },
+  });
+}
+
+export async function getPublishedEvents(opts?: { categorySlug?: string }) {
+  return prisma.event.findMany({
+    where: {
+      status: { in: ["PUBLISHED", "SOLD_OUT"] },
+      ...(opts?.categorySlug ? { category: { slug: opts.categorySlug, visible: true } } : {}),
+    },
+    include: {
+      category: true,
+      ticketTypes: {
+        where: { visible: true },
+        orderBy: { sortOrder: "asc" },
+      },
+    },
+    orderBy: [{ featured: "desc" }, { startsAt: "asc" }],
+  });
+}
+
+export async function getEventBySlug(slug: string) {
+  return prisma.event.findFirst({
+    where: {
+      slug,
+      status: { in: ["PUBLISHED", "SOLD_OUT", "ENDED", "CANCELLED"] },
+    },
+    include: {
+      category: true,
+      organizer: { select: { name: true } },
+      ticketTypes: {
+        where: { visible: true },
+        orderBy: { sortOrder: "asc" },
+      },
+      media: { where: { visible: true }, orderBy: { createdAt: "desc" } },
+    },
+  });
+}
+
+export async function getVisibleEventCategories() {
+  return prisma.eventCategory.findMany({
+    where: { visible: true },
+    orderBy: [{ order: "asc" }, { name: "asc" }],
   });
 }
