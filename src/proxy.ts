@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { canAccessAdmin, canManageUsers } from "@/lib/roles";
 
-export default auth((request) => {
+export const proxy = auth((request) => {
   const { pathname } = request.nextUrl;
   const role = typeof request.auth?.user?.role === "string" ? request.auth.user.role : null;
 
@@ -51,5 +51,14 @@ export default auth((request) => {
 });
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*", "/compte", "/compte/:path*", "/scan", "/scan/:path*", "/organisateur", "/organisateur/:path*"],
+  matcher: [
+    "/admin",
+    "/admin/:path*",
+    "/compte",
+    "/compte/:path*",
+    "/scan",
+    "/scan/:path*",
+    "/organisateur",
+    "/organisateur/:path*",
+  ],
 };

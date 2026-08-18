@@ -19,7 +19,7 @@
     "vercel-build": "prisma generate && prisma migrate deploy && next build"
   },
   "engines": {
-    "node": ">=20"
+    "node": "20.x"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
