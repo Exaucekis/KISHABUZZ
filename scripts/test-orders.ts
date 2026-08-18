@@ -12,6 +12,8 @@ import { parseTicketQrPayload, signTicketCode, ticketQrPayload, verifyTicketSign
 
 assert.equal(sanitizeCinetPayText("Billets #VIP / $test_&"), "Billets VIP test");
 assert.equal(mapCinetPayStatus("accepted"), "ACCEPTED");
+assert.equal(mapCinetPayStatus("SUCCESS"), "ACCEPTED");
+assert.equal(mapCinetPayStatus("FAILED"), "REFUSED");
 assert.equal(mapCinetPayStatus("CANCELED"), "CANCELLED");
 assert.equal(mapCinetPayStatus("WAITING_FOR_CUSTOMER"), "PENDING");
 assert.equal(amountsMatch({ amount: 5000, currency: "CDF" }, { amount: 5000, currency: "cdf" }), true);
@@ -25,6 +27,11 @@ assert.equal(form.transactionId, "KBABCDEFGHJKMNPQRS");
 
 const json = parseCinetPayNotifyBody("application/json", JSON.stringify({ transaction_id: "KBTESTID" }));
 assert.equal(json.transactionId, "KBTESTID");
+const merchant = parseCinetPayNotifyBody(
+  "application/json",
+  JSON.stringify({ merchant_transaction_id: "KBNEWAPIID", transaction_id: "other" })
+);
+assert.equal(merchant.transactionId, "KBNEWAPIID");
 
 assert.equal(isValidBuyerPhone("0974105940"), true);
 assert.equal(isValidBuyerPhone("12"), false);
