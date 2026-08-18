@@ -15,6 +15,7 @@ import {
 } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { createSlug } from "@/lib/utils";
+import { videoPoster } from "@/lib/media";
 
 const showSchema = z.object({
   title: z.string().min(2).max(220),
@@ -25,6 +26,7 @@ const showSchema = z.object({
   airTime: z.string().max(40).optional().default(""),
   poster: z.string().optional().default(""),
   videoUrl: z.string().optional().default(""),
+  videoThumbnail: z.string().optional().default(""),
   status: z.enum(["DRAFT", "SCHEDULED", "PUBLISHED", "ARCHIVED"]),
   isFeatured: z.boolean(),
   isGuestOfWeek: z.boolean(),
@@ -60,6 +62,7 @@ export async function saveArenaShow(
     airTime: formString(formData, "airTime"),
     poster: formString(formData, "poster"),
     videoUrl: formString(formData, "videoUrl"),
+    videoThumbnail: formString(formData, "videoThumbnail"),
     status: formString(formData, "status") || "DRAFT",
     isFeatured: formBool(formData, "isFeatured"),
     isGuestOfWeek: formBool(formData, "isGuestOfWeek"),
@@ -95,6 +98,7 @@ export async function saveArenaShow(
     airTime: data.airTime || "",
     poster: data.poster || "",
     videoUrl: data.videoUrl || "",
+    videoThumbnail: data.videoThumbnail || videoPoster(data.videoUrl),
     status: data.status,
     isFeatured: data.isFeatured,
     isGuestOfWeek: data.isGuestOfWeek,
@@ -116,7 +120,10 @@ export async function saveArenaShow(
   });
 
   revalidatePath("/admin/arena");
+  revalidatePath("/admin/arena/videos");
   revalidatePath("/arena-culture");
+  revalidatePath("/arena-culture/videos");
+  revalidatePath("/arena-culture/invites");
   revalidatePublic();
   redirect(`/admin/arena/${show.id}`);
 }
@@ -148,6 +155,8 @@ const guestSchema = z.object({
   profession: z.string().max(160).optional().default(""),
   bio: z.string().optional().default(""),
   photo: z.string().optional().default(""),
+  visible: z.boolean(),
+  featured: z.boolean(),
 });
 
 export async function saveArenaGuest(
@@ -161,6 +170,8 @@ export async function saveArenaGuest(
     profession: formString(formData, "profession"),
     bio: formString(formData, "bio"),
     photo: formString(formData, "photo"),
+    visible: formBool(formData, "visible"),
+    featured: formBool(formData, "featured"),
   });
   if (!parsed.success) {
     return {
@@ -180,15 +191,31 @@ export async function saveArenaGuest(
     profession: parsed.data.profession || "",
     bio: parsed.data.bio || "",
     photo: parsed.data.photo || "",
+    visible: parsed.data.visible,
+    featured: parsed.data.featured,
   };
 
   if (id) await prisma.arenaGuest.update({ where: { id }, data: payload });
   else await prisma.arenaGuest.create({ data: payload });
 
   revalidatePath("/admin/arena/guests");
+  revalidatePath("/arena-culture/invites");
   revalidatePath("/arena-culture");
   revalidatePublic();
   return { ok: true, message: "Invité enregistré." };
+}
+
+export async function setArenaGuestVisible(formData: FormData) {
+  await requireAdmin();
+  const id = formString(formData, "id");
+  const visible = formString(formData, "visible") === "1";
+  if (!id) return;
+  await prisma.arenaGuest.update({ where: { id }, data: { visible } });
+  revalidatePath("/admin/arena/guests");
+  revalidatePath("/admin");
+  revalidatePath("/arena-culture/invites");
+  revalidatePath("/arena-culture");
+  revalidatePublic();
 }
 
 export async function deleteArenaGuest(formData: FormData) {
@@ -197,6 +224,9 @@ export async function deleteArenaGuest(formData: FormData) {
   if (!id) return;
   await prisma.arenaGuest.delete({ where: { id } });
   revalidatePath("/admin/arena/guests");
+  revalidatePath("/arena-culture/invites");
+  revalidatePath("/arena-culture");
+  revalidatePublic();
 }
 
 const seasonSchema = z.object({

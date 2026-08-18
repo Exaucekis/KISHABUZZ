@@ -106,3 +106,13 @@ export function isPlayableMedia(url: string) {
 export function youtubeBackgroundSrc(id: string) {
   return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&playsinline=1&rel=0`;
 }
+
+export function videoPoster(url: string, thumbnail?: string | null) {
+  const custom = String(thumbnail || "").trim();
+  if (custom) return custom;
+  const embed = parseMediaEmbed(url);
+  if (embed?.provider === "youtube") {
+    return `https://i.ytimg.com/vi/${embed.id}/hqdefault.jpg`;
+  }
+  return "";
+}

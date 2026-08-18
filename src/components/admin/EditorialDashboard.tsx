@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { StatusBadge } from "@/components/admin/StatusBadge";
 import { articleEditPath, articlePreviewPath } from "@/lib/article-paths";
 import { articleTypeLabel } from "@/lib/editorial-dashboard";
 import { formatDate } from "@/lib/utils";
@@ -20,14 +19,6 @@ type Contact = {
   name: string;
   subject: string;
   createdAt: Date;
-};
-
-type Show = {
-  id: string;
-  title: string;
-  status: string;
-  airDate: Date | null;
-  guests: { guest: { name: string } }[];
 };
 
 function QueueCard({
@@ -58,15 +49,13 @@ export function EditorialDashboard({
   drafts,
   scheduled,
   contacts,
-  latestShow,
 }: {
   drafts: Draft[];
   scheduled: Scheduled[];
   contacts: Contact[];
-  latestShow: Show | null;
 }) {
   return (
-    <div className="mt-6 grid gap-4 lg:grid-cols-2">
+    <div className="mt-6 grid gap-4 lg:grid-cols-3">
       <QueueCard title="Brouillons" href="/admin/articles?status=DRAFT" empty="Aucun brouillon.">
         {drafts.length ? (
           <ul className="space-y-3">
@@ -147,39 +136,6 @@ export function EditorialDashboard({
           </ul>
         ) : null}
       </QueueCard>
-
-      <section className="admin-card">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[#9aa3b5]">
-            Dernière émission
-          </h2>
-          <Link href="/admin/arena" className="text-xs text-[#9aa3b5] hover:text-white">
-            Arena
-          </Link>
-        </div>
-        {latestShow ? (
-          <div>
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              <Link href={`/admin/arena/${latestShow.id}`} className="font-medium hover:underline">
-                {latestShow.title}
-              </Link>
-              <StatusBadge status={latestShow.status} />
-            </div>
-            <p className="text-sm text-[#9aa3b5]">
-              {latestShow.guests[0]?.guest.name || "Sans invité"}
-              {latestShow.airDate ? ` · ${formatDate(latestShow.airDate, "d MMM yyyy")}` : ""}
-            </p>
-            <Link
-              href={`/admin/arena/${latestShow.id}`}
-              className="admin-btn admin-btn-ghost mt-3 text-xs"
-            >
-              Éditer
-            </Link>
-          </div>
-        ) : (
-          <p className="text-sm text-[#9aa3b5]">Aucune émission pour l’instant.</p>
-        )}
-      </section>
     </div>
   );
 }

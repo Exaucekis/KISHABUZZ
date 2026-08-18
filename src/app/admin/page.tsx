@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { ArenaCulturePanel } from "@/components/admin/ArenaCulturePanel";
 import { EditorialDashboard } from "@/components/admin/EditorialDashboard";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { auth } from "@/lib/auth";
 import { editorialHeadline } from "@/lib/editorial-dashboard";
+import { videoPoster } from "@/lib/media";
 import { prisma } from "@/lib/prisma";
 import { roleLabel } from "@/lib/roles";
 
@@ -27,6 +29,11 @@ export default async function AdminDashboardPage() {
     artists,
     subscribers,
     users,
+    publishedShows,
+    publishedGuests,
+    arenaVideos,
+    arenaAlbums,
+    arenaVideoRows,
   ] = await Promise.all([
     prisma.article.count({ where: { status: "DRAFT" } }),
     prisma.article.count({ where: { status: "SCHEDULED" } }),
@@ -75,6 +82,16 @@ export default async function AdminDashboardPage() {
     prisma.spotlightArtist.count(),
     prisma.newsletterSubscriber.count({ where: { status: "ACTIVE" } }),
     prisma.user.count(),
+    prisma.arenaShow.count({ where: { status: "PUBLISHED" } }),
+    prisma.arenaGuest.count({ where: { visible: true } }),
+    prisma.mediaAsset.count({
+      where: { kind: "VIDEO", OR: [{ category: "ARENA_CULTURE" }, { arenaShowId: { not: null } }] },
+    }),
+    prisma.photoAlbum.count({ where: { visible: true } }),
+    prisma.mediaAsset.findMany({
+      where: { kind: "VIDEO", OR: [{ category: "ARENA_CULTURE" }, { arenaShowId: { not: null } }] },
+      select: { url: true, thumbnail: true },
+    }),
   ]);
 
   const headline = editorialHeadline({
@@ -95,7 +112,7 @@ export default async function AdminDashboardPage() {
     { label: "Publiés", value: publishedCount, href: "/admin/articles", hint: "En ligne sur le site." },
     { label: "Chroniques", value: chroniques, href: "/admin/articles?type=CHRONIQUE", hint: "Textes d’opinion." },
     { label: "Photos", value: photos, href: "/admin/media?kind=IMAGE", hint: "Galerie média." },
-    { label: "Vidéos", value: videos, href: "/admin/media?kind=VIDEO", hint: "Vidéos Arena et extraits." },
+    { label: "Vidéos", value: videos, href: "/admin/arena/videos", hint: "Vidéos Arena et extraits." },
     { label: "Partenaires", value: partners, href: "/admin/partners", hint: "Collaborations." },
     { label: "Artistes à la une", value: artists, href: "/admin/artists", hint: "Bandeau d’accueil." },
     { label: "Newsletter", value: subscribers, href: "/admin/newsletter", hint: "Abonnés actifs." },
@@ -117,6 +134,9 @@ export default async function AdminDashboardPage() {
             <Link href="/admin/arena/new" className="admin-btn admin-btn-ghost">
               Nouvelle émission
             </Link>
+            <Link href="/admin/arena/videos" className="admin-btn admin-btn-ghost">
+              Vidéo Arena
+            </Link>
           </>
         }
       />
@@ -135,6 +155,15 @@ export default async function AdminDashboardPage() {
         drafts={drafts}
         scheduled={scheduled}
         contacts={contacts}
+      />
+
+      <ArenaCulturePanel
+        publishedShows={publishedShows}
+        draftShows={arenaDrafts}
+        publishedGuests={publishedGuests}
+        videos={arenaVideos}
+        albums={arenaAlbums}
+        videosWithoutPoster={arenaVideoRows.filter((row) => !videoPoster(row.url, row.thumbnail)).length}
         latestShow={latestShow}
       />
 

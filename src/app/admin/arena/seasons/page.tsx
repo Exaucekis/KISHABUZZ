@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ArenaAdminNav } from "@/components/admin/ArenaAdminNav";
 import { SeasonsManager } from "@/components/admin/SeasonsManager";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { prisma } from "@/lib/prisma";
@@ -14,12 +14,8 @@ export default async function AdminArenaSeasonsPage() {
       <AdminPageIntro
         title="Saisons Arena"
         hint="Créez une saison (année + numéro), puis rattachez-y les émissions."
-        actions={
-          <Link href="/admin/arena" className="admin-btn admin-btn-ghost">
-            Émissions
-          </Link>
-        }
       />
+      <ArenaAdminNav current="/admin/arena/seasons" />
       <SeasonsManager seasons={seasons} />
     </div>
   );

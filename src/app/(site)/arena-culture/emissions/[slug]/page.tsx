@@ -5,6 +5,7 @@ import { ShareButtons } from "@/components/content/ShareButtons";
 import { PageViews } from "@/components/content/PageViews";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getShowBySlug } from "@/lib/data";
+import { videoPoster } from "@/lib/media";
 import { formatDate } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -26,7 +27,7 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
   const show = await getShowBySlug(slug);
   if (!show) notFound();
 
-  const guests = show.guests.map((g) => g.guest);
+  const guests = show.guests.map((g) => g.guest).filter((g) => g.visible !== false);
   const images = show.media.filter((m) => m.kind === "IMAGE");
   const videos = show.media.filter((m) => m.kind === "VIDEO");
 
@@ -78,7 +79,7 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={g.photo}
-                      alt=""
+                      alt={g.name}
                       className="h-20 w-20 object-cover"
                     />
                   ) : (
@@ -87,7 +88,11 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
                     </div>
                   )}
                   <div>
-                    <p className="font-display text-xl">{g.name}</p>
+                    <p className="font-display text-xl">
+                      <Link href={`/arena-culture/invites/${g.slug}`} className="hover:text-[var(--ac-amber)]">
+                        {g.name}
+                      </Link>
+                    </p>
                     {g.profession ? (
                       <p className="mt-1 text-sm text-paper-muted">{g.profession}</p>
                     ) : null}
@@ -104,7 +109,11 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
         {show.videoUrl ? (
           <div className="mt-12">
             <h2 className="mb-4 font-display text-2xl">Vidéo</h2>
-            <VideoEmbed url={show.videoUrl} title={show.title} />
+            <VideoEmbed
+              url={show.videoUrl}
+              title={show.title}
+              poster={videoPoster(show.videoUrl, show.videoThumbnail || show.poster)}
+            />
           </div>
         ) : null}
 
@@ -113,7 +122,11 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
             <h2 className="font-display text-2xl">Autres vidéos</h2>
             {videos.map((v) => (
               <div key={v.id}>
-                <VideoEmbed url={v.url} title={v.title} />
+                <VideoEmbed
+                  url={v.url}
+                  title={v.title}
+                  poster={videoPoster(v.url, v.thumbnail)}
+                />
                 <p className="mt-2 text-sm text-paper-muted">{v.title}</p>
               </div>
             ))}

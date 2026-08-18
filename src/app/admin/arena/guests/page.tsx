@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArenaAdminNav } from "@/components/admin/ArenaAdminNav";
 import { GuestsManager } from "@/components/admin/GuestsManager";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { prisma } from "@/lib/prisma";
@@ -11,13 +12,14 @@ export default async function AdminArenaGuestsPage() {
     <div>
       <AdminPageIntro
         title="Invités Arena"
-        hint="Créez l’invité (nom + photo) avant de le cocher dans une émission."
+        hint="Créez l’invité, ajoutez photo et bio, puis publiez. Il apparaît sur le site et peut être lié à une émission."
         actions={
-          <Link href="/admin/arena" className="admin-btn admin-btn-ghost">
-            Émissions
-          </Link>
+          <a href="/arena-culture/invites" className="admin-btn admin-btn-ghost" target="_blank" rel="noreferrer">
+            Voir la page
+          </a>
         }
       />
+      <ArenaAdminNav current="/admin/arena/guests" />
       <GuestsManager guests={guests} />
     </div>
   );

@@ -113,9 +113,13 @@ model ArenaGuest {
   profession  String           @default("")
   bio         String           @default("")
   photo       String           @default("")
+  visible     Boolean          @default(true)
+  featured    Boolean          @default(false)
   appearances ArenaShowGuest[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+
+  @@index([visible, featured])
 }
 
 model ArenaShow {
@@ -127,9 +131,10 @@ model ArenaShow {
   description   String           @default("")
   airDate       DateTime?
   airTime       String           @default("")
-  poster        String           @default("")
-  videoUrl      String           @default("")
-  status        String           @default("DRAFT")
+  poster         String           @default("")
+  videoUrl       String           @default("")
+  videoThumbnail String           @default("")
+  status         String           @default("DRAFT")
   isFeatured    Boolean          @default(false)
   isGuestOfWeek Boolean          @default(false)
   seasonId      String?
@@ -180,6 +185,7 @@ model MediaAsset {
   alt             String         @default("")
   category        String         @default("") // ACTIVITES | EMISSIONS | ...
   visible         Boolean        @default(true)
+  featured        Boolean        @default(false)
   date            DateTime?
   arenaShowId     String?
   arenaShow       ArenaShow?     @relation(fields: [arenaShowId], references: [id])

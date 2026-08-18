@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { CACHE_TAGS } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
-import { publishDueArticles } from "@/lib/publish-scheduled";
+import { publishDueArticles, publishDueArenaShows } from "@/lib/publish-scheduled";
 import { toSpotlightArtistCards } from "@/lib/spotlight-artists";
 
 const fallbackSettings = {
@@ -43,7 +43,7 @@ export const getSettings = cache(
 );
 
 async function loadHomePageData() {
-  await publishDueArticles();
+  await Promise.all([publishDueArticles(), publishDueArenaShows()]);
   const [settings, feed, spotlightShow, domains, featuredAlbum, featuredVideo, about, portfolio, partners, spotlightArtists] =
     await Promise.all([
       loadSettings(),
@@ -194,6 +194,7 @@ export async function getArticleBySlug(
 }
 
 export async function getPublishedShows(opts?: { take?: number; featured?: boolean }) {
+  await publishDueArenaShows();
   return prisma.arenaShow.findMany({
     where: {
       status: "PUBLISHED",
@@ -309,6 +310,7 @@ export async function getRelatedArticles(
 
 export async function getArenaGuests() {
   return prisma.arenaGuest.findMany({
+    where: { visible: true },
     include: {
       appearances: {
         include: {
@@ -316,7 +318,66 @@ export async function getArenaGuests() {
         },
       },
     },
+    orderBy: [{ featured: "desc" }, { name: "asc" }],
+  });
+}
+
+export async function getArenaGuestBySlug(slug: string) {
+  return prisma.arenaGuest.findFirst({
+    where: { slug, visible: true },
+    include: {
+      appearances: {
+        where: { show: { status: "PUBLISHED" } },
+        include: {
+          show: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              theme: true,
+              poster: true,
+              airDate: true,
+              status: true,
+            },
+          },
+        },
+        orderBy: { showId: "desc" },
+      },
+    },
+  });
+}
+
+export async function getFeaturedArenaGuests(take = 8) {
+  const featured = await prisma.arenaGuest.findMany({
+    where: { visible: true, featured: true },
     orderBy: { name: "asc" },
+    take,
+  });
+  if (featured.length) return featured;
+  return prisma.arenaGuest.findMany({
+    where: { visible: true, NOT: { photo: "" } },
+    orderBy: { updatedAt: "desc" },
+    take,
+  });
+}
+
+const arenaVideoWhere = {
+  kind: "VIDEO" as const,
+  visible: true,
+  OR: [{ category: "ARENA_CULTURE" }, { arenaShowId: { not: null } }],
+};
+
+export async function getFeaturedArenaVideo() {
+  const featured = await prisma.mediaAsset.findFirst({
+    where: { ...arenaVideoWhere, featured: true },
+    include: { arenaShow: true },
+    orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+  });
+  if (featured) return featured;
+  return prisma.mediaAsset.findFirst({
+    where: arenaVideoWhere,
+    include: { arenaShow: true },
+    orderBy: [{ date: "desc" }, { createdAt: "desc" }],
   });
 }
 
@@ -375,7 +436,7 @@ export async function getUpcomingShow() {
 }
 
 export async function searchAll(q: string) {
-  await publishDueArticles();
+  await Promise.all([publishDueArticles(), publishDueArenaShows()]);
   const query = q.trim();
   if (!query || query.length < 2) {
     return {
@@ -415,6 +476,7 @@ export async function searchAll(q: string) {
     }),
     prisma.arenaGuest.findMany({
       where: {
+        visible: true,
         OR: [{ name: { contains: query } }, { profession: { contains: query } }],
       },
       take: 12,

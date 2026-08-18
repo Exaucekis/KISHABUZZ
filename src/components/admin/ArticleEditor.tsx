@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { uploadImage, uploadMedia } from "@/actions/admin/upload";
 import { articleInlineImageTag } from "@/lib/image-alt";
 
 function wrapSelection(value: string, start: number, end: number, before: string, after: string) {

@@ -20,6 +20,7 @@ type Show = {
   airTime: string;
   poster: string;
   videoUrl: string;
+  videoThumbnail: string;
   status: string;
   isFeatured: boolean;
   isGuestOfWeek: boolean;
@@ -115,6 +116,14 @@ export function ArenaShowForm({
           folder="media"
           hint="Replay : lien YouTube / Instagram / TikTok / Facebook, ou fichier."
         />
+        <MediaField
+          name="videoThumbnail"
+          label="Miniature de la vidéo"
+          defaultValue={show?.videoThumbnail || ""}
+          kind="image"
+          folder="media"
+          hint="Image avant lecture. Si vide, YouTube fournit une miniature automatique."
+        />
         <div className="admin-field">
           <label htmlFor="status">Statut</label>
           <select id="status" name="status" defaultValue={show?.status || "DRAFT"}>
@@ -148,7 +157,7 @@ export function ArenaShowForm({
               <p className="text-sm text-[#9aa3b5]">Aucun invité — créez-en dans Invités.</p>
             ) : null}
           </div>
-          <AdminHint>Cochez les invités de cet épisode (créés dans Invités).</AdminHint>
+          <AdminHint>Cochez les invités de cet épisode (créés dans Invités, puis publiés).</AdminHint>
         </div>
         <div className="admin-field">
           <label className="admin-check">

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Shield, Sparkles } from "lucide-react";
+import { LayoutDashboard, Mic2, Shield, Sparkles } from "lucide-react";
 import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { auth } from "@/lib/auth";
@@ -56,13 +56,24 @@ export default async function ComptePage() {
         </div>
 
         {(staff || superadmin) && (
-          <div className="mt-8 grid gap-3 sm:grid-cols-2">
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {staff ? (
               <Link href="/admin" className="account-action-card account-action-card--primary group">
                 <LayoutDashboard className="h-5 w-5 shrink-0 text-ember-text" aria-hidden />
                 <span>
                   <strong className="block font-semibold text-paper">Tableau de bord</strong>
                   <span className="mt-1 block text-sm text-paper-muted">CMS, contenus, Arena Culture, médias…</span>
+                </span>
+              </Link>
+            ) : null}
+            {staff ? (
+              <Link href="/admin/arena" className="account-action-card group">
+                <Mic2 className="h-5 w-5 shrink-0 text-ember-text" aria-hidden />
+                <span>
+                  <strong className="block font-semibold text-paper">Arena Culture</strong>
+                  <span className="mt-1 block text-sm text-paper-muted">
+                    Émissions, invités, vidéos et albums de l’émission spéciale
+                  </span>
                 </span>
               </Link>
             ) : null}

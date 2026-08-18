@@ -4,6 +4,8 @@ import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaMediaRow } from "@/components/arena/ArenaMediaRow";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
+  getArenaPhotoAlbums,
+  getFeaturedArenaGuests,
   getGallery,
   getGuestOfTheWeek,
   getPageContent,
@@ -67,16 +69,19 @@ const SCENE = [
 ];
 
 export default async function ArenaCulturePage() {
-  const [presentation, guestWeek, upcoming, shows, posters] = await Promise.all([
+  const [presentation, guestWeek, upcoming, shows, posters, featuredGuests, albums] = await Promise.all([
     getPageContent("arena.presentation"),
     getGuestOfTheWeek(),
     getUpcomingShow(),
     getPublishedShows({ take: 8 }),
     getGallery({ category: "ARENA_CULTURE", kind: "IMAGE", take: 8 }),
+    getFeaturedArenaGuests(8),
+    getArenaPhotoAlbums(),
   ]);
 
-  const guest = guestWeek?.guests[0]?.guest;
+  const guest = guestWeek?.guests.map((item) => item.guest).find((item) => item.visible !== false);
   const latest = shows[0];
+  const upcomingGuest = upcoming?.guests.map((item) => item.guest).find((item) => item.visible !== false);
   const copy =
     presentation?.body ||
     "Émissions, invités, images et archives — l'univers culturel de KISHA BUZZ.";
@@ -102,28 +107,19 @@ export default async function ArenaCulturePage() {
           image: p.thumbnail || p.url,
         }));
 
-  const photoTiles = [
-    {
-      title: "Maman Sharonne",
-      image: "/arena/albums/invitee-plateau/01-invitee.jpg",
-      href: "/arena-culture/albums/maman-sharonne",
-    },
-    {
-      title: "Plateau",
-      image: "/arena/albums/invitee-plateau/02-plateau.jpg",
-      href: "/arena-culture/albums/maman-sharonne",
-    },
-    {
-      title: "Grand angle",
-      image: "/arena/albums/invitee-plateau/03-plateau-wide.jpg",
-      href: "/arena-culture/albums/maman-sharonne",
-    },
-    {
-      title: "Animateur",
-      image: "/arena/albums/invitee-plateau/04-animateur.jpg",
-      href: "/arena-culture/albums/maman-sharonne",
-    },
-  ];
+  const photoTiles = albums.slice(0, 6).map((album) => ({
+    title: album.guestName || album.title,
+    image: album.coverImage || album.photos[0]?.url || "/arena/albums/invitee-plateau/01-invitee.jpg",
+    href: `/arena-culture/albums/${album.slug}`,
+  }));
+
+  const sceneTiles = featuredGuests.length
+    ? featuredGuests.map((guest) => ({
+        title: guest.name,
+        image: guest.photo || "/artists/gaz-mawete.jpg",
+        href: `/arena-culture/invites/${guest.slug}`,
+      }))
+    : SCENE;
 
   return (
     <>
@@ -173,7 +169,9 @@ export default async function ArenaCulturePage() {
                     ? "Prochain invité"
                     : "Invité de la semaine"}
                 </p>
-                <h2>{guest.name}</h2>
+                <h2>
+                  <Link href={`/arena-culture/invites/${guest.slug}`}>{guest.name}</Link>
+                </h2>
                 <p>
                   {[guest.profession, guestWeek.theme].filter(Boolean).join(" · ") ||
                     "Invité Arena Grand Culture."}
@@ -186,19 +184,19 @@ export default async function ArenaCulturePage() {
                     href={`/arena-culture/emissions/${guestWeek.slug}`}
                     className="ac-btn ac-btn--primary"
                   >
-                    Voir l&apos;affiche
+                    Voir l&apos;émission
                   </Link>
-                  <Link href="/arena-culture/affiches" className="ac-btn ac-btn--ghost">
-                    Toutes les affiches
+                  <Link href={`/arena-culture/invites/${guest.slug}`} className="ac-btn ac-btn--ghost">
+                    Fiche invité
                   </Link>
                 </div>
               </>
             ) : upcoming ? (
               <>
                 <p className="ac-spotlight-label">Prochain invité</p>
-                <h2>{upcoming.guests[0]?.guest.name || upcoming.title}</h2>
+                <h2>{upcomingGuest?.name || upcoming.title}</h2>
                 <p>
-                  {[upcoming.theme, upcoming.guests[0]?.guest.profession]
+                  {[upcoming.theme, upcomingGuest?.profession]
                     .filter(Boolean)
                     .join(" · ") || upcoming.title}
                   {upcoming.airDate
@@ -258,7 +256,7 @@ export default async function ArenaCulturePage() {
         eyebrow="Scène"
         title="Visages & voix"
         href="/arena-culture/invites"
-        items={SCENE}
+        items={sceneTiles}
         variant="poster"
       />
 
@@ -286,13 +284,15 @@ export default async function ArenaCulturePage() {
         </section>
       )}
 
-      <ArenaMediaRow
-        eyebrow="Photos"
-        title="Ambiances"
-        href="/arena-culture/photos"
-        items={photoTiles}
-        variant="square"
-      />
+      {photoTiles.length ? (
+        <ArenaMediaRow
+          eyebrow="Photos"
+          title="Ambiances"
+          href="/arena-culture/photos"
+          items={photoTiles}
+          variant="square"
+        />
+      ) : null}
 
       <section className="ac-close">
         <p className="ac-kicker">Archives</p>

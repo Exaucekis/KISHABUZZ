@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { deleteArenaShow, setArenaShowStatus } from "@/actions/admin/arena";
+import { ArenaAdminNav } from "@/components/admin/ArenaAdminNav";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { prisma } from "@/lib/prisma";
@@ -9,30 +10,46 @@ import { formatDate } from "@/lib/utils";
 export const metadata = { title: "Arena Culture" };
 
 export default async function AdminArenaPage() {
-  const shows = await prisma.arenaShow.findMany({
-    include: { season: true, guests: { include: { guest: true } } },
-    orderBy: [{ number: "desc" }, { airDate: "desc" }],
-  });
+  const [shows, publishedGuests, videos, albums] = await Promise.all([
+    prisma.arenaShow.findMany({
+      include: { season: true, guests: { include: { guest: true } } },
+      orderBy: [{ number: "desc" }, { airDate: "desc" }],
+    }),
+    prisma.arenaGuest.count({ where: { visible: true } }),
+    prisma.mediaAsset.count({
+      where: { kind: "VIDEO", OR: [{ category: "ARENA_CULTURE" }, { arenaShowId: { not: null } }] },
+    }),
+    prisma.photoAlbum.count({ where: { visible: true } }),
+  ]);
+
+  const published = shows.filter((s) => s.status === "PUBLISHED").length;
 
   return (
     <div>
       <AdminPageIntro
         title="Arena Culture"
-        hint="Liste des émissions. Publiez une émission pour qu’elle apparaisse sur le site."
+        hint="Gérez l’émission spéciale : publiez les épisodes, les invités et les vidéos (avec miniature) pour le site."
         actions={
-          <>
-            <Link href="/admin/arena/guests" className="admin-btn admin-btn-ghost">
-              Invités
-            </Link>
-            <Link href="/admin/arena/seasons" className="admin-btn admin-btn-ghost">
-              Saisons
-            </Link>
-            <Link href="/admin/arena/new" className="admin-btn admin-btn-primary">
-              Nouvelle émission
-            </Link>
-          </>
+          <Link href="/admin/arena/new" className="admin-btn admin-btn-primary">
+            Nouvelle émission
+          </Link>
         }
       />
+      <ArenaAdminNav current="/admin/arena" />
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: "Émissions publiées", value: published, href: "/admin/arena" },
+          { label: "Invités publiés", value: publishedGuests, href: "/admin/arena/guests" },
+          { label: "Vidéos", value: videos, href: "/admin/arena/videos" },
+          { label: "Albums", value: albums, href: "/admin/arena/albums" },
+        ].map((card) => (
+          <Link key={card.label} href={card.href} className="admin-card block hover:border-white/20">
+            <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">{card.label}</p>
+            <p className="mt-2 text-2xl font-bold tabular-nums">{card.value}</p>
+          </Link>
+        ))}
+      </div>
 
       <div className="admin-card overflow-x-auto p-0">
         <table className="admin-table">

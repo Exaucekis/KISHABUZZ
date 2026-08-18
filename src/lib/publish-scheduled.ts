@@ -28,3 +28,24 @@ export async function publishDueArticles() {
   revalidatePublic();
   return due.length;
 }
+
+export async function publishDueArenaShows() {
+  const now = new Date();
+  const due = await prisma.arenaShow.findMany({
+    where: {
+      status: "SCHEDULED",
+      airDate: { lte: now },
+    },
+    select: { id: true },
+  });
+
+  if (!due.length) return 0;
+
+  await prisma.arenaShow.updateMany({
+    where: { id: { in: due.map((show) => show.id) } },
+    data: { status: "PUBLISHED" },
+  });
+
+  revalidatePublic();
+  return due.length;
+}

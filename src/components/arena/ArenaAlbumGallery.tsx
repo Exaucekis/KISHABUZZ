@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Lightbox } from "@/components/media/Lightbox";
 import { imageAlt } from "@/lib/image-alt";
 
 type Photo = {

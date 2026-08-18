@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
-import { publishDueArticles } from "@/lib/publish-scheduled";
+import { publishDueArticles, publishDueArenaShows } from "@/lib/publish-scheduled";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  await publishDueArticles();
+  await Promise.all([publishDueArticles(), publishDueArenaShows()]);
   const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   const staticRoutes = [
@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: path === "" ? 1 : 0.7,
   }));
 
-  const [articles, shows, portfolio] = await Promise.all([
+  const [articles, shows, portfolio, guests, albums] = await Promise.all([
     prisma.article.findMany({
       where: { status: "PUBLISHED" },
       select: { slug: true, contentType: true, updatedAt: true },
@@ -43,6 +43,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
     prisma.portfolioItem.findMany({
       where: { status: "PUBLISHED" },
+      select: { slug: true, updatedAt: true },
+    }),
+    prisma.arenaGuest.findMany({
+      where: { visible: true },
+      select: { slug: true, updatedAt: true },
+    }),
+    prisma.photoAlbum.findMany({
+      where: { visible: true },
       select: { slug: true, updatedAt: true },
     }),
   ]);
@@ -64,6 +72,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...portfolio.map((p) => ({
       url: `${base}/portfolio/${p.slug}`,
       lastModified: p.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
+    ...guests.map((g) => ({
+      url: `${base}/arena-culture/invites/${g.slug}`,
+      lastModified: g.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
+    ...albums.map((a) => ({
+      url: `${base}/arena-culture/albums/${a.slug}`,
+      lastModified: a.updatedAt,
       changeFrequency: "monthly" as const,
       priority: 0.6,
     })),

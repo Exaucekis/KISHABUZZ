@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { deleteArenaGuest, saveArenaGuest } from "@/actions/admin/arena";
+import { deleteArenaGuest, saveArenaGuest, setArenaGuestVisible } from "@/actions/admin/arena";
 import { MediaField } from "@/components/admin/MediaField";
 import { AdminHint } from "@/components/admin/AdminHint";
 import { SubmitButton } from "@/components/admin/SubmitButton";
@@ -13,6 +13,9 @@ type Guest = {
   profession: string;
   bio: string;
   photo: string;
+  visible: boolean;
+  featured: boolean;
+  slug?: string;
 };
 
 const initial: AdminActionState = { ok: false, message: "" };
@@ -46,6 +49,20 @@ function GuestForm({ guest }: { guest?: Guest }) {
         <textarea name="bio" defaultValue={guest?.bio || ""} />
         <AdminHint>Courte présentation (quelques lignes).</AdminHint>
       </div>
+      <div className="admin-field">
+        <label className="admin-check">
+          <input type="checkbox" name="visible" defaultChecked={guest?.visible ?? true} />
+          Publier sur le site
+        </label>
+        <AdminHint>Décochez pour garder l’invité en brouillon, hors des pages Arena.</AdminHint>
+      </div>
+      <div className="admin-field">
+        <label className="admin-check">
+          <input type="checkbox" name="featured" defaultChecked={guest?.featured || false} />
+          Mettre en avant
+        </label>
+        <AdminHint>Apparaît dans « Visages & voix » sur l’accueil Arena.</AdminHint>
+      </div>
       {state.message ? (
         <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>
           {state.message}
@@ -71,14 +88,37 @@ export function GuestsManager({ guests }: { guests: Guest[] }) {
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
                 <p className="font-semibold">{g.name}</p>
-                <p className="text-sm text-[#9aa3b5]">{g.profession || "—"}</p>
+                <p className="text-sm text-[#9aa3b5]">
+                  {g.profession || "—"}
+                  {g.visible ? " · Publié" : " · Brouillon"}
+                  {g.featured ? " · À la une" : ""}
+                </p>
               </div>
-              <form action={deleteArenaGuest}>
-                <input type="hidden" name="id" value={g.id} />
-                <button type="submit" className="admin-btn admin-btn-danger text-xs">
-                  Suppr.
-                </button>
-              </form>
+              <div className="flex flex-wrap gap-1">
+                {g.slug && g.visible ? (
+                  <a
+                    href={`/arena-culture/invites/${g.slug}`}
+                    className="admin-btn admin-btn-ghost text-xs"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Voir
+                  </a>
+                ) : null}
+                <form action={setArenaGuestVisible}>
+                  <input type="hidden" name="id" value={g.id} />
+                  <input type="hidden" name="visible" value={g.visible ? "0" : "1"} />
+                  <button type="submit" className="admin-btn admin-btn-ghost text-xs">
+                    {g.visible ? "Dépublier" : "Publier"}
+                  </button>
+                </form>
+                <form action={deleteArenaGuest}>
+                  <input type="hidden" name="id" value={g.id} />
+                  <button type="submit" className="admin-btn admin-btn-danger text-xs">
+                    Suppr.
+                  </button>
+                </form>
+              </div>
             </div>
             <GuestForm guest={g} />
           </div>
