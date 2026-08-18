@@ -290,3 +290,31 @@ model NewsletterSubscriber {
 
   @@index([status, createdAt])
 }
+
+model NewsletterCampaign {
+  id         String   @id @default(cuid())
+  subject    String
+  body       String
+  kind       String   @default("NEWSLETTER") // NEWSLETTER | NOTICE
+  audience   String   @default("ALL") // ALL | CUSTOM
+  recipients String   @default("")
+  sentCount  Int      @default(0)
+  failCount  Int      @default(0)
+  status     String   @default("SENT") // SENT | PARTIAL | FAILED
+  errorNote  String   @default("")
+  createdBy  String   @default("")
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model AdminNotice {
+  id        String   @id @default(cuid())
+  title     String
+  body      String   @default("")
+  href      String   @default("/admin/newsletter")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read, createdAt])
+}

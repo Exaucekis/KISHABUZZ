@@ -1310,6 +1310,11 @@ html[data-theme="dark"] .home-arena__card {
   color: #aeb6c5;
 }
 
+.admin-shell label.flex {
+  display: flex;
+  margin-bottom: 0;
+}
+
 .admin-shell .admin-btn {
   display: inline-flex;
   align-items: center;
@@ -1488,6 +1493,117 @@ html[data-theme="dark"] .home-arena__card {
   max-width: 18rem;
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+.admin-shell input[type="radio"],
+.admin-shell input[type="checkbox"] {
+  width: 1.05rem;
+  height: 1.05rem;
+  padding: 0;
+  accent-color: #e85d04;
+}
+
+.admin-notice-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.admin-notice-bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  min-width: 2.5rem;
+  border-radius: 0.5rem;
+  color: #eef1f6;
+}
+
+.admin-notice-bell:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.admin-notice-count {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.15rem;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 0.22rem;
+  border-radius: 999px;
+  background: #e85d04;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1rem;
+  text-align: center;
+}
+
+.admin-notice-panel {
+  position: absolute;
+  z-index: 90;
+  top: calc(100% + 0.35rem);
+  width: min(20rem, calc(100vw - 1.5rem));
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.7rem;
+  background: #151a24;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.admin-topbar .admin-notice-panel {
+  right: 0;
+  left: auto;
+}
+
+.admin-sidebar-desktop .admin-notice-panel,
+.admin-sidebar-drawer .admin-notice-panel {
+  left: 0;
+  right: auto;
+}
+
+.admin-notice-panel-title {
+  padding: 0.7rem 0.85rem 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9aa3b5;
+}
+
+.admin-notice-panel ul {
+  max-height: 22rem;
+  overflow-y: auto;
+}
+
+.admin-notice-item {
+  display: block;
+  padding: 0.7rem 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-notice-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.admin-notice-item-title {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.admin-notice-item-body,
+.admin-notice-item-date {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  color: #9aa3b5;
+}
+
+.admin-notice-empty {
+  padding: 0.85rem;
+  font-size: 0.8rem;
+  color: #9aa3b5;
 }
 
 .admin-shell .admin-topbar {

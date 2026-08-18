@@ -6,10 +6,14 @@ export function SubmitButton({
   children,
   variant = "primary",
   className = "",
+  pendingLabel = "Enregistrement…",
+  disabled = false,
 }: {
   children: React.ReactNode;
   variant?: "primary" | "ghost" | "danger";
   className?: string;
+  pendingLabel?: string;
+  disabled?: boolean;
 }) {
   const { pending } = useFormStatus();
   const variantClass =
@@ -22,10 +26,10 @@ export function SubmitButton({
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={pending || disabled}
       className={`admin-btn ${variantClass} disabled:opacity-60 ${className}`}
     >
-      {pending ? "Enregistrement…" : children}
+      {pending ? pendingLabel : children}
     </button>
   );
 }

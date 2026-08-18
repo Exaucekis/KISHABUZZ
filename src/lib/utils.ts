@@ -48,6 +48,11 @@ export function statusLabel(status: string) {
     DONE: "Traité",
     ACTIVE: "Actif",
     UNSUBSCRIBED: "Désinscrit",
+    SENT: "Envoyé",
+    PARTIAL: "Partiel",
+    FAILED: "Échec",
+    NEWSLETTER: "Newsletter",
+    NOTICE: "Notification",
   };
   return map[status] || status;
 }

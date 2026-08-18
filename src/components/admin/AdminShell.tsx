@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Menu, X } from "lucide-react";
+import { AdminNoticeMenu, type AdminNoticeDto } from "@/components/admin/AdminNoticeMenu";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ADMIN_NAV, adminNavTitle, isAdminNavActive } from "@/lib/admin-nav";
 import { canManageUsers, roleLabel } from "@/lib/roles";
@@ -13,10 +14,12 @@ export function AdminShell({
   children,
   role,
   userName,
+  notices = [],
 }: {
   children: React.ReactNode;
   role?: string;
   userName?: string | null;
+  notices?: AdminNoticeDto[];
 }) {
   const pathname = usePathname();
   const isLogin = pathname === "/admin/login";
@@ -46,7 +49,13 @@ export function AdminShell({
 
   return (
     <div className="admin-shell flex min-h-screen">
-      <AdminSidebar role={role} userName={userName} pathname={pathname} className="admin-sidebar-desktop" />
+      <AdminSidebar
+        role={role}
+        userName={userName}
+        pathname={pathname}
+        notices={notices}
+        className="admin-sidebar-desktop"
+      />
 
       {open ? (
         <div className="admin-sidebar-mobile" id="admin-mobile-nav">
@@ -60,6 +69,7 @@ export function AdminShell({
             role={role}
             userName={userName}
             pathname={pathname}
+            notices={notices}
             onNavigate={() => setOpen(false)}
             className="admin-sidebar-drawer"
           />
@@ -78,10 +88,11 @@ export function AdminShell({
           >
             {open ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
           </button>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{adminNavTitle(pathname)}</p>
             <p className="truncate text-[0.65rem] uppercase tracking-[0.16em] text-[#9aa3b5]">CMS</p>
           </div>
+          <AdminNoticeMenu notices={notices} />
         </header>
         <main className="admin-main">{children}</main>
       </div>
@@ -93,12 +104,14 @@ function AdminSidebar({
   role,
   userName,
   pathname,
+  notices = [],
   onNavigate,
   className,
 }: {
   role?: string;
   userName?: string | null;
   pathname: string;
+  notices?: AdminNoticeDto[];
   onNavigate?: () => void;
   className?: string;
 }) {
@@ -106,10 +119,11 @@ function AdminSidebar({
     <aside className={className}>
       <div className="flex items-center gap-3 border-b border-white/10 px-4 py-4">
         <BrandLogo href="/" size="sm" />
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="text-[0.65rem] uppercase tracking-[0.2em] text-[#9aa3b5]">CMS</p>
           <p className="font-[family-name:var(--font-syne)] text-lg font-bold">KISHA BUZZ</p>
         </div>
+        <AdminNoticeMenu notices={notices} />
       </div>
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3" aria-label="Navigation admin">
         {ADMIN_NAV.filter((item) => !item.superadmin || canManageUsers(role)).map((item) => {

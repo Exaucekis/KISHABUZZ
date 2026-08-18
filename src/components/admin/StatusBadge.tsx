@@ -10,6 +10,11 @@ const COLORS: Record<string, string> = {
   DONE: "bg-emerald-500/20 text-emerald-200",
   ACTIVE: "bg-emerald-500/20 text-emerald-200",
   UNSUBSCRIBED: "bg-slate-500/20 text-slate-300",
+  SENT: "bg-emerald-500/20 text-emerald-200",
+  PARTIAL: "bg-amber-500/20 text-amber-200",
+  FAILED: "bg-red-500/20 text-red-200",
+  NEWSLETTER: "bg-sky-500/20 text-sky-200",
+  NOTICE: "bg-violet-500/20 text-violet-200",
 };
 
 export function StatusBadge({ status }: { status: string }) {

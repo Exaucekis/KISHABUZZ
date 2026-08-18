@@ -33,3 +33,43 @@ export function subscribersToCsv(
   );
   return `\uFEFF${[header, ...lines].join("\n")}\n`;
 }
+
+export const MAX_CAMPAIGN_RECIPIENTS = 400;
+
+export function parseRecipientList(raw: string) {
+  const tokens = String(raw || "")
+    .split(/[\s,;]+/)
+    .map(normalizeNewsletterEmail)
+    .filter(Boolean);
+  const unique = [...new Set(tokens)];
+  return {
+    emails: unique.filter(isNewsletterEmail),
+    invalid: unique.filter((token) => !isNewsletterEmail(token)),
+  };
+}
+
+export function summarizeRecipients(emails: string[], max = 12) {
+  if (emails.length <= max) return emails.join(", ");
+  return `${emails.slice(0, max).join(", ")}… (+${emails.length - max})`;
+}
+
+export function campaignStatusFromCounts(sent: number, failed: number) {
+  if (sent === 0 && failed > 0) return "FAILED";
+  if (failed > 0) return "PARTIAL";
+  return "SENT";
+}
+
+export function campaignNoticeCopy(kind: string, subject: string, sent: number, failed: number) {
+  const label = kind === "NOTICE" ? "Notification" : "Newsletter";
+  const status = campaignStatusFromCounts(sent, failed);
+  const title =
+    status === "FAILED"
+      ? `Échec d’envoi (${label.toLowerCase()})`
+      : status === "PARTIAL"
+        ? `Envoi partiel (${label.toLowerCase()})`
+        : `${label} envoyée`;
+  return {
+    title,
+    body: `« ${subject} » — ${sent} envoyé${sent > 1 ? "s" : ""}, ${failed} échec${failed > 1 ? "s" : ""}.`,
+  };
+}
