@@ -29,11 +29,11 @@ type HeaderUser = { name: string | null; role: string } | null;
 
 const links = [
   { href: "/", label: "Accueil", icon: Home },
+  { href: "/evenements", label: "Événements", icon: CalendarDays },
   { href: "/a-propos", label: "À propos", icon: User },
   { href: "/chroniques", label: "Chroniques", icon: BookOpen },
   { href: "/publications", label: "Publications", icon: Newspaper },
   { href: "/portfolio", label: "Portfolio", icon: Briefcase },
-  { href: "/evenements", label: "Événements", icon: CalendarDays },
   { href: "/arena-culture", label: "Arena Culture", icon: Mic2, highlight: true },
   { href: "/collaborations", label: "Partenaires", icon: Handshake },
   { href: "/contact", label: "Contact", icon: Mail },
@@ -42,11 +42,11 @@ const links = [
 
 const desktopLinks = [
   { href: "/", label: "Accueil" },
+  { href: "/evenements", label: "Événements" },
   { href: "/a-propos", label: "À propos" },
   { href: "/chroniques", label: "Chroniques" },
   { href: "/publications", label: "Publications" },
   { href: "/portfolio", label: "Portfolio" },
-  { href: "/evenements", label: "Événements" },
   { href: "/contact", label: "Contact" },
 ];
 

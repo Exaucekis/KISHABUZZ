@@ -11,7 +11,7 @@
     },
     {
       "path": "/api/cron/tickets",
-      "schedule": "0 * * * *"
+      "schedule": "15 5 * * *"
     }
   ]
 }

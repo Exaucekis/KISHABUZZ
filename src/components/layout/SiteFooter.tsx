@@ -5,11 +5,11 @@ import { getSettings } from "@/lib/data";
 
 const nav = [
   { href: "/", label: "Accueil" },
+  { href: "/evenements", label: "Événements" },
   { href: "/a-propos", label: "À propos" },
   { href: "/chroniques", label: "Chroniques" },
   { href: "/publications", label: "Publications" },
   { href: "/portfolio", label: "Portfolio" },
-  { href: "/evenements", label: "Événements" },
   { href: "/arena-culture", label: "Arena Culture" },
   { href: "/collaborations", label: "Partenaires" },
   { href: "/contact", label: "Contact" },
