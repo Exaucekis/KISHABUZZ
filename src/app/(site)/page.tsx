@@ -4,6 +4,7 @@ import { ArticleCard } from "@/components/content/ArticleCard";
 import { DomainMarquee } from "@/components/home/DomainMarquee";
 import { HomeHero } from "@/components/home/HomeHero";
 import { ArtistRail } from "@/components/home/ArtistRail";
+import { NewsletterForm } from "@/components/newsletter/NewsletterForm";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -24,6 +25,7 @@ export default async function HomePage() {
     about,
     portfolio,
     partners,
+    artists,
   } = await getHomePageData();
 
   const guest = spotlightShow?.guests[0]?.guest;
@@ -62,11 +64,16 @@ export default async function HomePage() {
 
   return (
     <>
-      <HomeHero tagline={settings.tagline} />
+      <HomeHero
+        tagline={settings.tagline}
+        heroImage={settings.heroImage}
+        heroVideo={settings.heroVideo}
+        heroAlt={settings.heroAlt}
+      />
 
-      <DomainMarquee items={domains.map((d) => d.name)} />
+      <DomainMarquee items={domains.map((d) => ({ name: d.name, icon: d.icon }))} />
 
-      <ArtistRail />
+      <ArtistRail artists={artists} />
 
       <section className="home-spotlight relative overflow-hidden border-y border-line">
         <div className="home-spotlight__bg" aria-hidden>
@@ -191,6 +198,8 @@ export default async function HomePage() {
                   title={article.title}
                   excerpt={article.excerpt}
                   coverImage={article.coverImage}
+                  coverAlt={article.coverAlt}
+                  coverFocus={article.coverFocus}
                   category={article.category?.name}
                   date={article.publishedAt}
                   author={article.authorName}
@@ -277,6 +286,23 @@ export default async function HomePage() {
                 <p className="font-display text-lg">{d.name}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="kb-defer border-y border-line bg-ink-2">
+        <div className="mx-auto max-w-3xl px-4 py-16 md:px-6 md:py-20">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-ember-text">
+            Newsletter
+          </p>
+          <h2 className="mt-4 font-display text-3xl uppercase leading-[0.95] md:text-5xl">
+            Rester dans le buzz
+          </h2>
+          <p className="mt-4 text-paper-muted">
+            Un email quand une chronique ou une publication sort. Pas de spam.
+          </p>
+          <div className="mt-8">
+            <NewsletterForm source="home" />
           </div>
         </div>
       </section>

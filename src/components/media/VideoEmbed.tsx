@@ -1,10 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { getVideoEmbed } from "@/lib/utils";
+import { isDirectVideo, parseMediaEmbed } from "@/lib/media";
 
-function isDirectVideo(url: string) {
-  return /\.(mp4|webm|ogg)(\?.*)?$/i.test(url) || url.startsWith("/arena/videos/");
+function PlayPoster({
+  title,
+  poster,
+  onPlay,
+}: {
+  title?: string;
+  poster?: string;
+  onPlay: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className="kb-embed kb-embed--16-9 group relative w-full overflow-hidden bg-black text-left"
+      onClick={onPlay}
+      aria-label={`Lire ${title || "la vidéo"}`}
+    >
+      {poster ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-80" />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-ink-3 to-black" />
+      )}
+      <span className="absolute inset-0 grid place-items-center">
+        <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-ember text-on-ember shadow-lg transition group-hover:scale-105">
+          <svg viewBox="0 0 24 24" className="ml-0.5 h-7 w-7 fill-current" aria-hidden>
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </span>
+      </span>
+    </button>
+  );
 }
 
 export function VideoEmbed({
@@ -22,32 +51,11 @@ export function VideoEmbed({
 
   if (isDirectVideo(url)) {
     if (!playing) {
-      return (
-        <button
-          type="button"
-          className="group relative aspect-video w-full overflow-hidden bg-black text-left"
-          onClick={() => setPlaying(true)}
-          aria-label={`Lire ${title || "la vidéo"}`}
-        >
-          {poster ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-80" />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-ink-3 to-black" />
-          )}
-          <span className="absolute inset-0 grid place-items-center">
-            <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-ember text-on-ember shadow-lg transition group-hover:scale-105">
-              <svg viewBox="0 0 24 24" className="ml-0.5 h-7 w-7 fill-current" aria-hidden>
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </span>
-          </span>
-        </button>
-      );
+      return <PlayPoster title={title} poster={poster} onPlay={() => setPlaying(true)} />;
     }
 
     return (
-      <div className="relative aspect-video overflow-hidden bg-black">
+      <div className="kb-embed kb-embed--16-9">
         <video
           className="absolute inset-0 h-full w-full"
           controls
@@ -64,7 +72,7 @@ export function VideoEmbed({
     );
   }
 
-  const embed = getVideoEmbed(url);
+  const embed = parseMediaEmbed(url);
   if (!embed) {
     return (
       <a
@@ -73,25 +81,32 @@ export function VideoEmbed({
         rel="noopener noreferrer"
         className="inline-flex rounded-md border border-line px-4 py-3 text-sm text-ember-text"
       >
-        Voir la vidéo
+        Voir le média
       </a>
     );
   }
 
-  const src =
-    embed.type === "youtube"
-      ? `https://www.youtube-nocookie.com/embed/${embed.id}?rel=0`
-      : `https://player.vimeo.com/video/${embed.id}`;
+  if (!playing) {
+    return <PlayPoster title={title} poster={poster} onPlay={() => setPlaying(true)} />;
+  }
+
+  const ratioClass =
+    embed.ratio === "9/16"
+      ? "kb-embed--9-16"
+      : embed.ratio === "4/5"
+        ? "kb-embed--4-5"
+        : "kb-embed--16-9";
 
   return (
-    <div className="relative aspect-video overflow-hidden bg-black">
+    <div className={`kb-embed kb-embed--${embed.provider} ${ratioClass}`}>
       <iframe
-        src={src}
-        title={title || "Vidéo"}
+        src={embed.src}
+        title={title || `Vidéo ${embed.provider}`}
         className="absolute inset-0 h-full w-full"
         loading="lazy"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
+        referrerPolicy="strict-origin-when-cross-origin"
       />
     </div>
   );

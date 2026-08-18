@@ -6,13 +6,13 @@ import { revalidatePublic } from "@/lib/cache";
 import {
   formBool,
   formDate,
-  formInt,
   formOptionalId,
   formString,
   requireAdmin,
   type AdminActionState,
 } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { idsMatch, nextOrder, rankedOrders } from "@/lib/reorder";
 import { createSlug } from "@/lib/utils";
 
 const albumSchema = z.object({
@@ -23,7 +23,6 @@ const albumSchema = z.object({
   emissionLabel: z.string().optional().default("Arena Grand Culture"),
   date: z.date().nullable().optional(),
   visible: z.boolean(),
-  order: z.number().int(),
 });
 
 export async function savePhotoAlbum(
@@ -40,7 +39,6 @@ export async function savePhotoAlbum(
     emissionLabel: formString(formData, "emissionLabel") || "Arena Grand Culture",
     date: formDate(formData, "date"),
     visible: formBool(formData, "visible"),
-    order: formInt(formData, "order", 0),
   });
 
   if (!parsed.success) {
@@ -65,7 +63,6 @@ export async function savePhotoAlbum(
     emissionLabel: parsed.data.emissionLabel || "Arena Grand Culture",
     date: parsed.data.date,
     visible: parsed.data.visible,
-    order: parsed.data.order,
   };
 
   if (id) {
@@ -74,8 +71,9 @@ export async function savePhotoAlbum(
       data: payload,
     });
   } else {
+    const max = await prisma.photoAlbum.aggregate({ _max: { order: true } });
     await prisma.photoAlbum.create({
-      data: { ...payload, slug },
+      data: { ...payload, slug, order: nextOrder(max._max.order) },
     });
   }
 
@@ -85,6 +83,25 @@ export async function savePhotoAlbum(
   revalidatePath("/arena-culture");
   revalidatePublic();
   return { ok: true, message: "Album enregistré." };
+}
+
+export async function reorderPhotoAlbums(ids: string[]): Promise<AdminActionState> {
+  await requireAdmin();
+  const existing = await prisma.photoAlbum.findMany({ select: { id: true } });
+  if (!ids.length || !idsMatch(ids, existing.map((row) => row.id))) {
+    return { ok: false, message: "Liste incomplète. Rechargez la page." };
+  }
+  await prisma.$transaction(
+    rankedOrders(ids).map(({ id, order }) =>
+      prisma.photoAlbum.update({ where: { id }, data: { order } })
+    )
+  );
+  revalidatePath("/admin/arena/albums");
+  revalidatePath("/arena-culture/photos");
+  revalidatePath("/arena-culture/albums");
+  revalidatePath("/arena-culture");
+  revalidatePublic();
+  return { ok: true, message: "Ordre enregistré." };
 }
 
 export async function deletePhotoAlbum(formData: FormData) {
@@ -113,6 +130,7 @@ export async function addPhotoToAlbum(
   const title = formString(formData, "title");
   const url = formString(formData, "url");
   const description = formString(formData, "description");
+  const alt = formString(formData, "alt");
 
   if (!albumId || !url || title.length < 2) {
     return { ok: false, message: "Titre et URL requis." };
@@ -125,6 +143,7 @@ export async function addPhotoToAlbum(
     data: {
       title,
       description,
+      alt,
       kind: "IMAGE",
       url,
       thumbnail: url,

@@ -1,4 +1,5 @@
 import { PortfolioManager } from "@/components/admin/PortfolioManager";
+import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Portfolio" };
@@ -9,7 +10,10 @@ export default async function AdminPortfolioPage() {
   });
   return (
     <div>
-      <h1 className="mb-5 font-[family-name:var(--font-syne)] text-2xl font-bold">Portfolio</h1>
+      <AdminPageIntro
+        title="Portfolio"
+        hint="Vos réalisations. Statut « Publié » pour les montrer sur /portfolio."
+      />
       <PortfolioManager items={items} />
     </div>
   );

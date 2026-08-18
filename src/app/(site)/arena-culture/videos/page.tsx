@@ -42,7 +42,7 @@ export default async function ArenaVideosPage() {
             <div className="ac-videos">
               {showVideos.map((s) => (
                 <div key={s.id} className="min-w-0">
-                  <VideoEmbed url={s.videoUrl} title={s.title} />
+                  <VideoEmbed url={s.videoUrl} title={s.title} lazy />
                   <Link
                     href={`/arena-culture/emissions/${s.slug}`}
                     className="mt-4 block font-display text-xl hover:text-[var(--ac-amber)]"
@@ -61,7 +61,7 @@ export default async function ArenaVideosPage() {
             <div className="ac-videos">
               {restVideos.map((v) => (
                 <div key={v.id} className="min-w-0">
-                  <VideoEmbed url={v.url} title={v.title} />
+                  <VideoEmbed url={v.url} title={v.title} lazy />
                   <p className="mt-4 font-display text-xl">{v.title}</p>
                 </div>
               ))}

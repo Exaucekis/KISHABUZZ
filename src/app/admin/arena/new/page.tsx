@@ -1,4 +1,5 @@
 import { ArenaShowForm } from "@/components/admin/ArenaShowForm";
+import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Nouvelle émission" };
@@ -11,9 +12,10 @@ export default async function NewArenaShowPage() {
 
   return (
     <div>
-      <h1 className="mb-5 font-[family-name:var(--font-syne)] text-2xl font-bold">
-        Nouvelle émission Arena
-      </h1>
+      <AdminPageIntro
+        title="Nouvelle émission Arena"
+        hint="Titre, affiche, vidéo (lien ou fichier), puis Publier. Créez d’abord les invités si besoin."
+      />
       <ArenaShowForm seasons={seasons} guests={guests} />
     </div>
   );

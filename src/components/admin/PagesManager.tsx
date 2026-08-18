@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { deletePageContent, savePageContent } from "@/actions/admin/pages";
+import { AdminHint } from "@/components/admin/AdminHint";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -22,14 +23,17 @@ function PageForm({ page }: { page?: Page }) {
       <div className="admin-field">
         <label>Clé</label>
         <input name="key" required defaultValue={page?.key || ""} placeholder="a-propos" />
+        <AdminHint>Identifiant technique. Ex. about.qui, about.vision. Ne changez pas une clé existante.</AdminHint>
       </div>
       <div className="admin-field">
         <label>Titre</label>
         <input name="title" defaultValue={page?.title || ""} />
+        <AdminHint>Titre de la section sur la page publique.</AdminHint>
       </div>
       <div className="admin-field">
         <label>Contenu</label>
         <textarea name="body" className="min-h-[12rem]" defaultValue={page?.body || ""} />
+        <AdminHint>Texte de la section. Remplace le texte par défaut du site.</AdminHint>
       </div>
       {state.message ? (
         <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>

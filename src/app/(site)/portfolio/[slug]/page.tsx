@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getPortfolioBySlug } from "@/lib/data";
+import { coverFocusStyle } from "@/lib/cover-focus";
+import { imageAlt } from "@/lib/image-alt";
 import { formatDate, portfolioTypeLabel } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -46,7 +48,12 @@ export default async function PortfolioDetailPage({ params }: Props) {
       {item.coverImage ? (
         <div className="mx-auto max-w-5xl px-4 pt-10 md:px-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={item.coverImage} alt="" className="aspect-[21/9] w-full object-cover" />
+          <img
+            src={item.coverImage}
+            alt={imageAlt(item.coverAlt, item.title)}
+            className="aspect-[21/9] w-full object-cover"
+            style={coverFocusStyle(item.coverFocus)}
+          />
         </div>
       ) : null}
 
@@ -91,7 +98,7 @@ export default async function PortfolioDetailPage({ params }: Props) {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={img.thumbnail || img.url}
-                    alt={img.title}
+                    alt={imageAlt(img.alt, img.title)}
                     className="aspect-[4/3] w-full object-cover"
                     loading="lazy"
                   />

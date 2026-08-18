@@ -1,4 +1,5 @@
 import { MediaManager } from "@/components/admin/MediaManager";
+import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Médias" };
@@ -14,7 +15,10 @@ export default async function AdminMediaPage({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="mb-5 font-[family-name:var(--font-syne)] text-2xl font-bold">Médias / Galerie</h1>
+      <AdminPageIntro
+        title="Médias / Galerie"
+        hint="Ajoutez une photo ou une vidéo : fichier, ou lien YouTube / Instagram / Facebook / TikTok. Catégorie « Arena Culture » pour les pages Arena."
+      />
       <MediaManager items={items} />
     </div>
   );

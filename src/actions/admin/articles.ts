@@ -12,6 +12,7 @@ import {
   type AdminActionState,
 } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { normalizeCoverFocus } from "@/lib/cover-focus";
 import { createSlug } from "@/lib/utils";
 
 const articleSchema = z.object({
@@ -20,6 +21,8 @@ const articleSchema = z.object({
   excerpt: z.string().max(2000).optional().default(""),
   content: z.string().optional().default(""),
   coverImage: z.string().optional().default(""),
+  coverAlt: z.string().max(300).optional().default(""),
+  coverFocus: z.string().max(24).optional().default("50% 50%"),
   contentType: z.enum(["ARTICLE", "CHRONIQUE", "ANALYSIS"]),
   status: z.enum(["DRAFT", "SCHEDULED", "PUBLISHED", "ARCHIVED"]),
   publishedAt: z.date().nullable().optional(),
@@ -69,6 +72,8 @@ function parseArticle(formData: FormData) {
     excerpt: formString(formData, "excerpt"),
     content: formString(formData, "content"),
     coverImage: formString(formData, "coverImage"),
+    coverAlt: formString(formData, "coverAlt"),
+    coverFocus: formString(formData, "coverFocus"),
     contentType: formString(formData, "contentType") || "ARTICLE",
     status: formString(formData, "status") || "DRAFT",
     publishedAt: formDate(formData, "publishedAt"),
@@ -129,6 +134,8 @@ export async function saveArticle(
     excerpt: data.excerpt || "",
     content: data.content || "",
     coverImage: data.coverImage || "",
+    coverAlt: data.coverAlt || "",
+    coverFocus: normalizeCoverFocus(data.coverFocus),
     contentType: data.contentType,
     status,
     publishedAt,

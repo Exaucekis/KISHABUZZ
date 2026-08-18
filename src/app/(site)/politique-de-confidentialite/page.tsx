@@ -19,13 +19,19 @@ export default async function PolitiqueConfidentialitePage() {
       <div className="mx-auto max-w-3xl space-y-6 px-4 py-12 text-base leading-relaxed text-paper-muted md:px-6 [&_h2]:mt-8 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:text-paper">
         <p>
           Cette politique décrit la manière dont {settings.siteTitle} traite les données
-          personnelles collectées via le site, notamment le formulaire de contact.
+          personnelles collectées via le site, notamment le formulaire de contact et
+          l&apos;inscription à la newsletter.
         </p>
         <h2>Données collectées</h2>
         <p>
           Lors d&apos;une demande de contact, nous pouvons collecter : nom, organisation,
           téléphone, email, sujet, type de collaboration et message. Ces informations sont
           utilisées uniquement pour répondre à votre demande.
+        </p>
+        <p>
+          Si vous vous inscrivez à la newsletter, nous conservons votre adresse email afin de
+          vous envoyer les chroniques et actualités KISHA BUZZ. Vous pouvez vous désinscrire à
+          tout moment via le lien fourni ou en nous contactant.
         </p>
         <h2>Finalités</h2>
         <p>

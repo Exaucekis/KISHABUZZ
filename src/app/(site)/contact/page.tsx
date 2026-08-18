@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ContactForm } from "@/components/contact/ContactForm";
+import { NewsletterForm } from "@/components/newsletter/NewsletterForm";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { getPageContent, getSettings } from "@/lib/data";
 
@@ -68,6 +69,16 @@ export default async function ContactPage() {
               <p className="mt-3 text-paper-muted whitespace-pre-line">{settings.address}</p>
             </div>
           ) : null}
+
+          <div className="border border-line bg-ink-2 p-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">Newsletter</p>
+            <p className="mt-3 text-sm text-paper-muted">
+              Chroniques et actualités, directement dans votre boîte mail.
+            </p>
+            <div className="mt-5">
+              <NewsletterForm source="contact" compact />
+            </div>
+          </div>
         </aside>
 
         <div className="border border-line bg-ink-2 p-6 md:p-8">

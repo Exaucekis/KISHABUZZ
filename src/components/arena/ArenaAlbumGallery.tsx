@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Lightbox } from "@/components/media/Lightbox";
+import { imageAlt } from "@/lib/image-alt";
 
 type Photo = {
   id: string;
   title: string;
   url: string;
   description?: string;
+  alt?: string;
 };
 
 export function ArenaAlbumGallery({ photos }: { photos: Photo[] }) {
@@ -17,7 +18,7 @@ export function ArenaAlbumGallery({ photos }: { photos: Photo[] }) {
     () =>
       photos.map((p) => ({
         src: p.url,
-        alt: p.title,
+        alt: imageAlt(p.alt, p.title),
         title: p.title,
       })),
     [photos]
@@ -40,7 +41,7 @@ export function ArenaAlbumGallery({ photos }: { photos: Photo[] }) {
             onClick={() => setIndex(i)}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photo.url} alt={photo.title} loading="lazy" />
+            <img src={photo.url} alt={imageAlt(photo.alt, photo.title)} loading="lazy" />
             <span>{photo.title}</span>
           </button>
         ))}

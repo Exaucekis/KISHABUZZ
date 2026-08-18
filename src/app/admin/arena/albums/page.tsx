@@ -1,4 +1,5 @@
 import { AlbumsManager } from "@/components/admin/AlbumsManager";
+import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Albums photos Arena" };
@@ -11,12 +12,10 @@ export default async function AdminArenaAlbumsPage() {
 
   return (
     <div>
-      <h1 className="mb-2 font-[family-name:var(--font-syne)] text-2xl font-bold">
-        Albums photos Arena
-      </h1>
-      <p className="mb-5 text-sm text-[#9aa3b5]">
-        Un album = un invité du jour (ex. Maman Sharonne). Gérez ensuite les photos dans chaque album.
-      </p>
+      <AdminPageIntro
+        title="Albums photos Arena"
+        hint="Un album = un invité. Glissez pour changer l’ordre, puis Photos pour ajouter les images."
+      />
       <AlbumsManager albums={albums} />
     </div>
   );

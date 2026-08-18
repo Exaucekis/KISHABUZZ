@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { deleteArenaShow, setArenaShowStatus } from "@/actions/admin/arena";
+import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { prisma } from "@/lib/prisma";
+import { formatViews } from "@/lib/page-views";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = { title: "Arena Culture" };
@@ -14,23 +16,23 @@ export default async function AdminArenaPage() {
 
   return (
     <div>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-[family-name:var(--font-syne)] text-2xl font-bold">Arena Culture</h1>
-          <p className="mt-1 text-sm text-[#9aa3b5]">{shows.length} émission(s)</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/admin/arena/guests" className="admin-btn admin-btn-ghost">
-            Invités
-          </Link>
-          <Link href="/admin/arena/seasons" className="admin-btn admin-btn-ghost">
-            Saisons
-          </Link>
-          <Link href="/admin/arena/new" className="admin-btn admin-btn-primary">
-            Nouvelle émission
-          </Link>
-        </div>
-      </div>
+      <AdminPageIntro
+        title="Arena Culture"
+        hint="Liste des émissions. Publiez une émission pour qu’elle apparaisse sur le site."
+        actions={
+          <>
+            <Link href="/admin/arena/guests" className="admin-btn admin-btn-ghost">
+              Invités
+            </Link>
+            <Link href="/admin/arena/seasons" className="admin-btn admin-btn-ghost">
+              Saisons
+            </Link>
+            <Link href="/admin/arena/new" className="admin-btn admin-btn-primary">
+              Nouvelle émission
+            </Link>
+          </>
+        }
+      />
 
       <div className="admin-card overflow-x-auto p-0">
         <table className="admin-table">
@@ -41,6 +43,7 @@ export default async function AdminArenaPage() {
               <th>Saison</th>
               <th>Date</th>
               <th>Statut</th>
+              <th>Vues</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -67,6 +70,7 @@ export default async function AdminArenaPage() {
                 <td>
                   <StatusBadge status={s.status} />
                 </td>
+                <td className="whitespace-nowrap text-[#aeb6c5]">{formatViews(s.views)}</td>
                 <td>
                   <div className="flex flex-wrap gap-1">
                     <Link href={`/admin/arena/${s.id}`} className="admin-btn admin-btn-ghost text-xs">
@@ -101,7 +105,7 @@ export default async function AdminArenaPage() {
             ))}
             {!shows.length ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-[#9aa3b5]">
+                <td colSpan={7} className="py-8 text-center text-[#9aa3b5]">
                   Aucune émission.
                 </td>
               </tr>

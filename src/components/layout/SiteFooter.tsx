@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { NewsletterForm } from "@/components/newsletter/NewsletterForm";
 import { getSettings } from "@/lib/data";
 
 const nav = [
@@ -48,9 +49,13 @@ export async function SiteFooter() {
         </div>
         <div>
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-paper-muted">
-            Contact
+            Newsletter
           </p>
-          <p className="text-lg font-medium">{settings.phone}</p>
+          <p className="mb-4 text-sm text-paper-muted">
+            Recevez les chroniques et actualités KISHA BUZZ.
+          </p>
+          <NewsletterForm source="footer" compact />
+          <p className="mt-6 text-lg font-medium">{settings.phone}</p>
           {settings.email ? (
             <a href={`mailto:${settings.email}`} className="mt-2 block text-paper-muted">
               {settings.email}

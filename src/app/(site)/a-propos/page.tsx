@@ -4,6 +4,7 @@ import {
   getSettings,
   getVisibleDomains,
 } from "@/lib/data";
+import { DomainIcon } from "@/components/content/DomainIcon";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -81,7 +82,10 @@ export default async function AboutPage() {
               <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
                 {domains.map((d) => (
                   <div key={d.id} className="border border-line bg-ink-2 px-5 py-6">
-                    <h3 className="font-display text-xl">{d.name}</h3>
+                    <div className="mb-3 flex items-center gap-3">
+                      <DomainIcon icon={d.icon} name={d.name} />
+                      <h3 className="font-display text-xl">{d.name}</h3>
+                    </div>
                     {d.description ? (
                       <p className="mt-2 text-sm leading-relaxed text-paper-muted">
                         {d.description}

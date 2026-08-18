@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { deletePhotoAlbum, savePhotoAlbum } from "@/actions/admin/albums";
+import { deletePhotoAlbum, reorderPhotoAlbums, savePhotoAlbum } from "@/actions/admin/albums";
+import { MediaField } from "@/components/admin/MediaField";
+import { AdminHint } from "@/components/admin/AdminHint";
+import { SortableOrderList } from "@/components/admin/SortableOrderList";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -36,35 +39,43 @@ function AlbumForm({ album }: { album?: Album }) {
         <div className="admin-field sm:col-span-2">
           <label>Nom de l&apos;invité (titre de l&apos;album)</label>
           <input name="guestName" required defaultValue={album?.guestName || ""} />
+          <AdminHint>Nom de l’invité. C’est le titre de l’album sur le site.</AdminHint>
         </div>
         <div className="admin-field sm:col-span-2">
           <label>Titre affiché (optionnel)</label>
           <input name="title" defaultValue={album?.title || ""} placeholder="Ex. Maman Sharonne · Arena Grand Culture" />
+          <AdminHint>Sous-titre. Ex. « Maman Sharonne · Arena Grand Culture ».</AdminHint>
         </div>
         <div className="admin-field">
           <label>Émission</label>
           <input name="emissionLabel" defaultValue={album?.emissionLabel || "Arena Grand Culture"} />
+          <AdminHint>Nom de l’émission liée. Souvent « Arena Grand Culture ».</AdminHint>
         </div>
         <div className="admin-field">
           <label>Date</label>
           <input name="date" type="date" defaultValue={toDate(album?.date || null)} />
+          <AdminHint>Date du plateau / de l’enregistrement.</AdminHint>
         </div>
-        <div className="admin-field sm:col-span-2">
-          <label>Image de couverture (URL)</label>
-          <input name="coverImage" defaultValue={album?.coverImage || ""} />
-        </div>
+        <MediaField
+          name="coverImage"
+          label="Image de couverture"
+          defaultValue={album?.coverImage || ""}
+          kind="image"
+          folder="albums"
+          hint="Photo de une de l’album. Vous pourrez aussi la choisir parmi les photos."
+        />
         <div className="admin-field sm:col-span-2">
           <label>Description</label>
           <textarea name="description" defaultValue={album?.description || ""} />
+          <AdminHint>Texte d’intro de l’album, visible sur la fiche.</AdminHint>
         </div>
         <div className="admin-field">
-          <label>Ordre</label>
-          <input name="order" type="number" defaultValue={album?.order ?? 0} />
+          <label className="admin-check">
+            <input type="checkbox" name="visible" defaultChecked={album?.visible ?? true} />
+            Visible sur le site
+          </label>
+          <AdminHint>Décochez pour préparer l’album sans le publier.</AdminHint>
         </div>
-        <label className="admin-check admin-field">
-          <input type="checkbox" name="visible" defaultChecked={album?.visible ?? true} />
-          Visible sur le site
-        </label>
       </div>
       {state.message ? (
         <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>
@@ -78,7 +89,18 @@ function AlbumForm({ album }: { album?: Album }) {
 
 export function AlbumsManager({ albums }: { albums: Album[] }) {
   return (
-    <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+    <div className="space-y-6">
+      {albums.length > 1 ? (
+        <SortableOrderList
+          items={albums.map((a) => ({
+            id: a.id,
+            label: a.guestName,
+            hint: `${a._count?.photos ?? 0} photo(s) · ${a.visible ? "Visible" : "Masqué"}`,
+          }))}
+          onReorder={reorderPhotoAlbums}
+        />
+      ) : null}
+      <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
       <div>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#9aa3b5]">
           Nouvel album (invité)
@@ -124,6 +146,7 @@ export function AlbumsManager({ albums }: { albums: Album[] }) {
         {!albums.length ? (
           <p className="text-sm text-[#9aa3b5]">Aucun album. Créez le premier (ex. Maman Sharonne).</p>
         ) : null}
+      </div>
       </div>
     </div>
   );

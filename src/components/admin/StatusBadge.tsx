@@ -8,6 +8,8 @@ const COLORS: Record<string, string> = {
   NEW: "bg-sky-500/20 text-sky-200",
   IN_PROGRESS: "bg-amber-500/20 text-amber-200",
   DONE: "bg-emerald-500/20 text-emerald-200",
+  ACTIVE: "bg-emerald-500/20 text-emerald-200",
+  UNSUBSCRIBED: "bg-slate-500/20 text-slate-300",
 };
 
 export function StatusBadge({ status }: { status: string }) {

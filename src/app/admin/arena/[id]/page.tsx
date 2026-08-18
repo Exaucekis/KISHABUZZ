@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { ArenaShowForm } from "@/components/admin/ArenaShowForm";
+import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { prisma } from "@/lib/prisma";
 
 type Props = { params: Promise<{ id: string }> };
@@ -24,9 +25,10 @@ export default async function EditArenaShowPage({ params }: Props) {
 
   return (
     <div>
-      <h1 className="mb-5 font-[family-name:var(--font-syne)] text-2xl font-bold">
-        Éditer · {show.title}
-      </h1>
+      <AdminPageIntro
+        title={`Éditer · ${show.title}`}
+        hint="Mettez à jour l’affiche, la vidéo ou les invités, puis Enregistrer."
+      />
       <ArenaShowForm show={show} seasons={seasons} guests={guests} />
     </div>
   );

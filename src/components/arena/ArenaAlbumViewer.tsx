@@ -2,12 +2,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { VideoEmbed } from "@/components/media/VideoEmbed";
+import { isPlayableMedia } from "@/lib/media";
+import { imageAlt } from "@/lib/image-alt";
 
 type Photo = {
   id: string;
   title: string;
   url: string;
   description?: string;
+  alt?: string;
 };
 
 type Props = {
@@ -49,14 +53,20 @@ export function ArenaAlbumViewer({ guestName, emissionLabel, photos }: Props) {
   return (
     <div className="ac-viewer">
       <div className="ac-viewer__stage">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          key={current.id}
-          src={current.url}
-          alt={current.title}
-          className="ac-viewer__image"
-          decoding="async"
-        />
+        {isPlayableMedia(current.url) ? (
+          <div className="ac-viewer__video">
+            <VideoEmbed url={current.url} title={current.title} />
+          </div>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={current.id}
+            src={current.url}
+            alt={imageAlt(current.alt, current.title)}
+            className="ac-viewer__image"
+            decoding="async"
+          />
+        )}
 
         {total > 1 ? (
           <>

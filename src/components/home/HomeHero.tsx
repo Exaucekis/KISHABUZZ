@@ -1,10 +1,67 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { isDirectVideo, parseMediaEmbed, youtubeBackgroundSrc } from "@/lib/media";
 
-export function HomeHero({ tagline }: { tagline: string }) {
+export function HomeHero({
+  tagline,
+  heroImage,
+  heroVideo,
+  heroAlt,
+}: {
+  tagline: string;
+  heroImage?: string;
+  heroVideo?: string;
+  heroAlt?: string;
+}) {
+  const embed = heroVideo ? parseMediaEmbed(heroVideo) : null;
+  const fileVideo = Boolean(heroVideo && isDirectVideo(heroVideo));
+  const youtubeBg = embed?.provider === "youtube";
+  const vimeoBg = embed?.provider === "vimeo";
+  const imageBg = Boolean(heroImage && !fileVideo && !youtubeBg && !vimeoBg);
+  const hasMedia = fileVideo || youtubeBg || vimeoBg || imageBg;
+
   return (
     <section className="hero-stage hero-stage--lite relative min-h-[100svh] overflow-hidden bg-ink text-paper">
-      <div className="hero-aurora" aria-hidden />
+      {hasMedia ? <div className="hero-media-shade" aria-hidden /> : <div className="hero-aurora" aria-hidden />}
+
+      {imageBg ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={heroImage} alt={heroAlt?.trim() || ""} className="hero-media" />
+      ) : null}
+
+      {fileVideo && heroVideo ? (
+        <video
+          className="hero-media hero-media-video"
+          src={heroVideo}
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster={heroImage || undefined}
+        />
+      ) : null}
+
+      {youtubeBg && embed ? (
+        <div className="hero-media-frame" aria-hidden>
+          <iframe
+            src={youtubeBackgroundSrc(embed.id)}
+            title=""
+            allow="autoplay; encrypted-media"
+            tabIndex={-1}
+          />
+        </div>
+      ) : null}
+
+      {vimeoBg && embed ? (
+        <div className="hero-media-frame" aria-hidden>
+          <iframe
+            src={`${embed.src}?background=1&autoplay=1&muted=1&loop=1`}
+            title=""
+            allow="autoplay; encrypted-media"
+            tabIndex={-1}
+          />
+        </div>
+      ) : null}
 
       <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col justify-center px-4 pb-24 pt-24 sm:px-6 md:pb-20">
         <div className="flex w-full flex-col items-center text-center">

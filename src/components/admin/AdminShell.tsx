@@ -1,28 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { Menu, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { ADMIN_NAV, adminNavTitle, isAdminNavActive } from "@/lib/admin-nav";
 import { canManageUsers, roleLabel } from "@/lib/roles";
-
-const NAV = [
-  { href: "/admin", label: "Tableau de bord", exact: true },
-  { href: "/admin/articles", label: "Articles & chroniques" },
-  { href: "/admin/arena", label: "Arena Culture" },
-  { href: "/admin/arena/guests", label: "Invités" },
-  { href: "/admin/arena/seasons", label: "Saisons" },
-  { href: "/admin/arena/albums", label: "Albums photos" },
-  { href: "/admin/media", label: "Médias" },
-  { href: "/admin/portfolio", label: "Portfolio" },
-  { href: "/admin/partners", label: "Partenaires" },
-  { href: "/admin/contacts", label: "Contacts" },
-  { href: "/admin/categories", label: "Catégories" },
-  { href: "/admin/domains", label: "Domaines" },
-  { href: "/admin/pages", label: "Pages" },
-  { href: "/admin/users", label: "Utilisateurs", superadmin: true },
-  { href: "/admin/settings", label: "Paramètres" },
-];
 
 export function AdminShell({
   children,
@@ -35,6 +20,25 @@ export function AdminShell({
 }) {
   const pathname = usePathname();
   const isLogin = pathname === "/admin/login";
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
   if (isLogin) {
     return <div className="admin-shell min-h-screen">{children}</div>;
@@ -42,67 +46,106 @@ export function AdminShell({
 
   return (
     <div className="admin-shell flex min-h-screen">
-      <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-white/10 bg-[#0a0d13]">
-        <div className="flex items-center gap-3 border-b border-white/10 px-4 py-4">
-          <BrandLogo href="/" size="sm" />
-          <div>
-            <p className="text-[0.65rem] uppercase tracking-[0.2em] text-[#9aa3b5]">CMS</p>
-            <p className="font-[family-name:var(--font-syne)] text-lg font-bold">KISHA BUZZ</p>
-          </div>
-        </div>
-        <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
-          {NAV.filter((item) => !item.superadmin || canManageUsers(role)).map((item) => {
-            let active = false;
-            if (item.exact) {
-              active = pathname === item.href;
-            } else if (item.href === "/admin/arena") {
-              active =
-                pathname === "/admin/arena" ||
-                pathname.startsWith("/admin/arena/new") ||
-                (/^\/admin\/arena\/[^/]+$/.test(pathname) &&
-                  !pathname.startsWith("/admin/arena/guests") &&
-                  !pathname.startsWith("/admin/arena/seasons") &&
-                  !pathname.startsWith("/admin/arena/albums"));
-            } else {
-              active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            }
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`block rounded-md px-3 py-2 text-sm transition ${
-                  active
-                    ? "bg-white/10 text-white"
-                    : "text-[#aeb6c5] hover:bg-white/5 hover:text-white"
-                }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="border-t border-white/10 p-3">
-          {userName ? (
-            <p className="mb-3 px-1 text-xs text-[#9aa3b5]">
-              <span className="block truncate font-semibold text-white">{userName}</span>
-              {roleLabel(role)}
-            </p>
-          ) : null}
-          <Link href="/" className="admin-btn admin-btn-ghost mb-2 w-full text-xs">
-            Voir le site
-          </Link>
+      <AdminSidebar role={role} userName={userName} pathname={pathname} className="admin-sidebar-desktop" />
+
+      {open ? (
+        <div className="admin-sidebar-mobile" id="admin-mobile-nav">
           <button
             type="button"
-            className="admin-btn admin-btn-danger w-full text-xs"
-            onClick={() => signOut({ callbackUrl: "/admin/login" })}
-          >
-            Déconnexion
-          </button>
+            className="admin-sidebar-backdrop"
+            aria-label="Fermer le menu"
+            onClick={() => setOpen(false)}
+          />
+          <AdminSidebar
+            role={role}
+            userName={userName}
+            pathname={pathname}
+            onNavigate={() => setOpen(false)}
+            className="admin-sidebar-drawer"
+          />
         </div>
-      </aside>
+      ) : null}
+
       <div className="min-w-0 flex-1">
-        <main className="mx-auto max-w-6xl px-5 py-6 md:px-8">{children}</main>
+        <header className="admin-topbar">
+          <button
+            type="button"
+            className="admin-btn admin-btn-ghost admin-menu-btn"
+            aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={open}
+            aria-controls="admin-mobile-nav"
+            onClick={() => setOpen((value) => !value)}
+          >
+            {open ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
+          </button>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">{adminNavTitle(pathname)}</p>
+            <p className="truncate text-[0.65rem] uppercase tracking-[0.16em] text-[#9aa3b5]">CMS</p>
+          </div>
+        </header>
+        <main className="admin-main">{children}</main>
       </div>
     </div>
+  );
+}
+
+function AdminSidebar({
+  role,
+  userName,
+  pathname,
+  onNavigate,
+  className,
+}: {
+  role?: string;
+  userName?: string | null;
+  pathname: string;
+  onNavigate?: () => void;
+  className?: string;
+}) {
+  return (
+    <aside className={className}>
+      <div className="flex items-center gap-3 border-b border-white/10 px-4 py-4">
+        <BrandLogo href="/" size="sm" />
+        <div>
+          <p className="text-[0.65rem] uppercase tracking-[0.2em] text-[#9aa3b5]">CMS</p>
+          <p className="font-[family-name:var(--font-syne)] text-lg font-bold">KISHA BUZZ</p>
+        </div>
+      </div>
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3" aria-label="Navigation admin">
+        {ADMIN_NAV.filter((item) => !item.superadmin || canManageUsers(role)).map((item) => {
+          const active = isAdminNavActive(pathname, item);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onNavigate}
+              className={`block rounded-md px-3 py-2.5 text-sm transition ${
+                active ? "bg-white/10 text-white" : "text-[#aeb6c5] hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="border-t border-white/10 p-3">
+        {userName ? (
+          <p className="mb-3 px-1 text-xs text-[#9aa3b5]">
+            <span className="block truncate font-semibold text-white">{userName}</span>
+            {roleLabel(role)}
+          </p>
+        ) : null}
+        <Link href="/" className="admin-btn admin-btn-ghost mb-2 w-full text-xs" onClick={onNavigate}>
+          Voir le site
+        </Link>
+        <button
+          type="button"
+          className="admin-btn admin-btn-danger w-full text-xs"
+          onClick={() => signOut({ callbackUrl: "/admin/login" })}
+        >
+          Déconnexion
+        </button>
+      </div>
+    </aside>
   );
 }

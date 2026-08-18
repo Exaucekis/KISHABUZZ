@@ -3,6 +3,8 @@ import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { getPortfolio } from "@/lib/data";
+import { coverFocusStyle } from "@/lib/cover-focus";
+import { imageAlt } from "@/lib/image-alt";
 import { cn, formatDate, portfolioTypeLabel } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -85,8 +87,9 @@ export default async function PortfolioPage({ searchParams }: Props) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={item.coverImage}
-                      alt=""
+                      alt={imageAlt(item.coverAlt, item.title)}
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                      style={coverFocusStyle(item.coverFocus)}
                       loading="lazy"
                     />
                   ) : (

@@ -1,20 +1,11 @@
 import Image from "next/image";
+import type { SpotlightArtistCard } from "@/lib/spotlight-artists";
 
-export type ArtistCard = {
-  name: string;
-  role: string;
-  image: string;
-};
+export type ArtistCard = SpotlightArtistCard;
 
-/** Liste réduite pour limiter le poids réseau */
-const DEFAULT_ARTISTS: ArtistCard[] = [
-  { name: "Gaz Mawete", role: "Artiste", image: "/artists/gaz-mawete.jpg" },
-  { name: "Fally Ipupa", role: "Artiste", image: "/artists/fally-ipupa.jpg" },
-  { name: "Innoss'B", role: "Artiste", image: "/artists/innoss-b.png" },
-  { name: "Koffi Olomidé", role: "Légende", image: "/artists/koffi-olomide.jpg" },
-];
+export function ArtistRail({ artists }: { artists: ArtistCard[] }) {
+  if (!artists.length) return null;
 
-export function ArtistRail({ artists = DEFAULT_ARTISTS }: { artists?: ArtistCard[] }) {
   const loop = [...artists, ...artists];
 
   return (

@@ -38,6 +38,7 @@ model SiteSetting {
   metaDescription String   @default("Plateforme media professionnelle : chroniques, publications, portfolio et Arena Culture.")
   heroImage       String   @default("")
   heroVideo       String   @default("")
+  heroAlt         String   @default("")
   updatedAt       DateTime @updatedAt
 }
 
@@ -65,6 +66,8 @@ model Article {
   excerpt         String       @default("")
   content         String       @default("")
   coverImage      String       @default("")
+  coverAlt        String       @default("")
+  coverFocus      String       @default("50% 50%")
   contentType     String       @default("ARTICLE") // ARTICLE | CHRONIQUE | ANALYSIS | ...
   status          String       @default("DRAFT") // DRAFT | SCHEDULED | PUBLISHED | ARCHIVED
   publishedAt     DateTime?
@@ -158,6 +161,8 @@ model PortfolioItem {
   location    String       @default("")
   client      String       @default("")
   coverImage  String       @default("")
+  coverAlt    String       @default("")
+  coverFocus  String       @default("50% 50%")
   link        String       @default("")
   status      String       @default("DRAFT")
   media       MediaAsset[]
@@ -172,6 +177,7 @@ model MediaAsset {
   kind            String         @default("IMAGE") // IMAGE | VIDEO
   url             String
   thumbnail       String         @default("")
+  alt             String         @default("")
   category        String         @default("") // ACTIVITES | EMISSIONS | ...
   visible         Boolean        @default(true)
   date            DateTime?
@@ -246,4 +252,41 @@ model PageContent {
   title     String   @default("")
   body      String   @default("")
   updatedAt DateTime @updatedAt
+}
+
+model LibraryFile {
+  id        String   @id @default(cuid())
+  url       String   @unique
+  kind      String   @default("IMAGE")
+  title     String   @default("")
+  folder    String   @default("media")
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model SpotlightArtist {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  role      String   @default("Artiste")
+  image     String   @default("")
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([visible, order])
+}
+
+model NewsletterSubscriber {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  status           String   @default("ACTIVE") // ACTIVE | UNSUBSCRIBED
+  source           String   @default("footer")
+  unsubscribeToken String   @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([status, createdAt])
 }

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { imageAlt } from "@/lib/image-alt";
+import { coverFocusStyle } from "@/lib/cover-focus";
 import { formatDate } from "@/lib/utils";
 
 type ArticleCardProps = {
@@ -6,6 +8,8 @@ type ArticleCardProps = {
   title: string;
   excerpt?: string;
   coverImage?: string;
+  coverAlt?: string;
+  coverFocus?: string;
   category?: string | null;
   date?: Date | string | null;
   author?: string;
@@ -16,6 +20,8 @@ export function ArticleCard({
   title,
   excerpt,
   coverImage,
+  coverAlt,
+  coverFocus,
   category,
   date,
   author,
@@ -28,8 +34,9 @@ export function ArticleCard({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={coverImage}
-              alt={title}
+              alt={imageAlt(coverAlt, title)}
               className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-110"
+              style={coverFocusStyle(coverFocus)}
               loading="lazy"
               decoding="async"
               referrerPolicy="no-referrer"

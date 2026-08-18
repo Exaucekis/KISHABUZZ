@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { deleteUser, saveUser } from "@/actions/admin/users";
 import { SubmitButton } from "@/components/admin/SubmitButton";
+import { AdminHint } from "@/components/admin/AdminHint";
 import { EmailInput } from "@/components/auth/EmailInput";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { ROLE_LABELS, ROLES, type Role } from "@/lib/roles";
@@ -35,14 +36,17 @@ export function UsersManager({
           <div className="admin-field">
             <label htmlFor="name">Nom</label>
             <input id="name" name="name" required minLength={2} />
+            <AdminHint>Nom affiché dans le menu compte.</AdminHint>
           </div>
           <div className="admin-field">
             <label htmlFor="email">Email</label>
             <EmailInput id="email" name="email" required autoComplete="email" />
+            <AdminHint>Sert à se connecter. Un email = un compte.</AdminHint>
           </div>
           <div className="admin-field">
             <label htmlFor="password">Mot de passe</label>
             <PasswordInput id="password" name="password" required minLength={6} autoComplete="new-password" />
+            <AdminHint>Au moins 6 caractères. La personne pourra le changer ensuite.</AdminHint>
           </div>
           <div className="admin-field">
             <label htmlFor="role">Rôle</label>
@@ -53,6 +57,7 @@ export function UsersManager({
                 </option>
               ))}
             </select>
+            <AdminHint>USER = compte simple. AUTHOR/EDITOR/ADMIN = accès CMS. SUPERADMIN = tout.</AdminHint>
           </div>
         </div>
         {state.message ? (
@@ -69,14 +74,17 @@ export function UsersManager({
               <div className="admin-field">
                 <label>Nom</label>
                 <input name="name" defaultValue={user.name} required />
+                <AdminHint>Nom affiché dans le menu compte.</AdminHint>
               </div>
               <div className="admin-field">
                 <label>Email</label>
                 <EmailInput name="email" defaultValue={user.email} required autoComplete="email" />
+                <AdminHint>Identifiant de connexion.</AdminHint>
               </div>
               <div className="admin-field">
                 <label>Nouveau mot de passe</label>
                 <PasswordInput name="password" minLength={6} placeholder="Laisser vide pour ne pas changer" autoComplete="new-password" />
+                <AdminHint>Laissez vide pour garder le mot de passe actuel.</AdminHint>
               </div>
               <div className="admin-field">
                 <label>Rôle</label>
@@ -87,6 +95,7 @@ export function UsersManager({
                     </option>
                   ))}
                 </select>
+                <AdminHint>USER = site. Staff = CMS. SUPERADMIN = gestion des comptes.</AdminHint>
               </div>
               <div className="md:col-span-2 flex flex-wrap gap-2">
                 <SubmitButton>Enregistrer</SubmitButton>

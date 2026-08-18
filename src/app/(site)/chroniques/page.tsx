@@ -35,6 +35,8 @@ export default async function ChroniquesPage() {
                 title={article.title}
                 excerpt={article.excerpt}
                 coverImage={article.coverImage}
+                coverAlt={article.coverAlt}
+                coverFocus={article.coverFocus}
                 category={article.category?.name}
                 date={article.publishedAt}
                 author={article.authorName}

@@ -11,6 +11,7 @@ import {
   requireAdmin,
   type AdminActionState,
 } from "@/lib/admin";
+import { isPlayableMedia } from "@/lib/media";
 import { prisma } from "@/lib/prisma";
 
 const mediaSchema = z.object({
@@ -19,6 +20,7 @@ const mediaSchema = z.object({
   kind: z.enum(["IMAGE", "VIDEO"]),
   url: z.string().min(1, "URL requise"),
   thumbnail: z.string().optional().default(""),
+  alt: z.string().max(300).optional().default(""),
   category: z.string().optional().default(""),
   visible: z.boolean(),
   date: z.date().nullable().optional(),
@@ -39,6 +41,7 @@ export async function saveMedia(
     kind: formString(formData, "kind") || "IMAGE",
     url: formString(formData, "url"),
     thumbnail: formString(formData, "thumbnail"),
+    alt: formString(formData, "alt"),
     category: formString(formData, "category"),
     visible: formBool(formData, "visible"),
     date: formDate(formData, "date"),
@@ -55,12 +58,16 @@ export async function saveMedia(
     };
   }
 
+  const kind =
+    parsed.data.kind === "IMAGE" && isPlayableMedia(parsed.data.url) ? "VIDEO" : parsed.data.kind;
+
   const payload = {
     title: parsed.data.title,
     description: parsed.data.description || "",
-    kind: parsed.data.kind,
+    kind,
     url: parsed.data.url,
     thumbnail: parsed.data.thumbnail || "",
+    alt: parsed.data.alt || "",
     category: parsed.data.category || "",
     visible: parsed.data.visible,
     date: parsed.data.date,

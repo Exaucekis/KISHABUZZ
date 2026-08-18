@@ -10,6 +10,7 @@ import {
   type AdminActionState,
 } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { normalizeCoverFocus } from "@/lib/cover-focus";
 import { createSlug } from "@/lib/utils";
 
 const portfolioSchema = z.object({
@@ -20,6 +21,8 @@ const portfolioSchema = z.object({
   location: z.string().optional().default(""),
   client: z.string().optional().default(""),
   coverImage: z.string().optional().default(""),
+  coverAlt: z.string().max(300).optional().default(""),
+  coverFocus: z.string().max(24).optional().default("50% 50%"),
   link: z.string().optional().default(""),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
 });
@@ -49,6 +52,8 @@ export async function savePortfolio(
     location: formString(formData, "location"),
     client: formString(formData, "client"),
     coverImage: formString(formData, "coverImage"),
+    coverAlt: formString(formData, "coverAlt"),
+    coverFocus: formString(formData, "coverFocus"),
     link: formString(formData, "link"),
     status: formString(formData, "status") || "DRAFT",
   });
@@ -71,6 +76,8 @@ export async function savePortfolio(
     location: parsed.data.location || "",
     client: parsed.data.client || "",
     coverImage: parsed.data.coverImage || "",
+    coverAlt: parsed.data.coverAlt || "",
+    coverFocus: normalizeCoverFocus(parsed.data.coverFocus),
     link: parsed.data.link || "",
     status: parsed.data.status,
   };

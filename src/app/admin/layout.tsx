@@ -7,6 +7,12 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover" as const,
+};
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 

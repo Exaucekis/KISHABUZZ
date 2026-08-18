@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ShareButtons } from "@/components/content/ShareButtons";
+import { PageViews } from "@/components/content/PageViews";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getShowBySlug } from "@/lib/data";
 import { formatDate } from "@/lib/utils";
@@ -49,6 +50,7 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
               {show.airTime ? ` · ${show.airTime}` : ""}
             </span>
           ) : null}
+          <PageViews kind="show" id={show.id} initial={show.views} />
         </div>
       </header>
 

@@ -2,6 +2,8 @@
 
 import { useActionState } from "react";
 import { deleteArenaGuest, saveArenaGuest } from "@/actions/admin/arena";
+import { MediaField } from "@/components/admin/MediaField";
+import { AdminHint } from "@/components/admin/AdminHint";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -23,18 +25,26 @@ function GuestForm({ guest }: { guest?: Guest }) {
       <div className="admin-field">
         <label>Nom</label>
         <input name="name" required defaultValue={guest?.name || ""} />
+        <AdminHint>Nom complet de l’invité, tel qu’affiché sur le site.</AdminHint>
       </div>
       <div className="admin-field">
         <label>Profession</label>
         <input name="profession" defaultValue={guest?.profession || ""} />
+        <AdminHint>Métier ou titre. Ex. Artiste, Journaliste.</AdminHint>
       </div>
-      <div className="admin-field">
-        <label>Photo (URL)</label>
-        <input name="photo" defaultValue={guest?.photo || ""} />
-      </div>
+      <MediaField
+        name="photo"
+        label="Photo"
+        defaultValue={guest?.photo || ""}
+        kind="image"
+        folder="guests"
+        className="admin-field"
+        hint="Portrait. Fichier ou lien. S’affiche sur Invités et les émissions."
+      />
       <div className="admin-field">
         <label>Bio</label>
         <textarea name="bio" defaultValue={guest?.bio || ""} />
+        <AdminHint>Courte présentation (quelques lignes).</AdminHint>
       </div>
       {state.message ? (
         <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>

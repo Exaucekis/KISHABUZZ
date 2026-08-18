@@ -29,6 +29,7 @@ const settingsSchema = z.object({
   metaDescription: z.string().optional().default(""),
   heroImage: z.string().optional().default(""),
   heroVideo: z.string().optional().default(""),
+  heroAlt: z.string().max(300).optional().default(""),
 });
 
 export async function saveSettings(
@@ -54,6 +55,7 @@ export async function saveSettings(
     metaDescription: formString(formData, "metaDescription"),
     heroImage: formString(formData, "heroImage"),
     heroVideo: formString(formData, "heroVideo"),
+    heroAlt: formString(formData, "heroAlt"),
   });
 
   if (!parsed.success) {

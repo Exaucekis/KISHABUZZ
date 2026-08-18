@@ -1,4 +1,5 @@
 import { UsersManager } from "@/components/admin/UsersManager";
+import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { requireSuperAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 
@@ -13,10 +14,10 @@ export default async function AdminUsersPage() {
 
   return (
     <div>
-      <h1 className="mb-2 font-[family-name:var(--font-syne)] text-2xl font-bold">Utilisateurs</h1>
-      <p className="mb-6 text-sm text-[#9aa3b5]">
-        Le superadmin nomme les admins et gère tous les comptes, y compris les utilisateurs simples.
-      </p>
+      <AdminPageIntro
+        title="Utilisateurs"
+        hint="Le superadmin crée les comptes et choisit le rôle. USER = site seul. Staff = accès CMS."
+      />
       <UsersManager users={users} currentUserId={session.user.id} />
     </div>
   );

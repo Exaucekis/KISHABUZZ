@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { deleteContact, updateContactStatus } from "@/actions/admin/contacts";
+import { AdminHint, AdminPageIntro } from "@/components/admin/AdminHint";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { prisma } from "@/lib/prisma";
 import { collaborationLabel, formatDate } from "@/lib/utils";
@@ -17,7 +18,10 @@ export default async function AdminContactsPage({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-[family-name:var(--font-syne)] text-2xl font-bold">Demandes de contact</h1>
+      <AdminPageIntro
+        title="Demandes de contact"
+        hint="Messages reçus via le formulaire. Passez le statut : Nouveau → En cours → Traité."
+      />
       <div className="mt-4 mb-5 flex flex-wrap gap-2">
         {[
           ["", "Tous"],
@@ -77,6 +81,7 @@ export default async function AdminContactsPage({ searchParams }: Props) {
                   <option value="DONE">Traité</option>
                   <option value="ARCHIVED">Archivé</option>
                 </select>
+                <AdminHint>Nouveau → En cours → Traité. Archivé = classé.</AdminHint>
               </div>
               <button type="submit" className="admin-btn admin-btn-primary">
                 Mettre à jour

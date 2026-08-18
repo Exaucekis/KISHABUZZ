@@ -835,6 +835,11 @@
   animation: ac-viewer-fade 0.35s ease;
 }
 
+.ac-viewer__video {
+  width: min(100%, 960px);
+  padding: 0.75rem;
+}
+
 @keyframes ac-viewer-fade {
   from {
     opacity: 0.35;

@@ -3,6 +3,7 @@ import { cache } from "react";
 import { CACHE_TAGS } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { publishDueArticles } from "@/lib/publish-scheduled";
+import { toSpotlightArtistCards } from "@/lib/spotlight-artists";
 
 const fallbackSettings = {
   id: "main",
@@ -26,6 +27,7 @@ const fallbackSettings = {
     "Plateforme média professionnelle : chroniques, publications, portfolio médiatique et Arena Culture.",
   heroImage: "",
   heroVideo: "",
+  heroAlt: "",
   updatedAt: new Date(),
 };
 
@@ -42,7 +44,7 @@ export const getSettings = cache(
 
 async function loadHomePageData() {
   await publishDueArticles();
-  const [settings, feed, spotlightShow, domains, featuredAlbum, featuredVideo, about, portfolio, partners] =
+  const [settings, feed, spotlightShow, domains, featuredAlbum, featuredVideo, about, portfolio, partners, spotlightArtists] =
     await Promise.all([
       loadSettings(),
       prisma.article.findMany({
@@ -56,6 +58,8 @@ async function loadHomePageData() {
           title: true,
           excerpt: true,
           coverImage: true,
+          coverAlt: true,
+          coverFocus: true,
           contentType: true,
           publishedAt: true,
           authorName: true,
@@ -84,7 +88,7 @@ async function loadHomePageData() {
       }),
       prisma.domain.findMany({
         where: { visible: true },
-        select: { id: true, name: true },
+        select: { id: true, name: true, icon: true },
         orderBy: { order: "asc" },
       }),
       prisma.photoAlbum.findFirst({
@@ -113,6 +117,11 @@ async function loadHomePageData() {
         orderBy: [{ order: "asc" }, { name: "asc" }],
         take: 6,
       }),
+      prisma.spotlightArtist.findMany({
+        where: { visible: true },
+        select: { name: true, role: true, image: true },
+        orderBy: { order: "asc" },
+      }),
     ]);
 
   return {
@@ -125,6 +134,7 @@ async function loadHomePageData() {
     about,
     portfolio,
     partners,
+    artists: toSpotlightArtistCards(spotlightArtists),
   };
 }
 
@@ -169,10 +179,16 @@ export async function getPublishedArticles(opts?: {
   });
 }
 
-export async function getArticleBySlug(slug: string) {
+export async function getArticleBySlug(
+  slug: string,
+  opts?: { includeUnpublished?: boolean }
+) {
   await publishDueArticles();
   return prisma.article.findFirst({
-    where: { slug, status: "PUBLISHED" },
+    where: {
+      slug,
+      ...(opts?.includeUnpublished ? {} : { status: "PUBLISHED" }),
+    },
     include: { category: true, tags: { include: { tag: true } } },
   });
 }

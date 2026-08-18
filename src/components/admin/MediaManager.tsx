@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { deleteMedia, saveMedia } from "@/actions/admin/media";
+import { MediaField } from "@/components/admin/MediaField";
+import { AdminHint } from "@/components/admin/AdminHint";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 import { galleryCategoryLabel } from "@/lib/utils";
@@ -13,6 +15,7 @@ type Media = {
   kind: string;
   url: string;
   thumbnail: string;
+  alt?: string;
   category: string;
   visible: boolean;
   date: Date | null;
@@ -27,6 +30,8 @@ function toDate(d: Date | null) {
 
 function MediaForm({ media }: { media?: Media }) {
   const [state, action] = useActionState(saveMedia, initial);
+  const [kind, setKind] = useState(media?.kind || "IMAGE");
+
   return (
     <form action={action} className="admin-card">
       {media?.id ? <input type="hidden" name="id" value={media.id} /> : null}
@@ -34,13 +39,15 @@ function MediaForm({ media }: { media?: Media }) {
         <div className="admin-field sm:col-span-2">
           <label>Titre</label>
           <input name="title" required defaultValue={media?.title || ""} />
+          <AdminHint>Nom du média, affiché sous la photo ou la vidéo.</AdminHint>
         </div>
         <div className="admin-field">
           <label>Type</label>
-          <select name="kind" defaultValue={media?.kind || "IMAGE"}>
+          <select name="kind" value={kind} onChange={(e) => setKind(e.target.value)}>
             <option value="IMAGE">Image</option>
             <option value="VIDEO">Vidéo</option>
           </select>
+          <AdminHint>Image = photo. Vidéo = YouTube, Instagram, TikTok, Facebook ou fichier.</AdminHint>
         </div>
         <div className="admin-field">
           <label>Catégorie</label>
@@ -53,27 +60,43 @@ function MediaForm({ media }: { media?: Media }) {
               )
             )}
           </select>
+          <AdminHint>« Arena Culture » envoie le média dans les pages Arena (photos / vidéos).</AdminHint>
         </div>
-        <div className="admin-field sm:col-span-2">
-          <label>URL</label>
-          <input name="url" required defaultValue={media?.url || ""} />
-        </div>
-        <div className="admin-field">
-          <label>Miniature (URL)</label>
-          <input name="thumbnail" defaultValue={media?.thumbnail || ""} />
-        </div>
+        <MediaField
+          name="url"
+          label={kind === "VIDEO" ? "Vidéo" : "Image"}
+          defaultValue={media?.url || ""}
+          kind={kind === "VIDEO" ? "video" : "image"}
+          folder="media"
+          required
+          altName={kind === "VIDEO" ? undefined : "alt"}
+          defaultAlt={media?.alt || ""}
+        />
+        <MediaField
+          name="thumbnail"
+          label="Miniature"
+          defaultValue={media?.thumbnail || ""}
+          kind="image"
+          folder="media"
+          hint="Aperçu avant lecture. Utile pour les vidéos. Optionnel."
+        />
         <div className="admin-field">
           <label>Date</label>
           <input name="date" type="date" defaultValue={toDate(media?.date || null)} />
+          <AdminHint>Date du tournage ou de l’événement. Sert au tri.</AdminHint>
         </div>
         <div className="admin-field sm:col-span-2">
           <label>Description</label>
           <textarea name="description" defaultValue={media?.description || ""} />
+          <AdminHint>Légende courte, visible sous le média.</AdminHint>
         </div>
-        <label className="admin-check admin-field">
-          <input type="checkbox" name="visible" defaultChecked={media?.visible ?? true} />
-          Visible
-        </label>
+        <div className="admin-field">
+          <label className="admin-check">
+            <input type="checkbox" name="visible" defaultChecked={media?.visible ?? true} />
+            Visible
+          </label>
+          <AdminHint>Décochez pour garder le fichier sans l’afficher au public.</AdminHint>
+        </div>
       </div>
       {state.message ? (
         <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>

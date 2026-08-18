@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import slugifyLib from "slugify";
+import { parseMediaEmbed } from "@/lib/media";
 
 export function cn(...inputs: ClassValue[]) {
   return clsx(inputs);
@@ -45,6 +46,8 @@ export function statusLabel(status: string) {
     NEW: "Nouveau",
     IN_PROGRESS: "En cours",
     DONE: "Traité",
+    ACTIVE: "Actif",
+    UNSUBSCRIBED: "Désinscrit",
   };
   return map[status] || status;
 }
@@ -74,10 +77,7 @@ export function galleryCategoryLabel(cat: string) {
 }
 
 export function getVideoEmbed(url: string): { type: string; id: string } | null {
-  if (!url) return null;
-  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})/);
-  if (yt) return { type: "youtube", id: yt[1] };
-  const vimeo = url.match(/vimeo\.com\/(\d+)/);
-  if (vimeo) return { type: "vimeo", id: vimeo[1] };
-  return null;
+  const parsed = parseMediaEmbed(url);
+  if (!parsed) return null;
+  return { type: parsed.provider, id: parsed.id };
 }

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { deleteCategory, saveCategory } from "@/actions/admin/categories";
+import { AdminHint } from "@/components/admin/AdminHint";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -23,6 +24,7 @@ function CategoryForm({ category }: { category?: Category }) {
       <div className="admin-field">
         <label>Nom</label>
         <input name="name" required defaultValue={category?.name || ""} />
+        <AdminHint>Nom affiché sur les articles. Ex. Culture, Musique.</AdminHint>
       </div>
       <div className="admin-field">
         <label>Type</label>
@@ -31,10 +33,12 @@ function CategoryForm({ category }: { category?: Category }) {
           <option value="chronique">Chronique</option>
           <option value="general">Général</option>
         </select>
+        <AdminHint>Pour quel type d’article cette catégorie sert.</AdminHint>
       </div>
       <div className="admin-field">
         <label>Description</label>
         <textarea name="description" defaultValue={category?.description || ""} />
+        <AdminHint>Optionnel. Aide en interne, rarement affiché.</AdminHint>
       </div>
       {state.message ? (
         <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>

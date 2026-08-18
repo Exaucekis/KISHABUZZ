@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { deleteArenaSeason, saveArenaSeason } from "@/actions/admin/arena";
+import { AdminHint } from "@/components/admin/AdminHint";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -24,6 +25,7 @@ function SeasonForm({ season }: { season?: Season }) {
         <div className="admin-field">
           <label>Numéro</label>
           <input name="number" type="number" min={1} required defaultValue={season?.number ?? 1} />
+          <AdminHint>Numéro de saison (1, 2, 3…).</AdminHint>
         </div>
         <div className="admin-field">
           <label>Année</label>
@@ -33,14 +35,17 @@ function SeasonForm({ season }: { season?: Season }) {
             required
             defaultValue={season?.year ?? new Date().getFullYear()}
           />
+          <AdminHint>Année de la saison. Ex. 2026.</AdminHint>
         </div>
         <div className="admin-field sm:col-span-2">
           <label>Titre</label>
           <input name="title" required defaultValue={season?.title || ""} />
+          <AdminHint>Nom public. Ex. Saison 1 — Arena Grand Culture.</AdminHint>
         </div>
         <div className="admin-field sm:col-span-2">
           <label>Description</label>
           <textarea name="description" defaultValue={season?.description || ""} />
+          <AdminHint>Présentation courte de la saison (optionnel).</AdminHint>
         </div>
       </div>
       {state.message ? (

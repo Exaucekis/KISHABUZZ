@@ -2,6 +2,8 @@
 
 import { useActionState } from "react";
 import { deletePartner, savePartner } from "@/actions/admin/partners";
+import { MediaField } from "@/components/admin/MediaField";
+import { AdminHint } from "@/components/admin/AdminHint";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -27,31 +29,44 @@ function PartnerForm({ partner }: { partner?: Partner }) {
         <div className="admin-field sm:col-span-2">
           <label>Nom</label>
           <input name="name" required defaultValue={partner?.name || ""} />
+          <AdminHint>Nom officiel du partenaire.</AdminHint>
         </div>
-        <div className="admin-field">
-          <label>Logo (URL)</label>
-          <input name="logo" defaultValue={partner?.logo || ""} />
-        </div>
+        <MediaField
+          name="logo"
+          label="Logo"
+          defaultValue={partner?.logo || ""}
+          kind="logo"
+          folder="logos"
+          className="admin-field sm:col-span-2"
+          hint="Logo du partenaire. Fichier PNG transparent, ou lien."
+        />
         <div className="admin-field">
           <label>Site web</label>
           <input name="website" defaultValue={partner?.website || ""} />
+          <AdminHint>URL complète, avec https://</AdminHint>
         </div>
         <div className="admin-field">
           <label>Projet</label>
           <input name="project" defaultValue={partner?.project || ""} />
+          <AdminHint>Nom du projet commun, si besoin.</AdminHint>
         </div>
         <div className="admin-field">
           <label>Ordre</label>
           <input name="order" type="number" defaultValue={partner?.order ?? 0} />
+          <AdminHint>Plus le chiffre est petit, plus le partenaire est en haut.</AdminHint>
         </div>
         <div className="admin-field sm:col-span-2">
           <label>Description</label>
           <textarea name="description" defaultValue={partner?.description || ""} />
+          <AdminHint>Quelques mots sur la collaboration.</AdminHint>
         </div>
-        <label className="admin-check admin-field">
-          <input type="checkbox" name="visible" defaultChecked={partner?.visible ?? true} />
-          Visible
-        </label>
+        <div className="admin-field">
+          <label className="admin-check">
+            <input type="checkbox" name="visible" defaultChecked={partner?.visible ?? true} />
+            Visible
+          </label>
+          <AdminHint>Décochez pour retirer le partenaire de la page publique.</AdminHint>
+        </div>
       </div>
       {state.message ? (
         <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>

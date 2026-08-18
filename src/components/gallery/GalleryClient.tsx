@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { Lightbox } from "@/components/media/Lightbox";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { isPlayableMedia } from "@/lib/media";
+import { imageAlt } from "@/lib/image-alt";
 import { galleryCategoryLabel } from "@/lib/utils";
 
 type Item = {
@@ -14,6 +16,7 @@ type Item = {
   url: string;
   thumbnail?: string;
   category?: string;
+  alt?: string;
 };
 
 const TABS = [
@@ -27,8 +30,8 @@ export function GalleryClient({ items }: { items: Item[] }) {
   const [index, setIndex] = useState<number | null>(null);
 
   const filtered = useMemo(() => {
-    if (tab === "PHOTOS") return items.filter((i) => i.kind === "IMAGE");
-    if (tab === "VIDEOS") return items.filter((i) => i.kind === "VIDEO");
+    if (tab === "PHOTOS") return items.filter((i) => i.kind === "IMAGE" && !isPlayableMedia(i.url));
+    if (tab === "VIDEOS") return items.filter((i) => i.kind === "VIDEO" || isPlayableMedia(i.url));
     return items;
   }, [items, tab]);
 
@@ -38,7 +41,7 @@ export function GalleryClient({ items }: { items: Item[] }) {
         .filter((i) => i.kind === "IMAGE")
         .map((i) => ({
           src: i.url,
-          alt: i.title,
+          alt: imageAlt(i.alt, i.title),
           title: i.title,
         })),
     [filtered]
@@ -73,10 +76,10 @@ export function GalleryClient({ items }: { items: Item[] }) {
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
           {filtered.map((item) => {
-            if (item.kind === "VIDEO") {
+            if (item.kind === "VIDEO" || isPlayableMedia(item.url)) {
               return (
-                <div key={item.id} className="space-y-2">
-                  <VideoEmbed url={item.url} title={item.title} />
+                <div key={item.id} className="min-w-0 space-y-2 sm:col-span-2">
+                  <VideoEmbed url={item.url} title={item.title} poster={item.thumbnail} lazy />
                   <p className="font-display text-lg">{item.title}</p>
                   {item.category ? (
                     <p className="text-xs uppercase tracking-[0.18em] text-paper-muted">
@@ -99,7 +102,7 @@ export function GalleryClient({ items }: { items: Item[] }) {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={item.thumbnail || item.url}
-                    alt={item.title}
+                    alt={imageAlt(item.alt, item.title)}
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     loading="lazy"
                   />

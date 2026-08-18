@@ -6,6 +6,8 @@ import {
   savePortfolio,
   setPortfolioStatus,
 } from "@/actions/admin/portfolio";
+import { MediaField } from "@/components/admin/MediaField";
+import { AdminHint } from "@/components/admin/AdminHint";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import type { AdminActionState } from "@/lib/admin";
@@ -20,6 +22,8 @@ type Item = {
   location: string;
   client: string;
   coverImage: string;
+  coverAlt?: string;
+  coverFocus?: string;
   link: string;
   status: string;
 };
@@ -49,6 +53,7 @@ function PortfolioForm({ item }: { item?: Item }) {
         <div className="admin-field sm:col-span-2">
           <label>Titre</label>
           <input name="title" required defaultValue={item?.title || ""} />
+          <AdminHint>Nom du projet / de la réalisation.</AdminHint>
         </div>
         <div className="admin-field">
           <label>Type</label>
@@ -59,6 +64,7 @@ function PortfolioForm({ item }: { item?: Item }) {
               </option>
             ))}
           </select>
+          <AdminHint>Classe le projet dans le portfolio public.</AdminHint>
         </div>
         <div className="admin-field">
           <label>Statut</label>
@@ -67,30 +73,44 @@ function PortfolioForm({ item }: { item?: Item }) {
             <option value="PUBLISHED">Publié</option>
             <option value="ARCHIVED">Archivé</option>
           </select>
+          <AdminHint>Publiez pour l’afficher sur /portfolio.</AdminHint>
         </div>
         <div className="admin-field">
           <label>Date</label>
           <input name="date" type="date" defaultValue={toDate(item?.date || null)} />
+          <AdminHint>Date de la mission ou de la sortie.</AdminHint>
         </div>
         <div className="admin-field">
           <label>Lieu</label>
           <input name="location" defaultValue={item?.location || ""} />
+          <AdminHint>Ville ou lieu. Ex. Kinshasa.</AdminHint>
         </div>
         <div className="admin-field">
           <label>Client</label>
           <input name="client" defaultValue={item?.client || ""} />
+          <AdminHint>Nom du client ou de la marque (si public).</AdminHint>
         </div>
         <div className="admin-field">
           <label>Lien</label>
           <input name="link" defaultValue={item?.link || ""} />
+          <AdminHint>Lien externe optionnel (vidéo, article, site).</AdminHint>
         </div>
-        <div className="admin-field sm:col-span-2">
-          <label>Couverture (URL)</label>
-          <input name="coverImage" defaultValue={item?.coverImage || ""} />
-        </div>
+        <MediaField
+          name="coverImage"
+          label="Couverture"
+          defaultValue={item?.coverImage || ""}
+          kind="image"
+          folder="covers"
+          altName="coverAlt"
+          defaultAlt={item?.coverAlt || ""}
+          focusName="coverFocus"
+          defaultFocus={item?.coverFocus || "50% 50%"}
+          hint="Image de une du projet. Recadrer pour garder le sujet visible."
+        />
         <div className="admin-field sm:col-span-2">
           <label>Description</label>
           <textarea name="description" defaultValue={item?.description || ""} />
+          <AdminHint>Ce qui a été fait : format, rôle, résultat.</AdminHint>
         </div>
       </div>
       {state.message ? (

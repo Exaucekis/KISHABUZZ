@@ -7,6 +7,8 @@ import {
   removePhotoFromAlbum,
   setAlbumCover,
 } from "@/actions/admin/albums";
+import { MediaField } from "@/components/admin/MediaField";
+import { AdminHint } from "@/components/admin/AdminHint";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -15,6 +17,7 @@ type Photo = {
   title: string;
   url: string;
   description: string;
+  alt?: string;
 };
 
 type Album = {
@@ -34,7 +37,7 @@ export function AlbumPhotosManager({ album }: { album: Album }) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm text-[#9aa3b5]">Album invité</p>
+          <p className="text-sm text-[#9aa3b5]">Album invité — ajoutez les photos une par une</p>
           <h1 className="font-[family-name:var(--font-syne)] text-2xl font-bold">
             {album.guestName}
           </h1>
@@ -53,18 +56,21 @@ export function AlbumPhotosManager({ album }: { album: Album }) {
           <div className="admin-field sm:col-span-2">
             <label>Titre</label>
             <input name="title" required placeholder="Ex. Plateau avec Maman Sharonne" />
+            <AdminHint>Légende courte de la photo.</AdminHint>
           </div>
-          <div className="admin-field sm:col-span-2">
-            <label>URL de l&apos;image</label>
-            <input
-              name="url"
-              required
-              placeholder="/arena/albums/... ou https://..."
-            />
-          </div>
+          <MediaField
+            name="url"
+            label="Photo"
+            kind="image"
+            folder="albums"
+            required
+            hint="Fichier ou lien. S’ajoute à l’album de cet invité."
+            altName="alt"
+          />
           <div className="admin-field sm:col-span-2">
             <label>Description (optionnel)</label>
             <input name="description" />
+            <AdminHint>Détail optionnel (lieu, moment, personnes).</AdminHint>
           </div>
         </div>
         {state.message ? (
@@ -79,7 +85,7 @@ export function AlbumPhotosManager({ album }: { album: Album }) {
         {album.photos.map((p) => (
           <div key={p.id} className="admin-card overflow-hidden p-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={p.url} alt={p.title} className="aspect-[4/3] w-full object-cover" />
+            <img src={p.url} alt={p.alt || p.title} className="aspect-[4/3] w-full object-cover" />
             <div className="space-y-2 p-3">
               <p className="font-medium">{p.title}</p>
               <div className="flex flex-wrap gap-2">
