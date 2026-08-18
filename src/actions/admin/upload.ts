@@ -43,24 +43,23 @@ export async function uploadImage(formData: FormData): Promise<UploadResult> {
   const ext = extensionFor(file.type, file.name);
   const filename = `articles/${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  if (process.env.BLOB_READ_WRITE_TOKEN || process.env.VERCEL) {
     try {
       const blob = await put(filename, file, {
         access: "public",
-        token: process.env.BLOB_READ_WRITE_TOKEN,
+        ...(process.env.BLOB_READ_WRITE_TOKEN
+          ? { token: process.env.BLOB_READ_WRITE_TOKEN }
+          : {}),
       });
       return { ok: true, url: blob.url, message: "Image envoyée." };
     } catch {
-      return { ok: false, message: "Échec de l’envoi vers Vercel Blob." };
+      return {
+        ok: false,
+        message: process.env.VERCEL
+          ? "Échec de l’envoi vers Vercel Blob. Vérifiez le store Blob du projet."
+          : "Échec de l’envoi vers Vercel Blob.",
+      };
     }
-  }
-
-  if (process.env.VERCEL) {
-    return {
-      ok: false,
-      message:
-        "Ajoutez BLOB_READ_WRITE_TOKEN (Vercel Blob) pour envoyer des images en production.",
-    };
   }
 
   const dir = path.join(process.cwd(), "public", "uploads", "articles");
