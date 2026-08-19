@@ -1,3 +1,11 @@
+import dns from "node:dns";
+
+try {
+  dns.setDefaultResultOrder("ipv4first");
+} catch {
+  /* ignore on runtimes without this API */
+}
+
 export type CinetPayCheckStatus = "ACCEPTED" | "REFUSED" | "CANCELLED" | "EXPIRED" | "PENDING";
 
 export type CinetPayInitResult =
@@ -141,6 +149,42 @@ async function readJson(response: Response) {
   return json;
 }
 
+const jsonHeaders = {
+  Accept: "application/json",
+  "Content-Type": "application/json",
+};
+
+async function cinetPayFetch(url: string, init: RequestInit) {
+  const response = await fetch(url, {
+    ...init,
+    headers: { ...jsonHeaders, ...(init.headers || {}) },
+    redirect: "manual",
+    cache: "no-store",
+  });
+  const location = response.headers.get("location");
+  if (response.status >= 300 && response.status < 400 && location) {
+    const next = location.startsWith("http") ? location : new URL(location, url).toString();
+    return fetch(next, {
+      ...init,
+      method: init.method || "POST",
+      headers: { ...jsonHeaders, ...(init.headers || {}) },
+      cache: "no-store",
+    });
+  }
+  return response;
+}
+
+function authFailureMessage(json: Record<string, unknown>, httpStatus: number) {
+  const data = asRecord(json.data);
+  const status = pickString(json.status, json.message, json.error, data.message).toUpperCase();
+  if (status === "NOT_ALLOWED" || json.code === 708) {
+    return "CinetPay refuse cet appel (NOT_ALLOWED). Ce n’est pas la liste blanche IP : l’URL, la méthode ou le droit d’utiliser l’API Sandbox est refusé. Vérifie dans CinetPay → Documentation l’URL de base ({{baseUrl}}) et que le mot de passe API est bien celui du panneau Sandbox.";
+  }
+  const detail = pickString(json.message, json.error, json.status, json.description, data.message);
+  if (detail) return `CinetPay a refusé l’authentification (${detail}, HTTP ${httpStatus}).`;
+  return `CinetPay a refusé l’authentification (HTTP ${httpStatus}).`;
+}
+
 async function loginCinetPay(force = false) {
   if (!force && tokenCache && tokenCache.expiresAt > Date.now()) {
     return tokenCache.token;
@@ -148,23 +192,23 @@ async function loginCinetPay(force = false) {
 
   const apiKey = readCinetPaySecret("CINETPAY_API_KEY");
   const apiPassword = readCinetPaySecret("CINETPAY_API_PASSWORD");
-  const response = await fetch(`${cinetPayBaseUrl()}/v1/oauth/login`, {
+  const url = `${cinetPayBaseUrl()}/v1/oauth/login`;
+  const response = await cinetPayFetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ api_key: apiKey, api_password: apiPassword }),
-    cache: "no-store",
   });
   const json = await readJson(response);
   const data = asRecord(json.data);
   const token = pickString(json.access_token, data.access_token);
   if (!token) {
     tokenCache = null;
-    const detail = pickString(json.message, json.error, json.status, json.description, data.message);
-    throw new Error(
-      detail
-        ? `CinetPay a refusé l’authentification (${detail}).`
-        : "CinetPay a refusé l’authentification (clé ou mot de passe API)."
-    );
+    console.error("[cinetpay] login", {
+      http: response.status,
+      code: json.code ?? null,
+      status: json.status ?? null,
+      url: response.url || url,
+    });
+    throw new Error(authFailureMessage(json, response.status));
   }
 
   const expiresIn = Number(json.expires_in);
@@ -175,14 +219,12 @@ async function loginCinetPay(force = false) {
 
 async function cinetPayRequest(path: string, init: RequestInit = {}, retried = false): Promise<Record<string, unknown>> {
   const token = await loginCinetPay(retried);
-  const response = await fetch(`${cinetPayBaseUrl()}${path}`, {
+  const response = await cinetPayFetch(`${cinetPayBaseUrl()}${path}`, {
     ...init,
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
       ...(init.headers || {}),
     },
-    cache: "no-store",
   });
   const json = await readJson(response);
   if (response.status === 401 && !retried) {
