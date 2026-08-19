@@ -121,7 +121,7 @@ export default async function EventDetailPage({ params }: Props) {
             {freeOnly
               ? "Entrée libre, aucun billet à acheter."
               : event.status === "PUBLISHED" && onSale
-                ? "Indiquez le nombre de personnes et les jours : le site compose les billets, un seul paiement."
+                ? "Choisissez les catégories (VVIP, VIP, Standard…) et les quantités : un seul paiement pour le groupe."
                 : `Statut : ${eventStatusLabel(event.status)}.`}
           </p>
           {event.ticketTypes.length ? (

@@ -429,21 +429,45 @@ export function EventForm({
       </div>
 
       <div className="mt-6">
-        <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-[#9aa3b5]">
             Catégories de billets
           </h2>
-          <button
-            type="button"
-            className="admin-btn admin-btn-ghost text-xs"
-            onClick={() => setTypes((rows) => [...rows, emptyType()])}
-          >
-            Ajouter un tarif
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {["Simple", "VIP", "VVIP"].map((name) => (
+              <button
+                key={name}
+                type="button"
+                className="admin-btn admin-btn-ghost text-xs"
+                onClick={() =>
+                  setTypes((rows) => {
+                    const exists = rows.some(
+                      (row) => row.name.trim().toLowerCase() === name.toLowerCase()
+                    );
+                    if (exists) return rows;
+                    const blank = rows.length === 1 && !rows[0].name.trim() && !rows[0].id;
+                    const next = { ...emptyType(), name };
+                    return blank ? [next] : [...rows, next];
+                  })
+                }
+              >
+                + {name}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="admin-btn admin-btn-ghost text-xs"
+              onClick={() => setTypes((rows) => [...rows, emptyType()])}
+            >
+              Ajouter un tarif
+            </button>
+          </div>
         </div>
         <AdminHint>
-          Créez un tarif par formule : 1 jour, 2 jours, pass… Cochez les jours payants concernés.
-          Les jours en entrée libre n’ont pas de tarif. Prix en francs, multiple de 5 (CinetPay).
+          Les catégories sont libres et propres à cet événement : VVIP, VIP, Simple, Early Bird,
+          pass 2 jours… Ajoutez autant de tarifs que vous voulez. Cochez les jours payants
+          concernés. Les jours en entrée libre n’ont pas de tarif. Prix en francs, multiple de 5
+          (CinetPay).
         </AdminHint>
         <div className="mt-3 space-y-3">
           {types.map((type, index) => {
@@ -456,7 +480,7 @@ export function EventForm({
                     <input
                       value={type.name}
                       onChange={(e) => updateType(index, { name: e.target.value })}
-                      placeholder="Standard, VIP, Early Bird…"
+                      placeholder="VVIP, VIP, Simple…"
                     />
                   </div>
                   <div className="admin-field">

@@ -18,14 +18,21 @@ type TokenCache = { token: string; expiresAt: number };
 
 let tokenCache: TokenCache | null = null;
 
+function readCinetPaySecret(name: string) {
+  return (process.env[name] || "")
+    .trim()
+    .replace(/^["']|["']$/g, "")
+    .trim();
+}
+
 export function isCinetPayConfigured() {
-  return Boolean(process.env.CINETPAY_API_KEY?.trim() && process.env.CINETPAY_API_PASSWORD?.trim());
+  return Boolean(readCinetPaySecret("CINETPAY_API_KEY") && readCinetPaySecret("CINETPAY_API_PASSWORD"));
 }
 
 export function cinetPayBaseUrl() {
-  const explicit = process.env.CINETPAY_API_BASE_URL?.trim().replace(/\/$/, "");
+  const explicit = readCinetPaySecret("CINETPAY_API_BASE_URL").replace(/\/$/, "");
   if (explicit) return explicit;
-  const key = process.env.CINETPAY_API_KEY?.trim() || "";
+  const key = readCinetPaySecret("CINETPAY_API_KEY");
   if (key.startsWith("sk_live_")) return "https://api.cinetpay.co";
   return "https://api.cinetpay.net";
 }
@@ -139,8 +146,8 @@ async function loginCinetPay(force = false) {
     return tokenCache.token;
   }
 
-  const apiKey = process.env.CINETPAY_API_KEY?.trim() || "";
-  const apiPassword = process.env.CINETPAY_API_PASSWORD?.trim() || "";
+  const apiKey = readCinetPaySecret("CINETPAY_API_KEY");
+  const apiPassword = readCinetPaySecret("CINETPAY_API_PASSWORD");
   const response = await fetch(`${cinetPayBaseUrl()}/v1/oauth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -148,10 +155,16 @@ async function loginCinetPay(force = false) {
     cache: "no-store",
   });
   const json = await readJson(response);
-  const token = String(json.access_token || "").trim();
+  const data = asRecord(json.data);
+  const token = pickString(json.access_token, data.access_token);
   if (!token) {
     tokenCache = null;
-    throw new Error(String(json.message || json.error || "CinetPay a refusé l’authentification (clé ou mot de passe API)."));
+    const detail = pickString(json.message, json.error, json.status, json.description, data.message);
+    throw new Error(
+      detail
+        ? `CinetPay a refusé l’authentification (${detail}).`
+        : "CinetPay a refusé l’authentification (clé ou mot de passe API)."
+    );
   }
 
   const expiresIn = Number(json.expires_in);

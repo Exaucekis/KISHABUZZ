@@ -72,7 +72,8 @@ export default async function EventCheckoutPage({ params }: Props) {
         {eventPlace(event) ? ` · ${eventPlace(event)}` : ""}
       </p>
       <p className="mt-2 text-sm text-paper-muted">
-        Les places du groupe sont réservées {RESERVATION_MINUTES} minutes. Un seul paiement pour tout le monde.
+        Mélangez les catégories (2 VVIP, 2 VIP, 1 Standard…). Réservation {RESERVATION_MINUTES}{" "}
+        minutes, un seul paiement.
       </p>
       <span className="section-line mt-6" aria-hidden />
 
