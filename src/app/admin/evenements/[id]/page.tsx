@@ -30,7 +30,8 @@ export default async function EditEventPage({ params, searchParams }: Props) {
     prisma.event.findUnique({
       where: { id },
       include: {
-        ticketTypes: { orderBy: { sortOrder: "asc" } },
+        ticketTypes: { orderBy: { sortOrder: "asc" }, include: { sessions: true } },
+        sessions: { orderBy: { sortOrder: "asc" } },
         staff: { include: { user: { select: { name: true, email: true } } }, orderBy: { role: "asc" } },
         media: { where: { kind: "IMAGE" }, orderBy: { createdAt: "asc" } },
       },
@@ -92,6 +93,12 @@ export default async function EditEventPage({ params, searchParams }: Props) {
           salesClosesAt: event.salesClosesAt,
           featured: event.featured,
           gallery: event.media.map((item) => ({ id: item.id, url: item.url })),
+          sessions: event.sessions.map((session) => ({
+            id: session.id,
+            startsAt: session.startsAt,
+            endsAt: session.endsAt,
+            access: session.access,
+          })),
           ticketTypes: event.ticketTypes.map((type) => ({
             id: type.id,
             name: type.name,
@@ -103,6 +110,7 @@ export default async function EditEventPage({ params, searchParams }: Props) {
             visible: type.visible,
             soldCount: type.soldCount,
             reservedCount: type.reservedCount,
+            sessionKeys: type.sessions.map((row) => row.sessionId),
           })),
         }}
         categories={categories}

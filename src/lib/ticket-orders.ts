@@ -8,6 +8,7 @@ import {
   safeJson,
 } from "@/lib/cinetpay";
 import { eventOnSale, remainingSeats, RESERVATION_MINUTES, ticketTypeOnSale, totalRemaining } from "@/lib/events";
+import { ticketTypeHasLiveDay } from "@/lib/event-schedule";
 import { prisma } from "@/lib/prisma";
 import { createTicketSecret, generatePublicCode } from "@/lib/ticket-codes";
 import { sendOrderPaidEmail } from "@/lib/ticket-mail";
@@ -77,7 +78,7 @@ class StockShortageError extends Error {
 export async function validateCart(eventId: string, lines: CartLine[], userId: string, now = new Date()) {
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    include: { ticketTypes: true },
+    include: { ticketTypes: { include: { sessions: true } }, sessions: true },
   });
   if (!event) return { ok: false as const, message: "Événement introuvable." };
   if (!eventOnSale(event, now)) {
@@ -99,6 +100,15 @@ export async function validateCart(eventId: string, lines: CartLine[], userId: s
     const type = typesById.get(line.ticketTypeId);
     if (!type || !ticketTypeOnSale(type, now)) {
       return { ok: false as const, message: "Un tarif n’est plus disponible." };
+    }
+    if (
+      !ticketTypeHasLiveDay(
+        event.sessions,
+        type.sessions.map((row) => row.sessionId),
+        now
+      )
+    ) {
+      return { ok: false as const, message: `« ${type.name} » n’est plus valable : les jours concernés sont passés.` };
     }
     if (line.quantity > type.maxPerOrder) {
       return { ok: false as const, message: `Maximum ${type.maxPerOrder} billet(s) « ${type.name} » par commande.` };

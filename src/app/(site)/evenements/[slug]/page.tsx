@@ -5,8 +5,14 @@ import { ShareButtons } from "@/components/content/ShareButtons";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { auth } from "@/lib/auth";
 import { eventOnSale, eventPlace, eventStatusLabel, formatMoney, remainingSeats } from "@/lib/events";
+import {
+  formatSessionsSummary,
+  formatSessionLine,
+  formatTicketValidity,
+  paidSessions,
+  sessionsForTicketType,
+} from "@/lib/event-schedule";
 import { getEventBySlug } from "@/lib/data";
-import { formatDate } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -29,8 +35,10 @@ export default async function EventDetailPage({ params }: Props) {
 
   const onSale = eventOnSale(event);
   const place = eventPlace(event);
-  const session = await auth();
-  const checkoutHref = session?.user
+  const schedule = event.sessions || [];
+  const freeOnly = schedule.length > 0 && !paidSessions(schedule).length;
+  const authSession = await auth();
+  const checkoutHref = authSession?.user
     ? `/evenements/${event.slug}/commander`
     : `/connexion?callbackUrl=/evenements/${event.slug}/commander`;
   const canBuy = onSale && event.ticketTypes.some((type) => remainingSeats(type) > 0);
@@ -47,9 +55,15 @@ export default async function EventDetailPage({ params }: Props) {
               {event.title}
             </h1>
             <p className="mt-5 text-lg text-paper-muted">
-              {formatDate(event.startsAt, "EEEE d MMMM yyyy · HH:mm")}
-              {event.endsAt ? ` — ${formatDate(event.endsAt, "HH:mm")}` : ""}
+              {formatSessionsSummary(schedule, event.startsAt, event.endsAt)}
             </p>
+            {schedule.length > 1 ? (
+              <ul className="mt-4 space-y-1 text-sm text-paper-muted">
+                {schedule.map((day) => (
+                  <li key={day.id}>{formatSessionLine(day)}</li>
+                ))}
+              </ul>
+            ) : null}
             {place ? <p className="mt-2 text-paper-muted">{place}</p> : null}
             {event.summary ? <p className="mt-6 max-w-xl text-lg leading-relaxed">{event.summary}</p> : null}
             <div className="mt-6">
@@ -104,14 +118,22 @@ export default async function EventDetailPage({ params }: Props) {
         <aside className="border border-line bg-ink-2 p-6">
           <h2 className="font-display text-2xl">Billets</h2>
           <p className="mt-2 text-sm text-paper-muted">
-            {event.status === "PUBLISHED" && onSale
-              ? "Choisissez vos tarifs, puis payez en ligne via CinetPay (Mobile Money ou carte)."
-              : `Statut : ${eventStatusLabel(event.status)}.`}
+            {freeOnly
+              ? "Entrée libre, aucun billet à acheter."
+              : event.status === "PUBLISHED" && onSale
+                ? "Indiquez le nombre de personnes et les jours : le site compose les billets, un seul paiement."
+                : `Statut : ${eventStatusLabel(event.status)}.`}
           </p>
           {event.ticketTypes.length ? (
             <ul className="mt-6 space-y-4">
               {event.ticketTypes.map((type) => {
                 const left = remainingSeats(type);
+                const validity = formatTicketValidity(
+                  sessionsForTicketType(
+                    schedule,
+                    type.sessions.map((row) => row.sessionId)
+                  )
+                );
                 return (
                   <li key={type.id} className="border-b border-line pb-4 last:border-0">
                     <div className="flex items-start justify-between gap-3">
@@ -121,6 +143,9 @@ export default async function EventDetailPage({ params }: Props) {
                           <p className="mt-1 text-sm text-paper-muted">
                             {type.benefits || type.description}
                           </p>
+                        ) : null}
+                        {validity ? (
+                          <p className="mt-1 text-xs uppercase tracking-wide text-ember-text">{validity}</p>
                         ) : null}
                       </div>
                       <p className="shrink-0 font-display text-lg">
@@ -135,17 +160,26 @@ export default async function EventDetailPage({ params }: Props) {
               })}
             </ul>
           ) : (
-            <EmptyState title="Tarifs à venir" description="Les catégories de billets seront ajoutées par l’organisation." />
+            <EmptyState
+              title={freeOnly ? "Entrée libre" : "Tarifs à venir"}
+              description={
+                freeOnly
+                  ? "Tous les jours de cet événement sont en entrée libre."
+                  : "Les catégories de billets seront ajoutées par l’organisation."
+              }
+            />
           )}
           {canBuy ? (
             <Link
               href={checkoutHref}
               className="mt-6 inline-flex w-full items-center justify-center rounded-md bg-ember px-5 py-3 text-sm font-bold text-on-ember hover:bg-ember-hot"
             >
-              {session?.user ? "Réserver mes billets" : "Se connecter pour réserver"}
+              {authSession?.user ? "Réserver mes billets" : "Se connecter pour réserver"}
             </Link>
           ) : (
-            <p className="mt-6 text-sm text-paper-muted">La vente en ligne n’est pas ouverte.</p>
+            <p className="mt-6 text-sm text-paper-muted">
+              {freeOnly ? "Pas de billetterie : entrée libre." : "La vente en ligne n’est pas ouverte."}
+            </p>
           )}
         </aside>
       </section>

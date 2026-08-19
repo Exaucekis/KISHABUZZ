@@ -560,6 +560,7 @@ export async function getPublishedEvents(opts?: { categorySlug?: string }) {
         where: { visible: true },
         orderBy: { sortOrder: "asc" },
       },
+      sessions: { orderBy: { sortOrder: "asc" } },
     },
     orderBy: [{ featured: "desc" }, { startsAt: "asc" }],
   });
@@ -577,7 +578,9 @@ export async function getEventBySlug(slug: string) {
       ticketTypes: {
         where: { visible: true },
         orderBy: { sortOrder: "asc" },
+        include: { sessions: { include: { session: true } } },
       },
+      sessions: { orderBy: { sortOrder: "asc" } },
       media: { where: { visible: true }, orderBy: { createdAt: "desc" } },
     },
   });

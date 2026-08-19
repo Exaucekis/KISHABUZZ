@@ -1,4 +1,4 @@
-export const SCAN_RESULTS = ["OK", "ALREADY_USED", "INVALID", "WRONG_EVENT", "UNPAID", "CANCELLED", "REFUNDED"] as const;
+export const SCAN_RESULTS = ["OK", "ALREADY_USED", "INVALID", "WRONG_EVENT", "UNPAID", "CANCELLED", "REFUNDED", "WRONG_DAY"] as const;
 export type ScanResultCode = (typeof SCAN_RESULTS)[number];
 
 export type ScanOutcome = {
@@ -22,6 +22,7 @@ export function scanResultLabel(result: string) {
     UNPAID: "Non payé",
     CANCELLED: "Événement annulé",
     REFUNDED: "Billet remboursé",
+    WRONG_DAY: "Billet pas valable aujourd’hui",
   };
   return map[result] || result;
 }

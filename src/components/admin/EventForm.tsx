@@ -24,6 +24,14 @@ type TicketType = {
   visible: boolean;
   soldCount?: number;
   reservedCount?: number;
+  sessionKeys: string[];
+};
+type SessionDraft = {
+  key: string;
+  id?: string;
+  startsAt: string;
+  endsAt: string;
+  access: "PAID" | "FREE";
 };
 type EventValue = {
   id: string;
@@ -46,14 +54,49 @@ type EventValue = {
   featured: boolean;
   ticketTypes: TicketType[];
   gallery: GalleryItem[];
+  sessions?: { id: string; startsAt: Date; endsAt: Date | null; access: string }[];
 };
 
 function toInputDate(d: Date | null | undefined) {
   if (!d) return "";
-  return new Date(d).toISOString().slice(0, 16);
+  const date = new Date(d);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 const initial: AdminActionState = { ok: false, message: "" };
+
+function newSessionKey() {
+  return `tmp-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function emptySession(): SessionDraft {
+  return { key: newSessionKey(), startsAt: "", endsAt: "", access: "PAID" };
+}
+
+function sessionsFromEvent(event?: EventValue): SessionDraft[] {
+  if (event?.sessions?.length) {
+    return event.sessions.map((session) => ({
+      key: session.id,
+      id: session.id,
+      startsAt: toInputDate(session.startsAt),
+      endsAt: toInputDate(session.endsAt),
+      access: session.access === "FREE" ? "FREE" : "PAID",
+    }));
+  }
+  if (event?.startsAt) {
+    return [
+      {
+        key: newSessionKey(),
+        startsAt: toInputDate(event.startsAt),
+        endsAt: toInputDate(event.endsAt),
+        access: "PAID",
+      },
+    ];
+  }
+  return [emptySession()];
+}
 
 const emptyType = (): TicketType => ({
   name: "",
@@ -65,6 +108,7 @@ const emptyType = (): TicketType => ({
   visible: true,
   soldCount: 0,
   reservedCount: 0,
+  sessionKeys: [],
 });
 
 export function EventForm({
@@ -84,14 +128,17 @@ export function EventForm({
   const [types, setTypes] = useState<TicketType[]>(
     event?.ticketTypes.length ? event.ticketTypes : [emptyType()]
   );
+  const [sessions, setSessions] = useState<SessionDraft[]>(() => sessionsFromEvent(event));
   const [gallery, setGallery] = useState<GalleryItem[]>(event?.gallery || []);
   const [capacity, setCapacity] = useState(event?.capacity ?? 0);
   const [status, setStatus] = useState(event?.status || "DRAFT");
   const payload = useMemo(() => JSON.stringify(types), [types]);
+  const sessionsPayload = useMemo(() => JSON.stringify(sessions), [sessions]);
   const galleryPayload = useMemo(
     () => JSON.stringify(gallery.filter((item) => item.url.trim())),
     [gallery]
   );
+  const paidDays = sessions.filter((session) => session.access === "PAID");
   const ticketSum = sumTicketQuantities(types.map((type) => type.quantity));
   const takenSeats = types.reduce(
     (sum, type) => sum + (type.soldCount || 0) + (type.reservedCount || 0),
@@ -112,6 +159,7 @@ export function EventForm({
     <form action={action} className="admin-card space-y-1">
       {event?.id ? <input type="hidden" name="id" value={event.id} /> : null}
       <input type="hidden" name="ticketTypes" value={payload} />
+      <input type="hidden" name="sessions" value={sessionsPayload} />
       <input type="hidden" name="gallery" value={galleryPayload} />
       <input type="hidden" name="currency" value="CDF" />
 
@@ -170,24 +218,90 @@ export function EventForm({
           </select>
           <AdminHint>Publiez seulement si la capacité et les tarifs sont cohérents.</AdminHint>
         </div>
-        <div className="admin-field">
-          <label htmlFor="startsAt">Début</label>
-          <input
-            id="startsAt"
-            name="startsAt"
-            type="datetime-local"
-            required
-            defaultValue={toInputDate(event?.startsAt)}
-          />
-        </div>
-        <div className="admin-field">
-          <label htmlFor="endsAt">Fin</label>
-          <input
-            id="endsAt"
-            name="endsAt"
-            type="datetime-local"
-            defaultValue={toInputDate(event?.endsAt)}
-          />
+        <div className="admin-field md:col-span-2">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <label>Journées</label>
+            <button
+              type="button"
+              className="admin-btn admin-btn-ghost text-xs"
+              onClick={() => setSessions((rows) => [...rows, emptySession()])}
+            >
+              Ajouter une journée
+            </button>
+          </div>
+          <AdminHint>
+            Une ligne = un jour, même s’ils ne se suivent pas (lundi, vendredi, dimanche). Jours
+            d’affilée : une ligne par jour. Cochez Gratuit si ce jour-là on ne vend pas de billet.
+          </AdminHint>
+          <div className="mt-3 space-y-3">
+            {sessions.map((session, index) => (
+              <div key={session.key} className="rounded-md border border-white/10 p-3">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="admin-field">
+                    <label htmlFor={`session-start-${session.key}`}>Début</label>
+                    <input
+                      id={`session-start-${session.key}`}
+                      type="datetime-local"
+                      required
+                      value={session.startsAt}
+                      onChange={(e) =>
+                        setSessions((rows) =>
+                          rows.map((row, i) => (i === index ? { ...row, startsAt: e.target.value } : row))
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="admin-field">
+                    <label htmlFor={`session-end-${session.key}`}>Fin</label>
+                    <input
+                      id={`session-end-${session.key}`}
+                      type="datetime-local"
+                      value={session.endsAt}
+                      onChange={(e) =>
+                        setSessions((rows) =>
+                          rows.map((row, i) => (i === index ? { ...row, endsAt: e.target.value } : row))
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="admin-field md:col-span-2 flex flex-wrap items-center justify-between gap-3">
+                    <label className="admin-check">
+                      <input
+                        type="checkbox"
+                        checked={session.access === "FREE"}
+                        onChange={(e) =>
+                          setSessions((rows) =>
+                            rows.map((row, i) =>
+                              i === index ? { ...row, access: e.target.checked ? "FREE" : "PAID" } : row
+                            )
+                          )
+                        }
+                      />
+                      Entrée libre ce jour-là (pas de billet)
+                    </label>
+                    {sessions.length > 1 ? (
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-danger text-xs"
+                        onClick={() => {
+                          const removed = session.key;
+                          setSessions((rows) => rows.filter((_, i) => i !== index));
+                          setTypes((rows) =>
+                            rows.map((type) => ({
+                              ...type,
+                              sessionKeys: type.sessionKeys.filter((key) => key !== removed),
+                            }))
+                          );
+                        }}
+                      >
+                        Retirer ce jour
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
         <div className="admin-field">
           <label htmlFor="venueName">Lieu</label>
@@ -247,6 +361,7 @@ export function EventForm({
             type="datetime-local"
             defaultValue={toInputDate(event?.salesOpensAt)}
           />
+          <AdminHint>Vide = vente dès la publication. Indépendant des journées ci-dessus.</AdminHint>
         </div>
         <div className="admin-field">
           <label htmlFor="salesClosesAt">Fermeture des ventes</label>
@@ -256,6 +371,10 @@ export function EventForm({
             type="datetime-local"
             defaultValue={toInputDate(event?.salesClosesAt)}
           />
+          <AdminHint>
+            Vide = vente jusqu’à la fin du dernier jour payant. Renseignez une heure si la caisse
+            doit fermer avant (ex. la veille).
+          </AdminHint>
         </div>
         <div className="admin-field md:col-span-2">
           <label className="admin-check">
@@ -323,8 +442,8 @@ export function EventForm({
           </button>
         </div>
         <AdminHint>
-          Prix en francs, multiple de 5 (CinetPay). Le stock déjà vendu ou réservé ne peut pas être
-          diminué.
+          Créez un tarif par formule : 1 jour, 2 jours, pass… Cochez les jours payants concernés.
+          Les jours en entrée libre n’ont pas de tarif. Prix en francs, multiple de 5 (CinetPay).
         </AdminHint>
         <div className="mt-3 space-y-3">
           {types.map((type, index) => {
@@ -385,6 +504,54 @@ export function EventForm({
                       rows={2}
                     />
                   </div>
+                  {paidDays.length ? (
+                    <div className="admin-field md:col-span-2">
+                      <p className="mb-2 text-sm">Valable pour</p>
+                      <div className="flex flex-col gap-2">
+                        {paidDays.map((day, dayIndex) => {
+                          const checked =
+                            type.sessionKeys.length === 0 || type.sessionKeys.includes(day.key);
+                          const label = day.startsAt
+                            ? new Date(day.startsAt).toLocaleString("fr-FR", {
+                                weekday: "long",
+                                day: "numeric",
+                                month: "long",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : `Jour payant ${dayIndex + 1}`;
+                          return (
+                            <label key={day.key} className="admin-check">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={(e) => {
+                                  const allKeys = paidDays.map((item) => item.key);
+                                  const current =
+                                    type.sessionKeys.length === 0 ? allKeys : type.sessionKeys;
+                                  const next = e.target.checked
+                                    ? Array.from(new Set([...current, day.key]))
+                                    : current.filter((key) => key !== day.key);
+                                  updateType(index, {
+                                    sessionKeys: next.length === allKeys.length ? [] : next,
+                                  });
+                                }}
+                              />
+                              {label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <AdminHint>
+                        Rien décoché = valable tous les jours payants. Décochez pour un billet d’un
+                        seul jour.
+                      </AdminHint>
+                    </div>
+                  ) : (
+                    <p className="admin-hint md:col-span-2">
+                      Ajoutez au moins un jour payant ci-dessus pour lier ce tarif.
+                    </p>
+                  )}
                   <div className="admin-field md:col-span-2 flex flex-wrap items-center justify-between gap-2">
                     <label className="admin-check">
                       <input

@@ -5,9 +5,9 @@ import { Download } from "lucide-react";
 import { TicketQrCard } from "@/components/events/TicketQrCard";
 import { auth } from "@/lib/auth";
 import { eventPlace, ticketStatusLabel } from "@/lib/events";
+import { formatSessionsSummary, formatTicketValidity, sessionsForTicketType } from "@/lib/event-schedule";
 import { ticketQrDataUrl } from "@/lib/ticket-qr";
 import { getOwnedTicket } from "@/lib/tickets";
-import { formatDate } from "@/lib/utils";
 
 type Props = { params: Promise<{ ticketId: string }> };
 
@@ -24,6 +24,12 @@ export default async function TicketDetailPage({ params }: Props) {
   const ticket = await getOwnedTicket(ticketId, session.user.id);
   if (!ticket) notFound();
 
+  const validity = formatTicketValidity(
+    sessionsForTicketType(
+      ticket.event.sessions,
+      ticket.ticketType.sessions.map((row) => row.sessionId)
+    )
+  );
   const qr = ticket.status === "VALID" ? await ticketQrDataUrl(ticket.publicCode, 420) : "";
   const place = eventPlace(ticket.event);
   const inactive = ticket.status !== "VALID";
@@ -35,11 +41,12 @@ export default async function TicketDetailPage({ params }: Props) {
       </p>
       <h1 className="mt-3 font-display text-4xl uppercase">{ticket.event.title}</h1>
       <p className="mt-4 text-paper-muted">
-        {formatDate(ticket.event.startsAt, "EEEE d MMMM yyyy · HH:mm")}
+        {formatSessionsSummary(ticket.event.sessions, ticket.event.startsAt, ticket.event.endsAt)}
         {place ? ` · ${place}` : ""}
       </p>
       <p className="mt-1 text-sm text-paper-muted">
-        {ticket.ticketType.name} · {ticket.holderName} · {ticket.order.orderNumber}
+        {ticket.ticketType.name}
+        {validity ? ` · ${validity}` : ""} · {ticket.holderName} · {ticket.order.orderNumber}
       </p>
 
       {inactive ? (

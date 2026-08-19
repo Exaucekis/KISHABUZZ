@@ -1,4 +1,10 @@
 import { classifyTicketScan, scanResultLabel, type ScanOutcome, type ScanResultCode } from "@/lib/ticket-scan-core";
+import {
+  calendarDayKey,
+  laterPaidSessionsRemain,
+  sessionOnDay,
+  ticketTypeCoversToday,
+} from "@/lib/event-schedule";
 import { isPublicCode } from "@/lib/ticket-codes";
 import { parseTicketQrPayload, verifyTicketSignature } from "@/lib/ticket-qr";
 import { canAccessAdmin } from "@/lib/roles";
@@ -72,8 +78,19 @@ export async function scanTicketAtEvent(params: {
     where: { publicCode },
     include: {
       order: { select: { status: true } },
-      event: { select: { title: true } },
-      ticketType: { select: { name: true } },
+      event: {
+        select: {
+          title: true,
+          sessions: { select: { id: true, startsAt: true, endsAt: true, access: true } },
+        },
+      },
+      ticketType: {
+        select: {
+          name: true,
+          sessions: { select: { sessionId: true } },
+        },
+      },
+      scans: { where: { result: "OK" }, select: { scannedAt: true } },
     },
   });
 
@@ -112,16 +129,117 @@ export async function scanTicketAtEvent(params: {
     };
   }
 
-  const updated = await prisma.ticket.updateMany({
-    where: { id: ticket.id, status: "VALID" },
-    data: {
-      status: "USED",
-      usedAt: new Date(),
-      usedByStaffId: params.staffUserId,
-    },
-  });
+  const now = new Date();
+  const eventSessions = ticket.event.sessions || [];
+  const selectedIds = ticket.ticketType.sessions.map((row) => row.sessionId);
+  const todaySession = sessionOnDay(eventSessions, now);
 
-  const result: ScanResultCode = updated.count === 1 ? "OK" : "ALREADY_USED";
+  if (todaySession && todaySession.access === "FREE") {
+    await prisma.ticketScan.create({
+      data: {
+        ticketId: ticket.id,
+        eventId: params.eventId,
+        staffUserId: params.staffUserId,
+        result: "WRONG_DAY",
+        deviceNote: (params.deviceNote || "").slice(0, 180),
+      },
+    });
+    return {
+      result: "WRONG_DAY",
+      message: "Aujourd’hui entrée libre : pas de contrôle de billet.",
+      ticket: {
+        publicCode: ticket.publicCode,
+        holderName: ticket.holderName,
+        ticketType: ticket.ticketType.name,
+        eventTitle: ticket.event.title,
+        status: ticket.status,
+      },
+    };
+  }
+
+  if (eventSessions.length && !ticketTypeCoversToday(eventSessions, selectedIds, now)) {
+    await prisma.ticketScan.create({
+      data: {
+        ticketId: ticket.id,
+        eventId: params.eventId,
+        staffUserId: params.staffUserId,
+        result: "WRONG_DAY",
+        deviceNote: (params.deviceNote || "").slice(0, 180),
+      },
+    });
+    return {
+      result: "WRONG_DAY",
+      message: scanResultLabel("WRONG_DAY"),
+      ticket: {
+        publicCode: ticket.publicCode,
+        holderName: ticket.holderName,
+        ticketType: ticket.ticketType.name,
+        eventTitle: ticket.event.title,
+        status: ticket.status,
+      },
+    };
+  }
+
+  const today = calendarDayKey(now);
+  const scannedToday = ticket.scans.some((scan) => calendarDayKey(scan.scannedAt) === today);
+  if (scannedToday) {
+    await prisma.ticketScan.create({
+      data: {
+        ticketId: ticket.id,
+        eventId: params.eventId,
+        staffUserId: params.staffUserId,
+        result: "ALREADY_USED",
+        deviceNote: (params.deviceNote || "").slice(0, 180),
+      },
+    });
+    return {
+      result: "ALREADY_USED",
+      message: "Déjà scanné aujourd’hui",
+      ticket: {
+        publicCode: ticket.publicCode,
+        holderName: ticket.holderName,
+        ticketType: ticket.ticketType.name,
+        eventTitle: ticket.event.title,
+        status: ticket.status,
+      },
+    };
+  }
+
+  const markUsed = !laterPaidSessionsRemain(eventSessions, selectedIds, now);
+  if (markUsed) {
+    const updated = await prisma.ticket.updateMany({
+      where: { id: ticket.id, status: "VALID" },
+      data: {
+        status: "USED",
+        usedAt: now,
+        usedByStaffId: params.staffUserId,
+      },
+    });
+    if (updated.count !== 1) {
+      await prisma.ticketScan.create({
+        data: {
+          ticketId: ticket.id,
+          eventId: params.eventId,
+          staffUserId: params.staffUserId,
+          result: "ALREADY_USED",
+          deviceNote: (params.deviceNote || "").slice(0, 180),
+        },
+      });
+      return {
+        result: "ALREADY_USED",
+        message: scanResultLabel("ALREADY_USED"),
+        ticket: {
+          publicCode: ticket.publicCode,
+          holderName: ticket.holderName,
+          ticketType: ticket.ticketType.name,
+          eventTitle: ticket.event.title,
+          status: ticket.status,
+        },
+      };
+    }
+  }
+
+  const result: ScanResultCode = "OK";
   await prisma.ticketScan.create({
     data: {
       ticketId: ticket.id,
@@ -140,7 +258,7 @@ export async function scanTicketAtEvent(params: {
       holderName: ticket.holderName,
       ticketType: ticket.ticketType.name,
       eventTitle: ticket.event.title,
-      status: result === "OK" ? "USED" : ticket.status,
+      status: markUsed ? "USED" : "VALID",
     },
   };
 }

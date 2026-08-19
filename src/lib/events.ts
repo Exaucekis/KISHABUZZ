@@ -1,3 +1,6 @@
+import { formatDate } from "@/lib/utils";
+import { boxOfficeClosesAt, paidSessions, type ScheduleSession } from "@/lib/event-schedule";
+
 export const EVENT_STATUSES = ["DRAFT", "PUBLISHED", "SOLD_OUT", "ENDED", "CANCELLED"] as const;
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 
@@ -60,16 +63,38 @@ export function eventPlace(event: { venueName?: string; city?: string; address?:
   return [event.venueName, event.city || event.address].filter(Boolean).join(" · ");
 }
 
-export function eventOnSale(event: {
-  status: string;
-  salesOpensAt?: Date | null;
-  salesClosesAt?: Date | null;
-  startsAt: Date;
-}, now = new Date()) {
+function sameCalendarDay(a: Date, b: Date) {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+export function formatEventWhen(startsAt: Date, endsAt?: Date | null) {
+  const start = formatDate(startsAt, "EEEE d MMMM yyyy · HH:mm");
+  if (!endsAt) return start;
+  if (sameCalendarDay(startsAt, endsAt)) {
+    return `${start} — ${formatDate(endsAt, "HH:mm")}`;
+  }
+  return `${start} → ${formatDate(endsAt, "EEEE d MMMM yyyy · HH:mm")}`;
+}
+
+export function eventOnSale(
+  event: {
+    status: string;
+    salesOpensAt?: Date | null;
+    salesClosesAt?: Date | null;
+    startsAt: Date;
+    endsAt?: Date | null;
+    sessions?: ScheduleSession[];
+  },
+  now = new Date()
+) {
   if (event.status !== "PUBLISHED") return false;
   if (event.salesOpensAt && event.salesOpensAt > now) return false;
-  if (event.salesClosesAt && event.salesClosesAt < now) return false;
-  if (event.startsAt < now) return false;
+  if (boxOfficeClosesAt(event) < now) return false;
+  if (event.sessions?.length && !paidSessions(event.sessions).length) return false;
   return true;
 }
 

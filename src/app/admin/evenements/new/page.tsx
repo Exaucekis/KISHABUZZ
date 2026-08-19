@@ -21,7 +21,7 @@ export default async function NewEventPage() {
     <div>
       <AdminPageIntro
         title="Nouvel événement"
-        hint="Renseignez l’affiche, le lieu, la capacité, puis les tarifs. La somme des tarifs ne peut pas dépasser la jauge."
+        hint="Journées (payantes ou entrée libre), fenêtre de vente, jauge, puis tarifs liés aux jours payants."
       />
       <EventAdminNav current="/admin/evenements" />
       <EventForm
