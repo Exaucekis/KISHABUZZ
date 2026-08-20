@@ -2,6 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { cache } from "react";
 import { compareArenaDates, isUpcomingArenaDate } from "@/lib/arena-calendar";
 import { ARENA_HOME_KEY, parseArenaHome } from "@/lib/arena-home";
+import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { withPublicContactEmail } from "@/lib/contact";
 import { prisma } from "@/lib/prisma";
 import { publishDueArticles, publishDueArenaShows } from "@/lib/publish-scheduled";
@@ -130,13 +131,14 @@ async function loadHomePageData() {
     featuredVideo: showVideo
       ? {
           title: headlineShow?.title || featuredVideo?.title || "Arena Culture",
+          artistName: arenaSpotlightGuest(headlineShow)?.name || "",
           description: headlineShow?.theme || featuredVideo?.description || "",
           url: showVideo,
-          thumbnail: headlineShow?.videoThumbnail || headlineShow?.poster || featuredVideo?.thumbnail || "",
+          thumbnail: headlineShow?.videoThumbnail || "",
           slug: headlineShow?.slug || "",
         }
       : featuredVideo
-        ? { ...featuredVideo, slug: "" }
+        ? { ...featuredVideo, artistName: "", slug: "" }
         : null,
     about,
     portfolio,

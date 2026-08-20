@@ -52,15 +52,99 @@ export function ArenaShowForm({
 }) {
   const [state, action] = useActionState(saveArenaShow, initial);
   const selected = new Set(show?.guests.map((g) => g.guestId) || []);
+  const primaryGuestId = show?.guests[0]?.guestId || "";
 
   return (
     <form action={action} className="admin-card space-y-1">
       {show?.id ? <input type="hidden" name="id" value={show.id} /> : null}
+      <input type="hidden" name="poster" value={show?.poster || ""} />
       <div className="grid gap-4 md:grid-cols-2">
+        <div className="md:col-span-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-200">
+            Nouvelle émission
+          </p>
+          <p className="mt-1 text-sm text-[#9aa3b5]">
+            Le titre et le nom de l’artiste s’affichent au-dessus de la vidéo. Pas d’affiche ici :
+            seulement la vidéo, puis une photo miniature.
+          </p>
+        </div>
         <div className="admin-field md:col-span-2">
-          <label htmlFor="title">Titre</label>
-          <input id="title" name="title" required defaultValue={show?.title || ""} />
-          <AdminHint>Titre de l’émission, visible sur Arena Culture.</AdminHint>
+          <label htmlFor="title">Titre de l’émission</label>
+          <input
+            id="title"
+            name="title"
+            required
+            defaultValue={show?.title || ""}
+            placeholder="Ex. Arena Grand Culture — Live"
+          />
+          <AdminHint>Visible sous « Nouvelle émission », à côté du nom de l’artiste.</AdminHint>
+        </div>
+        <div className="admin-field md:col-span-2">
+          <label htmlFor="guestIds">Nom de l’artiste</label>
+          <select id="guestIds" name="guestIds" defaultValue={primaryGuestId}>
+            <option value="">— Choisir l’artiste —</option>
+            {guests.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+              </option>
+            ))}
+          </select>
+          <AdminHint>
+            Ce nom s’affiche sous le titre. Pas d’artiste dans la liste ?{" "}
+            <Link href="/admin/arena/guests" className="text-amber-200 underline">
+              Créez-le dans Invités
+            </Link>
+            .
+          </AdminHint>
+        </div>
+
+        <div className="admin-card md:col-span-2 space-y-4 border-amber-400/25 bg-amber-400/5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-200">
+              Médias de l’émission — vidéo uniquement
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-[#c5ccd8]">
+              Ici, <strong>pas de photo d’affiche</strong>. Deux fichiers seulement :
+              <br />
+              1. la <strong>vidéo</strong> (fichier MP4 ou lien YouTube / Facebook / Instagram / TikTok)
+              <br />
+              2. la <strong>photo miniature</strong> de cette vidéo (image avant le bouton lecture)
+            </p>
+          </div>
+          <MediaField
+            name="videoUrl"
+            label="1. Vidéo de l’émission"
+            defaultValue={show?.videoUrl || ""}
+            kind="video"
+            folder="media"
+            dropzone
+            hint="Déposez le fichier, ou collez un lien réseau. La vidéo passe en première ; l’ancienne va aux archives."
+            persist={show?.id ? { target: "arenaShow", id: show.id, field: "videoUrl" } : undefined}
+          />
+          <MediaField
+            name="videoThumbnail"
+            label="2. Photo miniature de la vidéo (pas une affiche)"
+            defaultValue={show?.videoThumbnail || ""}
+            kind="image"
+            folder="media"
+            dropzone
+            hint="Petite image affichée avant la lecture. Ce n’est pas l’affiche du prochain invité."
+            persist={show?.id ? { target: "arenaShow", id: show.id, field: "videoThumbnail" } : undefined}
+          />
+        </div>
+
+        <div className="admin-field md:col-span-2">
+          <label htmlFor="status">Publication</label>
+          <select id="status" name="status" defaultValue={show?.status || "PUBLISHED"}>
+            <option value="DRAFT">Brouillon</option>
+            <option value="SCHEDULED">Annoncer le prochain invité</option>
+            <option value="PUBLISHED">Mettre la vidéo en première</option>
+            <option value="ARCHIVED">Envoyer aux archives</option>
+          </select>
+          <AdminHint>
+            « Mettre la vidéo en première » : titre + artiste + vidéo en haut de l’accueil et Arena.
+            Le prochain invité (affiche) reste en dessous.
+          </AdminHint>
         </div>
         <div className="admin-field">
           <label htmlFor="number">Numéro</label>
@@ -130,67 +214,13 @@ export function ArenaShowForm({
             Lie un événement publié pour afficher « Prendre un billet » sur le calendrier Arena.
           </AdminHint>
         </div>
-        <MediaField
-          name="poster"
-          label="Affiche"
-          defaultValue={show?.poster || ""}
-          kind="image"
-          folder="covers"
-          hint="Affiche de l’épisode. Pour le prochain invité, c’est ce visuel qui s’affiche sous la vidéo."
-          persist={show?.id ? { target: "arenaShow", id: show.id, field: "poster" } : undefined}
-        />
-        <div className="admin-card md:col-span-2 space-y-3 border-amber-400/25 bg-amber-400/5">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-200">
-              Vidéo de l’émission
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-[#c5ccd8]">
-              Téléversez un fichier (MP4) ou collez un lien YouTube, Facebook, Instagram ou TikTok.
-              Enregistrer avec une vidéo met l’émission en <strong>première</strong> sur l’accueil et
-              Arena. L’annonce du prochain invité reste <strong>juste en dessous</strong>. Une
-              nouvelle vidéo envoie celle-ci dans <strong>Archives · Vidéos</strong>.
-            </p>
-          </div>
-          <MediaField
-            name="videoUrl"
-            label="Fichier ou lien"
-            defaultValue={show?.videoUrl || ""}
-            kind="video"
-            folder="media"
-            hint="MP4 / WebM, ou URL YouTube · Facebook · Instagram · TikTok."
-            persist={show?.id ? { target: "arenaShow", id: show.id, field: "videoUrl" } : undefined}
-          />
-          <MediaField
-            name="videoThumbnail"
-            label="Miniature avant lecture"
-            defaultValue={show?.videoThumbnail || ""}
-            kind="image"
-            folder="media"
-            hint="Image affichée avant le play. Si vide, YouTube fournit souvent une miniature."
-            persist={show?.id ? { target: "arenaShow", id: show.id, field: "videoThumbnail" } : undefined}
-          />
-        </div>
-        <div className="admin-field md:col-span-2">
-          <label htmlFor="status">Publication</label>
-          <select id="status" name="status" defaultValue={show?.status || "SCHEDULED"}>
-            <option value="DRAFT">Brouillon</option>
-            <option value="SCHEDULED">Annoncer le prochain invité</option>
-            <option value="PUBLISHED">Mettre la vidéo en première</option>
-            <option value="ARCHIVED">Envoyer aux archives</option>
-          </select>
-          <AdminHint>
-            Deux places distinctes : la vidéo publiée en première, l’affiche du prochain invité en
-            dessous. Ajouter une vidéo sur « Annoncer » passe automatiquement en première. Une
-            nouvelle vidéo archive l’ancienne émission, sans toucher au prochain invité.
-          </AdminHint>
-        </div>
         <div className="admin-field md:col-span-2">
           <label htmlFor="description">Description</label>
           <textarea id="description" name="description" defaultValue={show?.description || ""} />
           <AdminHint>Présentation de l’épisode (invités, sujet).</AdminHint>
         </div>
         <div className="admin-field md:col-span-2">
-          <label>Invités</label>
+          <label>Autres invités (optionnel)</label>
           <div className="mt-1 grid max-h-48 gap-2 overflow-y-auto rounded-md border border-white/10 p-3 sm:grid-cols-2">
             {guests.map((g) => (
               <label key={g.id} className="admin-check text-sm text-[#eef1f6]">
@@ -198,7 +228,7 @@ export function ArenaShowForm({
                   type="checkbox"
                   name="guestIds"
                   value={g.id}
-                  defaultChecked={selected.has(g.id)}
+                  defaultChecked={selected.has(g.id) && g.id !== primaryGuestId}
                 />
                 {g.name}
               </label>
@@ -207,7 +237,7 @@ export function ArenaShowForm({
               <p className="text-sm text-[#9aa3b5]">Aucun invité — créez-en dans Invités.</p>
             ) : null}
           </div>
-          <AdminHint>Cochez les invités de cet épisode (créés dans Invités, puis publiés).</AdminHint>
+          <AdminHint>Cochez seulement s’il y a plusieurs personnes sur le plateau.</AdminHint>
         </div>
       </div>
       {!state.ok && state.message ? (

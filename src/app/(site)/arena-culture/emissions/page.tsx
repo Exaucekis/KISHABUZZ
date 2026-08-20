@@ -70,13 +70,13 @@ export default async function ArenaEmissionsPage() {
     <>
       <ArenaPageIntro
         title="Émissions"
-        description="L’émission en première, le prochain invité, puis les rediffusions dans les archives."
+        description="La nouvelle émission, le prochain invité, puis les rediffusions."
       />
 
       <section className="ac-page space-y-14">
         {headline ? (
           <div>
-            <p className="ac-kicker mb-4">En première</p>
+            <p className="ac-kicker mb-4">Nouvelle émission</p>
             <div className="ac-grid-shows">
               <ShowCard
                 show={headline}

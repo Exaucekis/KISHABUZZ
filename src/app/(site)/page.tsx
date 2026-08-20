@@ -67,9 +67,13 @@ export default async function HomePage() {
         <section className="kb-defer mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
           <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <SectionHeading
-              eyebrow="Arena Culture · Émission"
+              eyebrow="Nouvelle émission"
               title={featuredVideo.title}
-              description={featuredVideo.description || "La vidéo à la une. L’annonce du prochain invité est juste en dessous."}
+              description={
+                featuredVideo.artistName
+                  ? featuredVideo.artistName
+                  : featuredVideo.description || undefined
+              }
             />
             <Link href="/arena-culture/videos" className="shrink-0 text-sm font-semibold text-ember-text">
               Toutes les vidéos →

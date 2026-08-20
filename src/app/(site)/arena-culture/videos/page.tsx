@@ -4,6 +4,7 @@ import { ArenaPageIntro } from "@/components/arena/ArenaPageIntro";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getArenaStage, getGallery, getPublishedShows } from "@/lib/data";
+import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { videoPoster } from "@/lib/media";
 
 export const metadata: Metadata = {
@@ -19,15 +20,16 @@ export default async function ArenaVideosPage() {
   ]);
 
   const headline = stage.headline;
+  const headlineGuest = arenaSpotlightGuest(headline);
   const showVideos = shows.filter((s) => s.videoUrl && s.id !== headline?.id);
   const spotlightVideo = String(headline?.videoUrl || "").trim();
   const featured =
     headline && spotlightVideo
       ? {
           title: headline.title,
+          artistName: headlineGuest?.name || "",
           url: spotlightVideo,
-          thumbnail: headline.videoThumbnail || headline.poster,
-          description: headline.theme || headline.description,
+          thumbnail: headline.videoThumbnail,
           slug: headline.slug,
         }
       : null;
@@ -40,16 +42,19 @@ export default async function ArenaVideosPage() {
       <section className="ac-page space-y-14">
         {featured ? (
           <div>
-            <h2 className="mb-6 font-display text-2xl md:text-3xl">{featured.title}</h2>
+            <p className="ac-kicker mb-3">Nouvelle émission</p>
+            <h2 className="font-display text-2xl md:text-3xl">{featured.title}</h2>
+            {featured.artistName ? (
+              <p className="mt-2 mb-6 text-lg text-paper-muted">{featured.artistName}</p>
+            ) : (
+              <div className="mb-6" />
+            )}
             <div className="ac-video-featured">
               <VideoEmbed
                 url={featured.url}
                 title={featured.title}
                 poster={videoPoster(featured.url, featured.thumbnail)}
               />
-              {featured.description ? (
-                <p className="mt-4 max-w-2xl text-paper-muted">{featured.description}</p>
-              ) : null}
               {featured.slug ? (
                 <p className="mt-3">
                   <Link
@@ -73,7 +78,7 @@ export default async function ArenaVideosPage() {
                   <VideoEmbed
                     url={s.videoUrl}
                     title={s.title}
-                    poster={videoPoster(s.videoUrl, s.videoThumbnail || s.poster)}
+                    poster={videoPoster(s.videoUrl, s.videoThumbnail)}
                     lazy
                   />
                   <Link

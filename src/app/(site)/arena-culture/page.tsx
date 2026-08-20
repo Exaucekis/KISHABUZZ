@@ -90,10 +90,8 @@ export default async function ArenaCulturePage() {
     href: `/arena-culture/invites/${guest.slug}`,
   }));
   const heroPoster =
-    headline?.poster ||
     spotlight?.poster ||
     guest?.photo ||
-    headlineGuest?.photo ||
     home.hero.poster;
   const headlineVideo = String(headline?.videoUrl || "").trim();
 
@@ -118,7 +116,7 @@ export default async function ArenaCulturePage() {
         }
         ctaLabel={
           headline
-            ? `Émission · ${headlineGuest?.name || headline.title}`
+            ? `Nouvelle émission · ${headlineGuest?.name || headline.title}`
             : spotlight
               ? `${home.spotlight.emptyLabel} · ${guest?.name || spotlight.title}`
               : "Voir les émissions"
@@ -127,12 +125,17 @@ export default async function ArenaCulturePage() {
 
       {headlineVideo ? (
         <section className="ac-page">
-          <p className="ac-kicker">Émission à la une</p>
-          <h2 className="mb-6 font-display text-3xl md:text-4xl">{headline.title}</h2>
+          <p className="ac-kicker">Nouvelle émission</p>
+          <h2 className="font-display text-3xl md:text-4xl">{headline.title}</h2>
+          {headlineGuest ? (
+            <p className="mt-2 mb-6 text-lg text-paper-muted">{headlineGuest.name}</p>
+          ) : (
+            <div className="mb-6" />
+          )}
           <VideoEmbed
             url={headlineVideo}
             title={headline.title}
-            poster={videoPoster(headlineVideo, headline.videoThumbnail || headline.poster)}
+            poster={videoPoster(headlineVideo, headline.videoThumbnail)}
           />
         </section>
       ) : null}

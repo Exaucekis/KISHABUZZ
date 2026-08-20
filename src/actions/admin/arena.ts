@@ -55,7 +55,7 @@ export async function saveArenaShow(
 ): Promise<AdminActionState> {
   await requireAdmin();
   const id = formOptionalId(formData, "id");
-  const guestIds = formData.getAll("guestIds").map(String).filter(Boolean);
+  const guestIds = Array.from(new Set(formData.getAll("guestIds").map(String).filter(Boolean)));
 
   const parsed = showSchema.safeParse({
     title: formString(formData, "title"),

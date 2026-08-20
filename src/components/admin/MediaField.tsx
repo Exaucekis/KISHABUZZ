@@ -74,6 +74,7 @@ export function MediaField({
   className = "admin-field md:col-span-2",
   onUrlChange,
   persist,
+  dropzone = false,
 }: {
   name: string;
   label: string;
@@ -88,6 +89,7 @@ export function MediaField({
   defaultFocus?: string;
   className?: string;
   onUrlChange?: (url: string) => void;
+  dropzone?: boolean;
   persist?: { target: MediaAttachTarget; id?: string; field: string };
 }) {
   const [url, setUrl] = useState(defaultValue);
@@ -98,6 +100,7 @@ export function MediaField({
   const [ok, setOk] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [cropOpen, setCropOpen] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const uploadFormId = `media-upload-${useId().replace(/:/g, "")}`;
 
@@ -177,20 +180,30 @@ export function MediaField({
       <label htmlFor={name}>{label}</label>
       {kind === "icon" ? <IconPicker value={url} onChange={(next) => void commitUrl(next)} /> : null}
       <input type="hidden" name={name} value={url} />
-      <input
-        id={name}
-        value={url}
-        required={required}
-        onChange={(e) => applyUrl(e.target.value)}
-        onBlur={() => {
-          if (persist && url !== defaultValue) void commitUrl(url);
-        }}
-        placeholder={PLACEHOLDERS[kind]}
-      />
-      <div className="admin-media-split">
-        <span>ou</span>
-        <label className="admin-btn admin-btn-ghost shrink-0 cursor-pointer">
-          {busy ? "Envoi…" : "Téléverser"}
+      {dropzone ? (
+        <label
+          className={`mb-3 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-6 text-center transition ${
+            dragOver
+              ? "border-amber-300 bg-amber-400/15"
+              : "border-white/20 bg-black/20 hover:border-amber-300/60"
+          }`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            void onFile(e.dataTransfer.files?.[0]);
+          }}
+        >
+          <span className="text-sm font-semibold text-[#eef1f6]">
+            {busy ? "Envoi en cours…" : kind === "video" ? "Cliquez ou déposez la vidéo ici" : "Cliquez ou déposez la photo ici"}
+          </span>
+          <span className="mt-1 text-xs text-[#9aa3b5]">
+            {kind === "video" ? "Fichier MP4 / WebM" : "JPG, PNG ou WebP"}
+          </span>
           <input
             ref={inputRef}
             type="file"
@@ -201,6 +214,39 @@ export function MediaField({
             onChange={(e) => void onFile(e.target.files?.[0])}
           />
         </label>
+      ) : null}
+      <input
+        id={name}
+        value={url}
+        required={required}
+        onChange={(e) => applyUrl(e.target.value)}
+        onBlur={() => {
+          if (persist && url !== defaultValue) void commitUrl(url);
+        }}
+        placeholder={
+          dropzone && kind === "video"
+            ? "Ou collez un lien YouTube, Facebook, Instagram ou TikTok"
+            : PLACEHOLDERS[kind]
+        }
+      />
+      <div className="admin-media-split">
+        {dropzone ? null : (
+          <>
+            <span>ou</span>
+            <label className="admin-btn admin-btn-ghost shrink-0 cursor-pointer">
+              {busy ? "Envoi…" : "Téléverser"}
+              <input
+                ref={inputRef}
+                type="file"
+                form={uploadFormId}
+                accept={ACCEPT[kind]}
+                className="sr-only"
+                disabled={busy}
+                onChange={(e) => void onFile(e.target.files?.[0])}
+              />
+            </label>
+          </>
+        )}
         <button
           type="button"
           className="admin-btn admin-btn-ghost shrink-0"

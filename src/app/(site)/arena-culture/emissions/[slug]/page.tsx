@@ -140,7 +140,7 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
             <VideoEmbed
               url={show.videoUrl}
               title={show.title}
-              poster={videoPoster(show.videoUrl, show.videoThumbnail || show.poster)}
+              poster={videoPoster(show.videoUrl, show.videoThumbnail)}
             />
           </div>
         ) : null}

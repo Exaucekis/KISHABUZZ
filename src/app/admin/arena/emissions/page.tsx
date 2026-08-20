@@ -25,7 +25,7 @@ export default async function AdminArenaShowsPage() {
     <div>
       <AdminPageIntro
         title="Émissions Arena"
-        hint="La vidéo d’émission prend la première place. Le prochain invité reste en dessous. Publier une nouvelle vidéo envoie l’ancienne dans Archives."
+        hint="Nouvelle émission : titre, nom de l’artiste, vidéo + miniature (pas d’affiche). Le prochain invité reste en dessous."
         actions={
           <Link href="/admin/arena/new" className="admin-btn admin-btn-primary">
             Nouvelle émission
