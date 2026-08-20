@@ -128,6 +128,7 @@ export async function saveArenaShow(
   queueArenaAlert(show.id, previous?.status, data.status);
 
   revalidatePath("/admin/arena");
+  revalidatePath("/admin/arena/prochain-invite");
   revalidatePath("/admin/arena/emissions");
   revalidatePath("/admin/arena/videos");
   revalidatePath("/admin/arena/archives");
@@ -183,6 +184,96 @@ export async function setArenaShowStatus(formData: FormData) {
   revalidatePath("/arena-culture/archives");
   revalidatePath("/");
   applyPublicWrites();
+}
+
+export async function announceNextGuest(
+  _prev: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const guestId = formString(formData, "guestId");
+  const mode = formString(formData, "mode") || "replace";
+  const currentId = formOptionalId(formData, "id");
+  const theme = formString(formData, "theme");
+  const poster = formString(formData, "poster");
+  const airDate = formDate(formData, "airDate");
+  const airTime = formString(formData, "airTime");
+
+  if (!guestId) {
+    return { ok: false, message: "Choisissez un invité à annoncer." };
+  }
+
+  const guest = await prisma.arenaGuest.findUnique({ where: { id: guestId } });
+  if (!guest) {
+    return { ok: false, message: "Cet invité n’existe pas." };
+  }
+
+  const existing =
+    mode === "update" && currentId
+      ? await prisma.arenaShow.findUnique({
+          where: { id: currentId },
+          select: { id: true, status: true, number: true, slug: true },
+        })
+      : null;
+  const updateExisting = Boolean(existing);
+
+  if (mode === "update" && currentId && !existing) {
+    return { ok: false, message: "Annonce introuvable. Créez-en une nouvelle." };
+  }
+
+  const last = await prisma.arenaShow.findFirst({
+    orderBy: { number: "desc" },
+    select: { number: true },
+  });
+  const number = existing?.number || (last?.number || 0) + 1;
+  const slug = existing?.slug || (await uniqueShowSlug(`${guest.name}-${number}`));
+  const payload = {
+    title: guest.name,
+    number,
+    slug,
+    theme: theme || guest.profession || "",
+    poster: poster || guest.photo || "",
+    airDate,
+    airTime: airTime || "",
+    status: "SCHEDULED" as const,
+    isFeatured: true,
+    isGuestOfWeek: true,
+  };
+
+  const show = await prisma.$transaction(async (tx) => {
+    await tx.arenaGuest.update({
+      where: { id: guestId },
+      data: { visible: true },
+    });
+
+    const saved = updateExisting
+      ? await tx.arenaShow.update({ where: { id: currentId! }, data: payload })
+      : await tx.arenaShow.create({ data: payload });
+
+    await tx.arenaShowGuest.deleteMany({ where: { showId: saved.id } });
+    await tx.arenaShowGuest.create({ data: { showId: saved.id, guestId } });
+    return saved;
+  });
+
+  await applyArenaSpotlight(show.id, "SCHEDULED");
+  queueArenaAlert(show.id, existing?.status, "SCHEDULED");
+
+  revalidatePath("/admin/arena");
+  revalidatePath("/admin/arena/prochain-invite");
+  revalidatePath("/admin/arena/emissions");
+  revalidatePath("/admin/arena/archives");
+  revalidatePath("/arena-culture");
+  revalidatePath("/arena-culture/calendrier");
+  revalidatePath("/arena-culture/emissions");
+  revalidatePath("/arena-culture/invites");
+  revalidatePath("/");
+  applyPublicWrites();
+  return {
+    ok: true,
+    message: updateExisting
+      ? `${guest.name} est à jour : Prochain invité est en ligne sur l’accueil.`
+      : `${guest.name} est annoncé : Prochain invité s’affiche maintenant sur l’accueil.`,
+  };
 }
 
 const guestSchema = z.object({

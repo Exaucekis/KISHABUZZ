@@ -206,7 +206,7 @@ assert.equal(announced.find((row) => row.id === "old")?.status, "ARCHIVED");
 assert.equal(announced.find((row) => row.id === "next")?.isFeatured, true);
 assert.equal(arenaSpotlightMode({ status: "SCHEDULED" }), "announced");
 assert.equal(arenaSpotlightMode({ status: "PUBLISHED", videoUrl: "https://youtu.be/x" }), "headline");
-assert.equal(arenaSpotlightMode({ status: "ARCHIVED" }), "headline");
+assert.equal(arenaSpotlightMode({ status: "ARCHIVED" }), "announced");
 assert.equal(arenaSpotlightMode({ status: "DRAFT" }), "empty");
 assert.equal(arenaSpotlightMode(null), "empty");
 assert.equal(
@@ -226,6 +226,7 @@ assert.equal(isAdminNavActive("/admin/arena/emissions", arenaNav), true);
 assert.equal(isAdminNavActive("/admin/arena/archives", arenaNav), true);
 assert.equal(isAdminNavActive("/admin/arena/new", arenaNav), true);
 assert.equal(isAdminNavActive("/admin/arena/show1", arenaNav), true);
+assert.equal(isAdminNavActive("/admin/arena/prochain-invite", arenaNav), false);
 assert.equal(isAdminNavActive("/admin/arena/guests", arenaNav), false);
 assert.equal(isAdminNavActive("/admin/arena/albums", arenaNav), false);
 
@@ -241,5 +242,6 @@ assert.match(publicArena, /await connection\(\)/);
 const publicHome = readFileSync("src/app/(site)/page.tsx", "utf8");
 assert.match(publicHome, /arenaHome/);
 assert.match(publicHome, /arenaHome\.explore\.items/);
+assert.match(publicHome, /arenaHome\.spotlight\.emptyLabel/);
 
 console.log("arena home tests: ok");

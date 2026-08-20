@@ -40,9 +40,9 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
         <p className="ac-kicker">
           {show.status === "SCHEDULED"
             ? "Prochain invité"
-            : show.status === "ARCHIVED"
-              ? "Rediffusion · Archives"
-              : "À la une"}
+            : show.status === "PUBLISHED"
+              ? "À la une"
+              : "Rediffusion · Archives"}
           {` · Épisode ${String(show.number).padStart(2, "0")}`}
           {show.season ? ` · Saison ${show.season.number} (${show.season.year})` : ""}
         </p>

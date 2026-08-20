@@ -72,8 +72,7 @@ export default async function HomePage() {
         <div className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-20 md:grid-cols-[1.05fr_0.95fr] md:items-end md:px-6 md:py-28">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#ffb347]">
-              Arena Culture ·{" "}
-              {mode === "headline" ? "À la une" : arenaHome.spotlight.emptyLabel}
+              Arena Culture · {arenaHome.spotlight.emptyLabel}
             </p>
             <h2 className="mt-4 font-display text-4xl uppercase leading-[0.95] text-white md:text-6xl lg:text-7xl">
               {announcedOrLive

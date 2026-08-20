@@ -294,7 +294,7 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
             <Link href={`/admin/arena/${live.spotlight.id}`} className="admin-btn admin-btn-primary text-xs">
               Modifier l’affiche
             </Link>
-            <Link href="/admin/arena/new" className="admin-btn admin-btn-ghost text-xs">
+            <Link href="/admin/arena/prochain-invite" className="admin-btn admin-btn-ghost text-xs">
               Nouvelle (archive l’ancienne)
             </Link>
           </div>
@@ -307,8 +307,8 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
               Créez une émission, ajoutez l’affiche, cochez l’invité, puis Annoncer ou Publier.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Link href="/admin/arena/new" className="admin-btn admin-btn-primary text-xs">
-                Nouvelle émission
+              <Link href="/admin/arena/prochain-invite" className="admin-btn admin-btn-primary text-xs">
+                Annoncer le prochain invité
               </Link>
               <Link href="/admin/arena/emissions" className="admin-btn admin-btn-ghost text-xs">
                 Voir les émissions

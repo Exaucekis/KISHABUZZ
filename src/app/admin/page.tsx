@@ -175,15 +175,15 @@ export default async function AdminDashboardPage() {
           <section className="admin-dash-panel">
             <AdminActionRow>
               <AdminAction
-                href="/admin/arena/new"
-                label="Nouvelle émission"
-                hint="Créer un épisode Arena"
+                href="/admin/arena/prochain-invite"
+                label="Prochain invité"
+                hint="Annoncer : visible tout de suite sur l’accueil"
                 variant="primary"
               />
               <AdminAction
-                href="/admin/arena/guests"
-                label="Publier un invité"
-                hint="Portrait visible sur le site"
+                href="/admin/arena/new"
+                label="Nouvelle émission"
+                hint="Créer un épisode Arena"
               />
               <AdminAction
                 href="/admin/arena/videos"

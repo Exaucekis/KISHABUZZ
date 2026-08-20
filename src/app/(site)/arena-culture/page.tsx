@@ -108,11 +108,9 @@ export default async function ArenaCulturePage() {
               : undefined
         }
         ctaLabel={
-          mode === "announced"
-            ? `Prochain · ${guest?.name || spotlight?.title}`
-            : mode === "headline"
-              ? `À la une · ${guest?.name || spotlight?.title}`
-              : "Voir les émissions"
+          mode === "empty"
+            ? "Voir les émissions"
+            : `${home.spotlight.emptyLabel} · ${guest?.name || spotlight?.title}`
         }
       />
 
@@ -138,10 +136,10 @@ export default async function ArenaCulturePage() {
             />
           </div>
           <div className="ac-spotlight__copy">
-            <p className="ac-kicker">À la une</p>
+            <p className="ac-kicker">{home.spotlight.emptyLabel}</p>
             {mode === "headline" && spotlight ? (
               <>
-                <p className="ac-spotlight-label">Invité de la semaine</p>
+                <p className="ac-spotlight-label">{home.spotlight.emptyLabel}</p>
                 <h2>
                   {guest ? (
                     <Link href={`/arena-culture/invites/${guest.slug}`}>{guest.name}</Link>

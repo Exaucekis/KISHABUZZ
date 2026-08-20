@@ -75,7 +75,7 @@ export default async function ArenaEmissionsPage() {
         {spotlight ? (
           <div>
             <p className="ac-kicker mb-4">
-              {spotlight.status === "SCHEDULED" ? "Prochain invité" : "À la une"}
+              {spotlight.status === "PUBLISHED" ? "À la une" : "Prochain invité"}
             </p>
             <div className="ac-grid-shows">
               <ShowCard

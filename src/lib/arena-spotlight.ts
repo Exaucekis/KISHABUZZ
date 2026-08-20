@@ -18,8 +18,7 @@ export function arenaSpotlightMode(
   now = new Date()
 ): ArenaSpotlightMode {
   if (!show || show.status === "DRAFT") return "empty";
-  if (show.status === "SCHEDULED") return "announced";
-  if (show.status === "ARCHIVED") return "headline";
+  if (show.status === "SCHEDULED" || show.status === "ARCHIVED") return "announced";
   if (show.airDate && show.airDate > now && !String(show.videoUrl || "").trim()) return "announced";
   return "headline";
 }

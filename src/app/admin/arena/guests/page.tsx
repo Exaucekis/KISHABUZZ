@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArenaAdminNav } from "@/components/admin/ArenaAdminNav";
 import { GuestsManager } from "@/components/admin/GuestsManager";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
@@ -12,12 +11,21 @@ export default async function AdminArenaGuestsPage() {
     <div>
       <AdminPageIntro
         title="Invités Arena"
-        hint="Créez l’invité, ajoutez photo et bio, puis publiez. Il apparaît sur le site et peut être lié à une émission."
-        actions={
-          <a href="/arena-culture/invites" className="admin-btn admin-btn-ghost" target="_blank" rel="noreferrer">
-            Voir la page
-          </a>
-        }
+        hint="Créez l’invité, ajoutez photo et bio, puis publiez. Pour l’afficher sur l’accueil, ouvrez Prochain invité."
+        actions={[
+          {
+            href: "/admin/arena/prochain-invite",
+            label: "Prochain invité",
+            hint: "Annoncer sur l’accueil",
+            variant: "primary",
+          },
+          {
+            href: "/arena-culture/invites",
+            label: "Voir la page",
+            hint: "Ouvre /arena-culture/invites",
+            target: "_blank",
+          },
+        ]}
       />
       <ArenaAdminNav current="/admin/arena/guests" />
       <GuestsManager guests={guests} />

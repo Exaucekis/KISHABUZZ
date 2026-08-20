@@ -31,6 +31,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { href: "/admin/categories", label: "Catégories", group: "editorial" },
   { href: "/admin/pages", label: "Pages", group: "editorial" },
   { href: "/admin/arena", label: "Arena Culture", group: "arena" },
+  { href: "/admin/arena/prochain-invite", label: "Prochain invité", group: "arena" },
   { href: "/admin/arena/guests", label: "Invités", group: "arena" },
   { href: "/admin/arena/videos", label: "Vidéos Arena", group: "arena" },
   { href: "/admin/arena/seasons", label: "Saisons", group: "arena" },
@@ -58,6 +59,7 @@ export function isAdminNavActive(pathname: string, item: Pick<AdminNavItem, "hre
       pathname.startsWith("/admin/arena/alertes") ||
       (/^\/admin\/arena\/[^/]+$/.test(pathname) &&
         !pathname.startsWith("/admin/arena/guests") &&
+        !pathname.startsWith("/admin/arena/prochain-invite") &&
         !pathname.startsWith("/admin/arena/seasons") &&
         !pathname.startsWith("/admin/arena/albums") &&
         !pathname.startsWith("/admin/arena/videos") &&

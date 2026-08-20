@@ -11,6 +11,7 @@ const articles = ADMIN_NAV.find((item) => item.href === "/admin/articles")!;
 const arena = ADMIN_NAV.find((item) => item.href === "/admin/arena")!;
 const albums = ADMIN_NAV.find((item) => item.href === "/admin/arena/albums")!;
 const guests = ADMIN_NAV.find((item) => item.href === "/admin/arena/guests")!;
+const nextGuest = ADMIN_NAV.find((item) => item.href === "/admin/arena/prochain-invite")!;
 const videos = ADMIN_NAV.find((item) => item.href === "/admin/arena/videos")!;
 
 assert.equal(isAdminNavActive("/admin", dashboard), true);
@@ -25,7 +26,10 @@ assert.equal(isAdminNavActive("/admin/arena/alertes", arena), true);
 assert.equal(isAdminNavActive("/admin/arena/albums", arena), false);
 assert.equal(isAdminNavActive("/admin/arena/videos", arena), false);
 assert.equal(isAdminNavActive("/admin/arena/guests", arena), false);
+assert.equal(isAdminNavActive("/admin/arena/prochain-invite", arena), false);
+assert.equal(isAdminNavActive("/admin/arena/prochain-invite", nextGuest), true);
 assert.equal(isAdminNavActive("/admin/arena/guests", guests), true);
+assert.equal(adminNavTitle("/admin/arena/prochain-invite"), "Prochain invité");
 assert.equal(isAdminNavActive("/admin/arena/videos", videos), true);
 assert.equal(isAdminNavActive("/admin/arena/albums/x", albums), true);
 assert.equal(adminNavTitle("/admin"), "Tableau de bord");
