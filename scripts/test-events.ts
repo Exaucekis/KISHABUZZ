@@ -24,7 +24,11 @@ assert.equal(
 );
 assert.equal(isCinetPayAmount(5000), true);
 assert.equal(isCinetPayAmount(7), false);
+assert.equal(isCinetPayAmount(10, "USD"), true);
+assert.equal(isCinetPayAmount(7, "USD"), true);
+assert.equal(isCinetPayAmount(7.5, "USD"), false);
 assert.equal(formatMoney(15000, "CDF"), "15 000 CDF");
+assert.equal(formatMoney(25, "USD"), "25 USD");
 assert.equal(
   eventOnSale({
     status: "PUBLISHED",

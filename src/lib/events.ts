@@ -33,13 +33,26 @@ export function totalRemaining(types: TicketStock[]) {
   return types.reduce((sum, type) => sum + remainingSeats(type), 0);
 }
 
-export function isCinetPayAmount(amount: number) {
-  return Number.isInteger(amount) && amount >= 0 && amount % 5 === 0;
+export const EVENT_CURRENCIES = ["CDF", "USD"] as const;
+export type EventCurrency = (typeof EVENT_CURRENCIES)[number];
+
+export function normalizeEventCurrency(value: string | null | undefined): EventCurrency {
+  return String(value || "").toUpperCase() === "USD" ? "USD" : "CDF";
+}
+
+export function currencyLabel(currency: string) {
+  return normalizeEventCurrency(currency) === "USD" ? "Dollar (USD)" : "Franc congolais (CDF)";
+}
+
+export function isCinetPayAmount(amount: number, currency = "CDF") {
+  if (!Number.isInteger(amount) || amount < 0) return false;
+  if (amount === 0) return true;
+  return normalizeEventCurrency(currency) === "USD" ? true : amount % 5 === 0;
 }
 
 export function formatMoney(amount: number, currency = "CDF") {
   const digits = Math.trunc(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-  return `${digits} ${currency}`;
+  return `${digits} ${normalizeEventCurrency(currency)}`;
 }
 
 export function lowestVisiblePrice(types: { price: number; visible?: boolean }[]) {

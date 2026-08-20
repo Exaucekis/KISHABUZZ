@@ -56,6 +56,8 @@ const parsed = parseTicketQrPayload(payload);
 assert.equal(parsed.publicCode, code);
 assert.equal(verifyTicketSignature(parsed.publicCode, parsed.signature, secret), true);
 assert.equal(isCinetPayAmount(0), true);
+assert.equal(isCinetPayAmount(10, "USD"), true);
+assert.equal(isCinetPayAmount(7, "CDF"), false);
 
 assert.equal(
   ticketTypeOnSale({

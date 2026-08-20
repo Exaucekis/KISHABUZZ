@@ -9,6 +9,7 @@ import { AdminHint } from "@/components/admin/AdminHint";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 import { eventCapacityError, sumTicketQuantities } from "@/lib/event-capacity";
+import { normalizeEventCurrency } from "@/lib/events";
 
 type Category = { id: string; name: string };
 type Organizer = { id: string; name: string; email: string; role: string };
@@ -172,6 +173,10 @@ export function EventForm({
   const [gallery, setGallery] = useState<GalleryItem[]>(event?.gallery || []);
   const [capacity, setCapacity] = useState(event?.capacity ?? 0);
   const [status, setStatus] = useState(event?.status || "DRAFT");
+  const [currency, setCurrency] = useState(normalizeEventCurrency(event?.currency));
+  const hasSales = Boolean(
+    event?.ticketTypes.some((type) => (type.soldCount || 0) > 0 || (type.reservedCount || 0) > 0)
+  );
   const payload = useMemo(() => JSON.stringify(types), [types]);
   const sessionsPayload = useMemo(
     () =>
@@ -213,7 +218,7 @@ export function EventForm({
       <input type="hidden" name="ticketTypes" value={payload} />
       <input type="hidden" name="sessions" value={sessionsPayload} />
       <input type="hidden" name="gallery" value={galleryPayload} />
-      <input type="hidden" name="currency" value="CDF" />
+      {hasSales ? <input type="hidden" name="currency" value={currency} /> : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="admin-field md:col-span-2">
@@ -405,9 +410,24 @@ export function EventForm({
           </AdminHint>
         </div>
         <div className="admin-field">
-          <label htmlFor="currencyDisplay">Devise</label>
-          <input id="currencyDisplay" value="CDF" readOnly />
-          <AdminHint>CinetPay V1 : francs congolais uniquement, montants multiples de 5.</AdminHint>
+          <label htmlFor="currency">Devise</label>
+          <select
+            id="currency"
+            name={hasSales ? undefined : "currency"}
+            value={currency}
+            disabled={hasSales}
+            onChange={(e) => setCurrency(normalizeEventCurrency(e.target.value))}
+          >
+            <option value="CDF">Franc congolais (CDF)</option>
+            <option value="USD">Dollar (USD)</option>
+          </select>
+          <AdminHint>
+            {hasSales
+              ? "La devise ne peut plus changer : des billets ont déjà été vendus."
+              : currency === "USD"
+                ? "Les prix sont en dollars, nombre entier (ex. 10, 25)."
+                : "Les prix sont en francs congolais, multiple de 5 (ex. 5 000, 12 500)."}
+          </AdminHint>
         </div>
         <div className="admin-field">
           <label htmlFor="salesOpensAt">Ouverture des ventes</label>
@@ -522,8 +542,10 @@ export function EventForm({
         <AdminHint>
           Les catégories sont libres et propres à cet événement : VVIP, VIP, Simple, Early Bird,
           pass 2 jours… Ajoutez autant de tarifs que vous voulez. Cochez les jours payants
-          concernés. Les jours en entrée libre n’ont pas de tarif. Prix en francs, multiple de 5
-          (CinetPay).
+          concernés. Les jours en entrée libre n’ont pas de tarif.{" "}
+          {currency === "USD"
+            ? "Prix en dollars, nombre entier."
+            : "Prix en francs congolais, multiple de 5."}
         </AdminHint>
         <div className="mt-3 space-y-3">
           {types.map((type, index) => {
@@ -540,11 +562,11 @@ export function EventForm({
                     />
                   </div>
                   <div className="admin-field">
-                    <label>Prix</label>
+                    <label>Prix ({currency})</label>
                     <input
                       type="number"
                       min={0}
-                      step={5}
+                      step={currency === "USD" ? 1 : 5}
                       value={type.price}
                       onChange={(e) => updateType(index, { price: Number(e.target.value) || 0 })}
                     />

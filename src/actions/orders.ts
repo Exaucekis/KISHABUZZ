@@ -82,8 +82,14 @@ export async function createTicketOrder(
   const cart = await validateCart(parsed.data.eventId, lines, session.user.id);
   if (!cart.ok) return { ok: false, message: cart.message };
 
-  if (cart.amount > 0 && !isCinetPayAmount(cart.amount)) {
-    return { ok: false, message: "Le montant n’est pas compatible avec CinetPay (multiple de 5)." };
+  if (cart.amount > 0 && !isCinetPayAmount(cart.amount, cart.currency)) {
+    return {
+      ok: false,
+      message:
+        cart.currency?.toUpperCase() === "USD"
+          ? "Le montant n’est pas compatible avec CinetPay (dollar entier)."
+          : "Le montant n’est pas compatible avec CinetPay (multiple de 5).",
+    };
   }
   if (cart.amount > 0 && !isCinetPayConfigured()) {
     return { ok: false, message: "Le paiement en ligne n’est pas encore configuré." };

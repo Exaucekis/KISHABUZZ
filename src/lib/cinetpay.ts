@@ -178,7 +178,7 @@ export async function initCinetPayPayment(input: {
     site_id,
     transaction_id: input.transactionId,
     amount: input.amount,
-    currency: input.currency,
+    currency: String(input.currency || "CDF").toUpperCase(),
     description: sanitizeCinetPayText(input.description, 80),
     notify_url: input.notifyUrl,
     return_url: input.returnUrl,

@@ -16,7 +16,7 @@ import {
 import { eventCapacityError, ticketQuantityFloorError } from "@/lib/event-capacity";
 import { snapshotEvent, writeEventAudit } from "@/lib/event-audit";
 import { deriveEventBounds } from "@/lib/event-schedule";
-import { isCinetPayAmount } from "@/lib/events";
+import { isCinetPayAmount, normalizeEventCurrency } from "@/lib/events";
 import { prisma } from "@/lib/prisma";
 import { applyEventCancellation } from "@/lib/ticket-lifecycle";
 import { createSlug } from "@/lib/utils";
@@ -34,7 +34,7 @@ const eventSchema = z.object({
   categoryId: z.string().nullable().optional(),
   capacity: z.number().int().min(0).optional().default(0),
   status: z.enum(["DRAFT", "PUBLISHED", "SOLD_OUT", "ENDED", "CANCELLED"]),
-  currency: z.string().min(3).max(3).optional().default("CDF"),
+  currency: z.enum(["CDF", "USD"]).optional().default("CDF"),
   salesOpensAt: z.date().nullable().optional(),
   salesClosesAt: z.date().nullable().optional(),
   featured: z.boolean(),
@@ -177,7 +177,7 @@ export async function saveEvent(
     categoryId: formOptionalId(formData, "categoryId"),
     capacity: formInt(formData, "capacity", 0),
     status: formString(formData, "status") || "DRAFT",
-    currency: formString(formData, "currency") || "CDF",
+    currency: normalizeEventCurrency(formString(formData, "currency")),
     salesOpensAt: formDate(formData, "salesOpensAt"),
     salesClosesAt: formDate(formData, "salesClosesAt"),
     featured: formBool(formData, "featured"),
@@ -201,14 +201,6 @@ export async function saveEvent(
     };
   }
 
-  const invalidPrice = ticketTypes.find((type) => type.price > 0 && !isCinetPayAmount(type.price));
-  if (invalidPrice) {
-    return {
-      ok: false,
-      message: `Le prix « ${invalidPrice.name} » doit être un multiple de 5 (exigence CinetPay).`,
-    };
-  }
-
   let takenSeats = 0;
   const previous = id
     ? await prisma.event.findUnique({
@@ -226,6 +218,24 @@ export async function saveEvent(
       const existing = type.id ? currentById.get(type.id) : undefined;
       return sum + (existing ? existing.soldCount + existing.reservedCount : 0);
     }, 0);
+  }
+
+  const currencyLocked = Boolean(
+    previous?.ticketTypes.some((type) => type.soldCount > 0 || type.reservedCount > 0)
+  );
+  const currency = currencyLocked
+    ? normalizeEventCurrency(previous?.currency)
+    : normalizeEventCurrency(parsed.data.currency);
+
+  const invalidPrice = ticketTypes.find((type) => type.price > 0 && !isCinetPayAmount(type.price, currency));
+  if (invalidPrice) {
+    return {
+      ok: false,
+      message:
+        currency === "USD"
+          ? `Le prix « ${invalidPrice.name} » doit être un nombre entier de dollars.`
+          : `Le prix « ${invalidPrice.name} » doit être un multiple de 5 (exigence CinetPay).`,
+    };
   }
 
   const capacityMessage = eventCapacityError({
@@ -260,7 +270,7 @@ export async function saveEvent(
     categoryId: data.categoryId,
     capacity: data.capacity || 0,
     status: goingCancelled ? previous?.status || "DRAFT" : data.status,
-    currency: "CDF",
+    currency,
     salesOpensAt: data.salesOpensAt,
     salesClosesAt: data.salesClosesAt,
     featured: data.featured,
