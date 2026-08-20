@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   ARENA_EXPLORE_DEFAULTS,
   ARENA_HOME_DEFAULTS,
+  ARENA_HOME_SECTION_META,
   ARENA_HOME_SECTIONS,
   applyArenaHomeSection,
   collectReplacedImages,
@@ -47,6 +49,9 @@ assert.deepEqual([...ARENA_HOME_SECTIONS], [
   "photos",
   "memory",
 ]);
+assert.deepEqual([...ARENA_HOME_SECTIONS], Object.keys(ARENA_HOME_SECTION_META));
+assert.equal(ARENA_HOME_SECTION_META.hero.label, "Héro");
+assert.equal(ARENA_HOME_SECTION_META.memory.label, "Archives");
 
 const fromPresentation = parseArenaHome(null, "Texte historique Arena.");
 assert.equal(fromPresentation.hero.text, "Texte historique Arena.");
@@ -216,5 +221,13 @@ assert.equal(
   ARENA_EXPLORE_DEFAULTS.every((item) => item.href.startsWith("/arena-culture/")),
   true
 );
+
+const publicArena = readFileSync("src/app/(site)/arena-culture/page.tsx", "utf8");
+assert.match(publicArena, /home\.hero\.line1/);
+assert.match(publicArena, /home\.explore\.items/);
+assert.match(publicArena, /await connection\(\)/);
+const publicHome = readFileSync("src/app/(site)/page.tsx", "utf8");
+assert.match(publicHome, /arenaHome/);
+assert.match(publicHome, /arenaHome\.explore\.items/);
 
 console.log("arena home tests: ok");

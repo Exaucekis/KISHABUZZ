@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { connection } from "next/server";
 import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaMediaRow } from "@/components/arena/ArenaMediaRow";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -21,18 +22,11 @@ export const metadata: Metadata = {
     "Émissions, invités, affiches, photos, vidéos et archives — l'univers médiatique de KISHA BUZZ.",
 };
 
-const SCENE_FALLBACK = [
-  { title: "Gaz Mawete", image: "/artists/gaz-mawete.jpg", href: "/arena-culture/invites" },
-  { title: "Fally Ipupa", image: "/artists/fally-ipupa.jpg", href: "/arena-culture/invites" },
-  { title: "Innoss'B", image: "/artists/innoss-b.png", href: "/arena-culture/invites" },
-  { title: "Koffi Olomidé", image: "/artists/koffi-olomide.jpg", href: "/arena-culture/invites" },
-  { title: "Ferré Gola", image: "/artists/ferre-gola.jpg", href: "/arena-culture/invites" },
-  { title: "Damso", image: "/artists/damso.jpg", href: "/arena-culture/invites" },
-];
-
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function ArenaCulturePage() {
+  await connection();
   const [home, spotlight, shows, posters, featuredGuests, albums, archived] = await Promise.all([
     getArenaHome(),
     getArenaSpotlight(),
@@ -83,13 +77,15 @@ export default async function ArenaCulturePage() {
     href: `/arena-culture/albums/${album.slug}`,
   }));
 
-  const sceneTiles = featuredGuests.length
-    ? featuredGuests.map((guest) => ({
-        title: guest.name,
-        image: guest.photo || "/artists/gaz-mawete.jpg",
-        href: `/arena-culture/invites/${guest.slug}`,
-      }))
-    : SCENE_FALLBACK;
+  const sceneTiles = featuredGuests.map((guest) => ({
+    title: guest.name,
+    image: guest.photo || home.hero.poster || "/artists/gaz-mawete.jpg",
+    href: `/arena-culture/invites/${guest.slug}`,
+  }));
+  const heroPoster =
+    mode === "empty"
+      ? home.hero.poster
+      : spotlight?.poster || guest?.photo || home.hero.poster;
 
   return (
     <>
@@ -99,7 +95,7 @@ export default async function ArenaCulturePage() {
         line3={home.hero.line3}
         description={home.hero.text}
         ctaInvites={home.hero.ctaInvites}
-        poster={spotlight?.poster || guest?.photo || home.hero.poster}
+        poster={heroPoster}
         spotlightTitle={guest?.name || spotlight?.title}
         spotlightHref={
           spotlight
@@ -130,9 +126,7 @@ export default async function ArenaCulturePage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={
-                spotlight?.poster ||
-                guest?.photo ||
-                home.hero.poster ||
+                heroPoster ||
                 "/arena/albums/invitee-plateau/01-invitee.jpg"
               }
               alt={guest?.name || spotlight?.title || "Invité Arena Culture"}

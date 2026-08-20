@@ -143,6 +143,44 @@ export const ARENA_HOME_SECTIONS = [
 
 export type ArenaHomeSection = (typeof ARENA_HOME_SECTIONS)[number];
 
+export const ARENA_HOME_SECTION_META: Record<
+  ArenaHomeSection,
+  { label: string; where: string }
+> = {
+  hero: {
+    label: "Héro",
+    where: "le titre d’ouverture et le visuel d’entrée, sur /arena-culture et l’accueil",
+  },
+  explore: {
+    label: "Univers",
+    where: "les six cartes Explorer, sur /arena-culture et l’accueil",
+  },
+  spotlight: {
+    label: "À la une",
+    where: "le bloc Prochain invité / Bientôt annoncé",
+  },
+  scene: {
+    label: "Scène",
+    where: "la rangée Visages & voix",
+  },
+  shows: {
+    label: "Émissions",
+    where: "la rangée des épisodes à (re)découvrir",
+  },
+  posters: {
+    label: "Affiches",
+    where: "la rangée des visuels / affiches",
+  },
+  photos: {
+    label: "Photos",
+    where: "la rangée Ambiances / photos",
+  },
+  memory: {
+    label: "Archives",
+    where: "le bloc de clôture La mémoire de l’Arena",
+  },
+};
+
 function text(value: unknown, fallback: string) {
   const next = String(value ?? "").trim();
   return next || fallback;

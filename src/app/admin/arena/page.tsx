@@ -37,7 +37,7 @@ export default async function AdminArenaDashboardPage() {
     <div>
       <AdminPageIntro
         title="Tableau de bord Arena Culture"
-        hint="Chaque rubrique de la page publique se modifie ici, une par une. Un visuel remplacé part aux archives pour rester rediffusable."
+        hint="Chaque rubrique s’affiche sur /arena-culture et sur le bloc Arena de l’accueil. Un visuel remplacé part aux archives. Après Enregistrer, recharge la page publique."
         actions={
           <>
             <Link href="/arena-culture" className="admin-btn admin-btn-ghost" target="_blank" rel="noreferrer">

@@ -1,14 +1,21 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { saveArenaHomeSection } from "@/actions/admin/arena-home";
 import { AdminHint } from "@/components/admin/AdminHint";
 import { MediaField } from "@/components/admin/MediaField";
+import { SaveResultDialog } from "@/components/admin/SaveResultDialog";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
-import type { ArenaHomeConfig, ArenaHomeSection } from "@/lib/arena-home";
+import {
+  ARENA_HOME_SECTIONS,
+  ARENA_HOME_SECTION_META,
+  type ArenaHomeConfig,
+  type ArenaHomeSection,
+} from "@/lib/arena-home";
 
 export type ArenaHomeLive = {
   spotlight: {
@@ -39,24 +46,59 @@ function SectionForm({
   hint: string;
   children: ReactNode;
 }) {
+  const router = useRouter();
+  const meta = ARENA_HOME_SECTION_META[section];
+  const index = ARENA_HOME_SECTIONS.indexOf(section) + 1;
+  const total = ARENA_HOME_SECTIONS.length;
   const [state, action] = useActionState(saveArenaHomeSection, initial);
+  const [popup, setPopup] = useState(false);
+  const closePopup = useCallback(() => setPopup(false), []);
+
+  useEffect(() => {
+    if (!state.message) return;
+    setPopup(true);
+    if (state.ok) router.refresh();
+  }, [state, router]);
+
   return (
     <form action={action} id={`rubrique-${section}`} className="admin-card scroll-mt-24 space-y-4">
       <input type="hidden" name="section" value={section} />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#9aa3b5]">
-            {kicker}
+            Rubrique {String(index).padStart(2, "0")} / {String(total).padStart(2, "0")} · {kicker}
           </p>
           <h2 className="mt-1 font-[family-name:var(--font-syne)] text-xl font-bold">{title}</h2>
-          <p className="admin-page-hint mt-1 max-w-2xl">{hint}</p>
+          <p className="mt-2 inline-flex rounded-full border border-amber-400/35 bg-amber-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-200">
+            Tu enregistres la rubrique {meta.label}
+          </p>
+          <p className="admin-page-hint mt-2 max-w-2xl">
+            {hint} Seule cette rubrique est enregistrée — les autres ne bougent pas.
+          </p>
         </div>
-        <SubmitButton>Enregistrer cette rubrique</SubmitButton>
+        <SubmitButton pendingLabel={`Enregistrement de ${meta.label}…`}>
+          Enregistrer · {meta.label}
+        </SubmitButton>
       </div>
       {children}
       {state.message ? (
-        <p className={`text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>{state.message}</p>
+        <p
+          className={`rounded-lg border px-3 py-2 text-sm ${
+            state.ok
+              ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
+              : "border-red-400/30 bg-red-400/10 text-red-200"
+          }`}
+        >
+          {state.ok ? `Rubrique « ${meta.label} » enregistrée.` : state.message}
+        </p>
       ) : null}
+      <SaveResultDialog
+        open={popup && Boolean(state.message)}
+        ok={state.ok}
+        title={state.ok ? `« ${meta.label} » est en ligne` : `« ${meta.label} » n’a pas été enregistré`}
+        description={state.message}
+        onClose={closePopup}
+      />
     </form>
   );
 }

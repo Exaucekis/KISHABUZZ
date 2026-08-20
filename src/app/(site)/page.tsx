@@ -27,42 +27,25 @@ export default async function HomePage() {
     portfolio,
     partners,
     artists,
+    arenaHome,
   } = await getHomePageData();
 
   const guest = spotlightShow?.guests[0]?.guest;
   const mode = arenaSpotlightMode(spotlightShow);
   const spotlightPoster =
+    (mode === "empty" ? arenaHome.hero.poster : "") ||
     spotlightShow?.poster ||
     guest?.photo ||
+    arenaHome.hero.poster ||
     featuredAlbum?.coverImage ||
     "/arena/albums/invitee-plateau/01-invitee.jpg";
 
-  const arenaEntries = [
-    {
-      href: "/arena-culture/emissions",
-      title: "Émissions",
-      text: "Épisodes & replays",
-      image: spotlightShow?.poster || "/arena/posters/terminusboy-14-aout-2026.jpg",
-    },
-    {
-      href: "/arena-culture/photos",
-      title: "Albums photos",
-      text: "Plateaux & invités",
-      image: featuredAlbum?.coverImage || "/arena/albums/invitee-plateau/01-invitee.jpg",
-    },
-    {
-      href: "/arena-culture/videos",
-      title: "Vidéos",
-      text: "Extraits & moments",
-      image: "/arena/albums/invitee-plateau/03-plateau-wide.jpg",
-    },
-    {
-      href: "/arena-culture/affiches",
-      title: "Affiches",
-      text: "Visuels officiels",
-      image: "/arena/posters/terminusboy-14-aout-2026.jpg",
-    },
-  ];
+  const arenaEntries = arenaHome.explore.items.map((item) => ({
+    href: item.href,
+    title: item.title,
+    text: item.subtitle,
+    image: item.image,
+  }));
 
   return (
     <>
@@ -85,17 +68,22 @@ export default async function HomePage() {
         <div className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-20 md:grid-cols-[1.05fr_0.95fr] md:items-end md:px-6 md:py-28">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#ffb347]">
-              Arena Culture · {mode === "announced" ? "Prochain invité" : mode === "headline" ? "À la une" : "Bientôt"}
+              Arena Culture ·{" "}
+              {mode === "announced"
+                ? arenaHome.spotlight.emptyLabel
+                : mode === "headline"
+                  ? "À la une"
+                  : arenaHome.spotlight.emptyLabel}
             </p>
             <h2 className="mt-4 font-display text-4xl uppercase leading-[0.95] text-white md:text-6xl lg:text-7xl">
-              {guest?.name || spotlightShow?.title || "Bientôt annoncé"}
+              {guest?.name || spotlightShow?.title || arenaHome.spotlight.emptyTitle}
             </h2>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
               {spotlightShow
                 ? spotlightShow.theme ||
                   guest?.profession ||
-                  "Émissions, invités, photos et vidéos — l’univers Arena Grand Culture."
-                : "L’invité de la semaine sera annoncé ici. Proposez une collaboration ou explorez Arena Culture."}
+                  arenaHome.hero.text
+                : arenaHome.spotlight.emptyBody}
               {spotlightShow?.airDate
                 ? ` · ${formatDate(spotlightShow.airDate)}${spotlightShow.airTime ? ` · ${spotlightShow.airTime}` : ""}`
                 : ""}
@@ -113,7 +101,7 @@ export default async function HomePage() {
                   ? spotlightShow.videoUrl
                     ? "Voir la vidéo"
                     : "Voir l'affiche"
-                  : "Proposer un invité"}
+                  : arenaHome.spotlight.emptyCta}
               </ButtonLink>
               <ButtonLink
                 href="/arena-culture"
@@ -128,7 +116,7 @@ export default async function HomePage() {
           <div className="home-spotlight__poster">
             <PublicImage
               src={spotlightPoster}
-              alt={guest?.name || spotlightShow?.title || "Arena Culture"}
+              alt={guest?.name || spotlightShow?.title || arenaHome.hero.line1}
               fill
               sizes="(max-width: 768px) 90vw, 42vw"
               className="object-cover"
@@ -139,11 +127,11 @@ export default async function HomePage() {
 
       <section className="kb-defer mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
         <SectionHeading
-          eyebrow="Arena Culture"
-          title="Un univers à explorer"
-          description="Tout le contenu image et plateau vit dans Arena Culture — émissions, albums, vidéos et affiches."
+          eyebrow={arenaHome.explore.eyebrow}
+          title={arenaHome.explore.title}
+          description={arenaHome.hero.text}
         />
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {arenaEntries.map((item) => (
             <Link key={item.href} href={item.href} className="home-door focus-ring group">
               <div className="home-door__media">

@@ -1,6 +1,9 @@
 import { ArenaSubNav } from "@/components/arena/ArenaSubNav";
 import "../../arena-culture.css";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default function ArenaCultureLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="arena-space min-h-full">

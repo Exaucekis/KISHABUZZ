@@ -39,6 +39,7 @@ async function main() {
     "src/app/admin/arena/archives/page.tsx",
     "src/components/admin/ArenaHomeDashboard.tsx",
     "src/app/(site)/arena-culture/page.tsx",
+    "src/app/(site)/page.tsx",
   ];
   for (const file of files) {
     check(existsSync(file), `fichier présent ${file}`);

@@ -1,4 +1,4 @@
-import { unstable_cache } from "next/cache";
+import { unstable_cache, unstable_noStore as noStore } from "next/cache";
 import { cache } from "react";
 import { ARENA_HOME_KEY, parseArenaHome } from "@/lib/arena-home";
 import { CACHE_TAGS } from "@/lib/cache";
@@ -105,7 +105,7 @@ async function loadHomePageData() {
       select: { coverImage: true },
     }),
   ]);
-  const [featuredVideo, about, portfolio, partners, spotlightArtists] = await Promise.all([
+  const [featuredVideo, about, portfolio, partners, spotlightArtists, arenaHome] = await Promise.all([
     prisma.mediaAsset.findFirst({
       where: { visible: true, kind: "VIDEO", category: "ARENA_CULTURE" },
       orderBy: [{ featured: "desc" }, { date: "desc" }, { createdAt: "desc" }],
@@ -132,6 +132,7 @@ async function loadHomePageData() {
       select: { name: true, role: true, image: true },
       orderBy: { order: "asc" },
     }),
+    loadArenaHome(),
   ]);
 
   const showVideo = String(spotlightShow?.videoUrl || "").trim();
@@ -155,13 +156,14 @@ async function loadHomePageData() {
     portfolio,
     partners,
     artists: toSpotlightArtistCards(spotlightArtists),
+    arenaHome,
   };
 }
 
 export const getHomePageData = cache(
   unstable_cache(loadHomePageData, ["home-page"], {
     revalidate: 60,
-    tags: [CACHE_TAGS.home, CACHE_TAGS.settings],
+    tags: [CACHE_TAGS.home, CACHE_TAGS.settings, CACHE_TAGS.arena],
   })
 );
 
@@ -169,12 +171,22 @@ export async function getPageContent(key: string) {
   return prisma.pageContent.findUnique({ where: { key } });
 }
 
+async function loadArenaHome() {
+  try {
+    const [home, presentation] = await Promise.all([
+      prisma.pageContent.findUnique({ where: { key: ARENA_HOME_KEY } }),
+      prisma.pageContent.findUnique({ where: { key: "arena.presentation" } }),
+    ]);
+    return parseArenaHome(home?.body, presentation?.body);
+  } catch (error) {
+    console.error("arena.home: database unreachable, using defaults", error);
+    return parseArenaHome(null, "");
+  }
+}
+
 export async function getArenaHome() {
-  const [home, presentation] = await Promise.all([
-    prisma.pageContent.findUnique({ where: { key: ARENA_HOME_KEY } }),
-    prisma.pageContent.findUnique({ where: { key: "arena.presentation" } }),
-  ]);
-  return parseArenaHome(home?.body, presentation?.body);
+  noStore();
+  return loadArenaHome();
 }
 
 export async function getPublishedArticles(opts?: {
