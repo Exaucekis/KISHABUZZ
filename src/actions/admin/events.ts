@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { revalidatePublic } from "@/lib/cache";
+import { applyPublicWrites } from "@/lib/cache";
 import {
   formBool,
   formDate,
@@ -150,7 +150,7 @@ function revalidateEvents(slug?: string) {
   revalidatePath("/admin");
   revalidatePath("/evenements");
   if (slug) revalidatePath(`/evenements/${slug}`);
-  revalidatePublic();
+  applyPublicWrites();
 }
 
 export async function saveEvent(

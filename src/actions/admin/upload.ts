@@ -5,7 +5,7 @@ import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/admin";
-import { revalidatePublic } from "@/lib/cache";
+import { applyPublicWrites } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 
 const IMAGE_MAX = 4 * 1024 * 1024;
@@ -215,7 +215,7 @@ export async function attachMediaUrl(input: {
 }
 
 function revalidatePublicMedia(kind: MediaAttachTarget, slug?: string, contentType?: string) {
-  revalidatePublic();
+  applyPublicWrites();
   revalidatePath("/", "layout");
   if (kind === "event") {
     revalidatePath("/evenements");

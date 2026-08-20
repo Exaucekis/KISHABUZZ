@@ -9,6 +9,7 @@ import {
   requireAdmin,
   type AdminActionState,
 } from "@/lib/admin";
+import { applyPublicWrites } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { normalizeCoverFocus } from "@/lib/cover-focus";
 import { createSlug } from "@/lib/utils";
@@ -88,6 +89,7 @@ export async function savePortfolio(
 
   revalidatePath("/admin/portfolio");
   revalidatePath("/portfolio");
+  applyPublicWrites();
   return { ok: true, message: "Élément enregistré.", id: item.id };
 }
 
@@ -98,6 +100,7 @@ export async function deletePortfolio(formData: FormData) {
   await prisma.portfolioItem.delete({ where: { id } });
   revalidatePath("/admin/portfolio");
   revalidatePath("/portfolio");
+  applyPublicWrites();
 }
 
 export async function setPortfolioStatus(formData: FormData) {
@@ -108,4 +111,5 @@ export async function setPortfolioStatus(formData: FormData) {
   await prisma.portfolioItem.update({ where: { id }, data: { status } });
   revalidatePath("/admin/portfolio");
   revalidatePath("/portfolio");
+  applyPublicWrites();
 }

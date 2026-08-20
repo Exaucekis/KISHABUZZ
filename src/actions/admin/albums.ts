@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { revalidatePublic } from "@/lib/cache";
+import { applyPublicWrites } from "@/lib/cache";
 import {
   formBool,
   formDate,
@@ -81,7 +81,7 @@ export async function savePhotoAlbum(
   revalidatePath("/arena-culture/photos");
   revalidatePath("/arena-culture/albums");
   revalidatePath("/arena-culture");
-  revalidatePublic();
+  applyPublicWrites();
   return { ok: true, message: "Album enregistré." };
 }
 
@@ -100,7 +100,7 @@ export async function reorderPhotoAlbums(ids: string[]): Promise<AdminActionStat
   revalidatePath("/arena-culture/photos");
   revalidatePath("/arena-culture/albums");
   revalidatePath("/arena-culture");
-  revalidatePublic();
+  applyPublicWrites();
   return { ok: true, message: "Ordre enregistré." };
 }
 
@@ -118,7 +118,7 @@ export async function deletePhotoAlbum(formData: FormData) {
   revalidatePath("/admin/arena/albums");
   revalidatePath("/arena-culture/photos");
   revalidatePath("/arena-culture");
-  revalidatePublic();
+  applyPublicWrites();
 }
 
 export async function addPhotoToAlbum(
@@ -165,7 +165,7 @@ export async function addPhotoToAlbum(
   revalidatePath("/arena-culture/photos");
   revalidatePath(`/arena-culture/albums/${album.slug}`);
   revalidatePath("/arena-culture");
-  revalidatePublic();
+  applyPublicWrites();
   return { ok: true, message: "Photo ajoutée à l'album." };
 }
 
@@ -182,7 +182,7 @@ export async function removePhotoFromAlbum(formData: FormData) {
   }
   revalidatePath("/arena-culture/photos");
   revalidatePath("/arena-culture");
-  revalidatePublic();
+  applyPublicWrites();
 }
 
 export async function setAlbumCover(formData: FormData) {
@@ -202,5 +202,5 @@ export async function setAlbumCover(formData: FormData) {
   }
   revalidatePath("/arena-culture/photos");
   revalidatePath("/arena-culture");
-  revalidatePublic();
+  applyPublicWrites();
 }

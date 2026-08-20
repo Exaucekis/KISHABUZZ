@@ -10,6 +10,7 @@ import {
   requireAdmin,
   type AdminActionState,
 } from "@/lib/admin";
+import { applyPublicWrites } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { createSlug } from "@/lib/utils";
 
@@ -67,6 +68,7 @@ export async function savePartner(
 
   revalidatePath("/admin/partners");
   revalidatePath("/collaborations");
+  applyPublicWrites();
   return { ok: true, message: "Partenaire enregistré." };
 }
 
@@ -77,4 +79,5 @@ export async function deletePartner(formData: FormData) {
   await prisma.partner.delete({ where: { id } });
   revalidatePath("/admin/partners");
   revalidatePath("/collaborations");
+  applyPublicWrites();
 }

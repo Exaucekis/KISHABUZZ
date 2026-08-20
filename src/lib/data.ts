@@ -1,8 +1,7 @@
-import { unstable_cache, unstable_noStore as noStore } from "next/cache";
+import { unstable_noStore as noStore } from "next/cache";
 import { cache } from "react";
 import { compareArenaDates, isUpcomingArenaDate } from "@/lib/arena-calendar";
 import { ARENA_HOME_KEY, parseArenaHome } from "@/lib/arena-home";
-import { CACHE_TAGS } from "@/lib/cache";
 import { withPublicContactEmail } from "@/lib/contact";
 import { prisma } from "@/lib/prisma";
 import { publishDueArticles, publishDueArenaShows } from "@/lib/publish-scheduled";
@@ -44,12 +43,10 @@ async function loadSettings() {
   }
 }
 
-export const getSettings = cache(
-  unstable_cache(loadSettings, ["settings"], {
-    revalidate: 60,
-    tags: [CACHE_TAGS.settings],
-  })
-);
+export const getSettings = cache(async () => {
+  noStore();
+  return loadSettings();
+});
 
 async function loadHomePageData() {
   await Promise.all([publishDueArticles(), publishDueArenaShows()]);
@@ -132,7 +129,7 @@ async function loadHomePageData() {
     }),
     prisma.spotlightArtist.findMany({
       where: { visible: true },
-      select: { name: true, role: true, image: true },
+      select: { id: true, name: true, role: true, image: true },
       orderBy: { order: "asc" },
     }),
     loadArenaHome(),
@@ -163,12 +160,10 @@ async function loadHomePageData() {
   };
 }
 
-export const getHomePageData = cache(
-  unstable_cache(loadHomePageData, ["home-page"], {
-    revalidate: 60,
-    tags: [CACHE_TAGS.home, CACHE_TAGS.settings, CACHE_TAGS.arena],
-  })
-);
+export const getHomePageData = cache(async () => {
+  noStore();
+  return loadHomePageData();
+});
 
 export async function getPageContent(key: string) {
   return prisma.pageContent.findUnique({ where: { key } });

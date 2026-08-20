@@ -10,7 +10,7 @@ import {
   requireAdmin,
   type AdminActionState,
 } from "@/lib/admin";
-import { revalidatePublic } from "@/lib/cache";
+import { applyPublicWrites } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { createSlug } from "@/lib/utils";
 
@@ -61,8 +61,9 @@ export async function saveSpotlightArtist(
   else await prisma.spotlightArtist.create({ data: payload });
 
   revalidatePath("/admin/artists");
-  revalidatePublic();
-  return { ok: true, message: "Artiste enregistré." };
+  revalidatePath("/");
+  applyPublicWrites();
+  return { ok: true, message: "Artiste enregistré. Il s’affiche maintenant sur l’accueil." };
 }
 
 export async function deleteSpotlightArtist(formData: FormData) {
@@ -71,5 +72,6 @@ export async function deleteSpotlightArtist(formData: FormData) {
   if (!id) return;
   await prisma.spotlightArtist.delete({ where: { id } });
   revalidatePath("/admin/artists");
-  revalidatePublic();
+  revalidatePath("/");
+  applyPublicWrites();
 }

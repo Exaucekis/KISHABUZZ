@@ -9,7 +9,7 @@ import {
   requireAdmin,
   type AdminActionState,
 } from "@/lib/admin";
-import { revalidatePublic } from "@/lib/cache";
+import { applyPublicWrites } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { idsMatch, nextOrder, rankedOrders } from "@/lib/reorder";
 import { createSlug } from "@/lib/utils";
@@ -24,7 +24,7 @@ const domainSchema = z.object({
 function revalidateDomains() {
   revalidatePath("/admin/domains");
   revalidatePath("/a-propos");
-  revalidatePublic();
+  applyPublicWrites();
 }
 
 export async function saveDomain(

@@ -8,6 +8,7 @@ import {
   requireAdmin,
   type AdminActionState,
 } from "@/lib/admin";
+import { applyPublicWrites } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { createSlug } from "@/lib/utils";
 
@@ -55,7 +56,9 @@ export async function savePageContent(
 
   revalidatePath("/admin/pages");
   revalidatePath("/admin/settings");
-  return { ok: true, message: "Page enregistrée." };
+  revalidatePath("/a-propos");
+  applyPublicWrites();
+  return { ok: true, message: "Page enregistrée. Elle s’affiche maintenant sur le site." };
 }
 
 export async function deletePageContent(formData: FormData) {
@@ -64,4 +67,6 @@ export async function deletePageContent(formData: FormData) {
   if (!id) return;
   await prisma.pageContent.delete({ where: { id } });
   revalidatePath("/admin/pages");
+  revalidatePath("/a-propos");
+  applyPublicWrites();
 }

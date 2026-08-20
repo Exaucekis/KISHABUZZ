@@ -926,10 +926,14 @@ html[data-theme="dark"] .home-arena__card {
 
 .artist-rail-track {
   display: flex;
-  gap: 1rem;
   width: max-content;
   animation: artist-marquee 42s linear infinite;
-  padding: 0 1rem;
+}
+
+.artist-rail-set {
+  display: flex;
+  gap: 1rem;
+  padding-right: 1rem;
 }
 
 .artist-rail:hover .artist-rail-track {
@@ -1009,6 +1013,10 @@ html[data-theme="dark"] .home-arena__card {
     width: 100%;
     justify-content: center;
   }
+
+  .artist-rail-dup {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1023,6 +1031,15 @@ html[data-theme="dark"] .home-arena__card {
     padding-bottom: 0.5rem;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
+  }
+
+  .artist-rail-set {
+    padding-right: 0;
+    padding-left: 1rem;
+  }
+
+  .artist-rail-dup {
+    display: none;
   }
 
   .artist-card {

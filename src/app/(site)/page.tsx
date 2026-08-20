@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { ArticleCard } from "@/components/content/ArticleCard";
 import { DomainMarquee } from "@/components/home/DomainMarquee";
 import { HomeHero } from "@/components/home/HomeHero";
@@ -14,8 +15,10 @@ import { arenaSpotlightMode } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function HomePage() {
+  await connection();
   const {
     settings,
     feed,

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { revalidatePublic } from "@/lib/cache";
+import { applyPublicWrites } from "@/lib/cache";
 import {
   formBool,
   formDate,
@@ -138,7 +138,7 @@ export async function saveArenaShow(
   revalidatePath("/arena-culture/archives");
   revalidatePath("/arena-culture/affiches");
   revalidatePath("/arena-culture/invites");
-  revalidatePublic();
+  applyPublicWrites();
   redirect(`/admin/arena/${show.id}`);
 }
 
@@ -151,7 +151,7 @@ export async function deleteArenaShow(formData: FormData) {
   revalidatePath("/admin/arena/emissions");
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/calendrier");
-  revalidatePublic();
+  applyPublicWrites();
   redirect("/admin/arena/emissions");
 }
 
@@ -179,7 +179,7 @@ export async function setArenaShowStatus(formData: FormData) {
   revalidatePath("/arena-culture/emissions");
   revalidatePath("/arena-culture/videos");
   revalidatePath("/arena-culture/archives");
-  revalidatePublic();
+  applyPublicWrites();
 }
 
 const guestSchema = z.object({
@@ -234,7 +234,7 @@ export async function saveArenaGuest(
   revalidatePath("/arena-culture/invites");
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/calendrier");
-  revalidatePublic();
+  applyPublicWrites();
   return { ok: true, message: "Invité enregistré." };
 }
 
@@ -249,7 +249,7 @@ export async function setArenaGuestVisible(formData: FormData) {
   revalidatePath("/arena-culture/invites");
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/calendrier");
-  revalidatePublic();
+  applyPublicWrites();
 }
 
 export async function deleteArenaGuest(formData: FormData) {
@@ -261,7 +261,7 @@ export async function deleteArenaGuest(formData: FormData) {
   revalidatePath("/arena-culture/invites");
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/calendrier");
-  revalidatePublic();
+  applyPublicWrites();
 }
 
 const seasonSchema = z.object({
@@ -304,7 +304,7 @@ export async function saveArenaSeason(
   revalidatePath("/admin/arena/seasons");
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/calendrier");
-  revalidatePublic();
+  applyPublicWrites();
   return { ok: true, message: "Saison enregistrée." };
 }
 

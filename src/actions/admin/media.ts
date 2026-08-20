@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { revalidatePublic } from "@/lib/cache";
+import { applyPublicWrites } from "@/lib/cache";
 import {
   formBool,
   formDate,
@@ -119,7 +119,7 @@ export async function saveMedia(
   revalidatePath("/arena-culture/photos");
   revalidatePath("/arena-culture/videos");
   revalidatePath("/arena-culture");
-  revalidatePublic();
+  applyPublicWrites();
   return { ok: true, message: "Média enregistré." };
 }
 
@@ -134,5 +134,5 @@ export async function deleteMedia(formData: FormData) {
   revalidatePath("/arena-culture/photos");
   revalidatePath("/arena-culture/videos");
   revalidatePath("/arena-culture");
-  revalidatePublic();
+  applyPublicWrites();
 }

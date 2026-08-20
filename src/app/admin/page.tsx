@@ -10,6 +10,9 @@ import { roleLabel } from "@/lib/roles";
 
 export const metadata = { title: "Tableau de bord" };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminDashboardPage() {
   const session = await auth();
   const [

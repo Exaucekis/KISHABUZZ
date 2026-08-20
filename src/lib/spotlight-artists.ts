@@ -1,14 +1,16 @@
 export type SpotlightArtistCard = {
+  id?: string;
   name: string;
   role: string;
   image: string;
 };
 
 export function toSpotlightArtistCards(
-  rows: Array<{ name: string; role?: string | null; image?: string | null }>
+  rows: Array<{ id?: string; name: string; role?: string | null; image?: string | null }>
 ): SpotlightArtistCard[] {
   return rows
     .map((row) => ({
+      id: row.id,
       name: row.name.trim(),
       role: (row.role || "").trim() || "Artiste",
       image: (row.image || "").trim(),
