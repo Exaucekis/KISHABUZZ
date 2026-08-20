@@ -273,8 +273,48 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
         section="spotlight"
         kicker="À la une"
         title="Prochain invité / Bientôt annoncé"
-        hint="Textes affichés quand aucun invité n’est annoncé. L’invité réel se gère dans Émissions (Annoncer / Publier)."
+        hint="L’invité annoncé vient d’une émission (bouton Annoncer). Les champs ci-dessous ne s’affichent que s’il n’y a personne à la une."
       >
+        {live.spotlight ? (
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3">
+            {live.spotlight.poster ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={live.spotlight.poster} alt="" className="h-16 w-12 rounded object-cover" />
+            ) : null}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs uppercase tracking-wide text-amber-200">En ligne maintenant</p>
+              <p className="font-medium">{live.spotlight.guestName || live.spotlight.title}</p>
+              <p className="text-sm text-[#9aa3b5]">
+                Visible sur l’accueil et /arena-culture à la place de « {home.spotlight.emptyTitle} ».
+              </p>
+            </div>
+            <StatusBadge status={live.spotlight.status} />
+            <Link href={`/admin/arena/${live.spotlight.id}`} className="admin-btn admin-btn-primary text-xs">
+              Modifier l’émission
+            </Link>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+            <p className="text-sm text-[#eef1f6]">
+              Personne n’est annoncé : l’accueil affiche « {home.spotlight.emptyTitle} ».
+            </p>
+            <p className="mt-1 text-sm text-[#9aa3b5]">
+              Pour publier un invité : créez une émission, cochez l’invité, choisissez « Annoncer le
+              prochain invité », puis Enregistrer.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link href="/admin/arena/new" className="admin-btn admin-btn-primary text-xs">
+                Nouvelle émission
+              </Link>
+              <Link href="/admin/arena/emissions" className="admin-btn admin-btn-ghost text-xs">
+                Annoncer une émission
+              </Link>
+            </div>
+          </div>
+        )}
+        <p className="text-xs font-semibold uppercase tracking-wide text-[#9aa3b5]">
+          Textes d’attente (si aucun invité n’est annoncé)
+        </p>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="admin-field">
             <label>Sur-titre (vide)</label>
@@ -313,31 +353,6 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
             <input name="chipCollab" required defaultValue={home.spotlight.chipCollab} />
           </div>
         </div>
-        {live.spotlight ? (
-          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
-            {live.spotlight.poster ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={live.spotlight.poster} alt="" className="h-16 w-12 rounded object-cover" />
-            ) : null}
-            <div className="min-w-0 flex-1">
-              <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">Invité / émission actuelle</p>
-              <p className="font-medium">{live.spotlight.guestName || live.spotlight.title}</p>
-              <p className="text-sm text-[#9aa3b5]">{live.spotlight.title}</p>
-            </div>
-            <StatusBadge status={live.spotlight.status} />
-            <Link href={`/admin/arena/${live.spotlight.id}`} className="admin-btn admin-btn-ghost text-xs">
-              Modifier l’émission
-            </Link>
-          </div>
-        ) : (
-          <p className="text-sm text-[#9aa3b5]">
-            Aucun invité à la une. Annonce-le depuis{" "}
-            <Link href="/admin/arena/emissions" className="underline">
-              Émissions
-            </Link>
-            .
-          </p>
-        )}
       </SectionForm>
       </div>
 

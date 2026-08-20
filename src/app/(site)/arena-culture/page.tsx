@@ -15,7 +15,7 @@ import {
   getPublishedShows,
   getUpcomingArenaDates,
 } from "@/lib/data";
-import { arenaSpotlightMode } from "@/lib/arena-spotlight";
+import { arenaSpotlightGuest, arenaSpotlightMode } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -40,7 +40,7 @@ export default async function ArenaCulturePage() {
     getUpcomingArenaDates(),
   ]);
 
-  const guest = spotlight?.guests.map((item) => item.guest).find((item) => item.visible !== false);
+  const guest = arenaSpotlightGuest(spotlight);
   const mode = arenaSpotlightMode(spotlight);
   const latest = shows[0];
   const replayTiles = archived

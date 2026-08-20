@@ -10,7 +10,7 @@ import {
   parseArenaHome,
   patchArenaHomeFromForm,
 } from "../src/lib/arena-home";
-import { arenaSpotlightMode, planArenaSpotlight } from "../src/lib/arena-spotlight";
+import { arenaSpotlightGuest, arenaSpotlightMode, planArenaSpotlight } from "../src/lib/arena-spotlight";
 import { isAdminNavActive } from "../src/lib/admin-nav";
 import { ADMIN_NAV } from "../src/lib/admin-nav";
 
@@ -207,6 +207,16 @@ assert.equal(announced.find((row) => row.id === "next")?.isFeatured, true);
 assert.equal(arenaSpotlightMode({ status: "SCHEDULED" }), "announced");
 assert.equal(arenaSpotlightMode({ status: "PUBLISHED", videoUrl: "https://youtu.be/x" }), "headline");
 assert.equal(arenaSpotlightMode(null), "empty");
+assert.equal(
+  arenaSpotlightGuest({
+    guests: [
+      { guest: { name: "Cache", visible: false } },
+      { guest: { name: "Gaz Mawete", visible: true } },
+    ],
+  })?.name,
+  "Gaz Mawete"
+);
+assert.equal(arenaSpotlightGuest({ guests: [] }), null);
 
 const arenaNav = ADMIN_NAV.find((item) => item.href === "/admin/arena")!;
 assert.equal(isAdminNavActive("/admin/arena", arenaNav), true);

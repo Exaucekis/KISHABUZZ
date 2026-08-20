@@ -88,6 +88,7 @@ export async function saveArenaHomeSection(
     revalidatePath("/arena-culture", "layout");
     revalidatePath("/arena-culture/affiches");
     revalidatePath("/arena-culture/archives");
+    revalidatePath("/");
     applyPublicWrites();
 
     const meta = ARENA_HOME_SECTION_META[section];

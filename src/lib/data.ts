@@ -73,27 +73,7 @@ async function loadHomePageData() {
       orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
       take: 6,
     }),
-    prisma.arenaShow.findFirst({
-      where: { status: { in: ["PUBLISHED", "SCHEDULED"] } },
-      orderBy: [{ isFeatured: "desc" }, { isGuestOfWeek: "desc" }, { airDate: "desc" }],
-      select: {
-        slug: true,
-        title: true,
-        theme: true,
-        poster: true,
-        videoUrl: true,
-        videoThumbnail: true,
-        status: true,
-        airDate: true,
-        airTime: true,
-        guests: {
-          take: 1,
-          select: {
-            guest: { select: { name: true, photo: true, profession: true, slug: true } },
-          },
-        },
-      },
-    }),
+    getArenaSpotlight(),
     prisma.domain.findMany({
       where: { visible: true },
       select: { id: true, name: true, icon: true },
@@ -132,7 +112,7 @@ async function loadHomePageData() {
       select: { id: true, name: true, role: true, image: true },
       orderBy: { order: "asc" },
     }),
-    loadArenaHome(),
+    getArenaHome(),
   ]);
 
   const showVideo = String(spotlightShow?.videoUrl || "").trim();
@@ -249,6 +229,7 @@ export async function getPublishedShows(opts?: { take?: number; featured?: boole
 }
 
 export async function getArenaSpotlight() {
+  noStore();
   await publishDueArenaShows();
   const include = {
     guests: { include: { guest: true } },
@@ -267,9 +248,9 @@ export async function getArenaSpotlight() {
   });
   if (guestWeek) return guestWeek;
   return prisma.arenaShow.findFirst({
-    where: { status: "PUBLISHED" },
+    where: { status: { in: ["PUBLISHED", "SCHEDULED"] } },
     include,
-    orderBy: [{ airDate: "desc" }, { number: "desc" }],
+    orderBy: [{ isFeatured: "desc" }, { isGuestOfWeek: "desc" }, { airDate: "desc" }, { number: "desc" }],
   });
 }
 

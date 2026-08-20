@@ -138,6 +138,7 @@ export async function saveArenaShow(
   revalidatePath("/arena-culture/archives");
   revalidatePath("/arena-culture/affiches");
   revalidatePath("/arena-culture/invites");
+  revalidatePath("/");
   applyPublicWrites();
   redirect(`/admin/arena/${show.id}`);
 }
@@ -151,6 +152,7 @@ export async function deleteArenaShow(formData: FormData) {
   revalidatePath("/admin/arena/emissions");
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/calendrier");
+  revalidatePath("/");
   applyPublicWrites();
   redirect("/admin/arena/emissions");
 }
@@ -179,6 +181,7 @@ export async function setArenaShowStatus(formData: FormData) {
   revalidatePath("/arena-culture/emissions");
   revalidatePath("/arena-culture/videos");
   revalidatePath("/arena-culture/archives");
+  revalidatePath("/");
   applyPublicWrites();
 }
 
@@ -234,6 +237,7 @@ export async function saveArenaGuest(
   revalidatePath("/arena-culture/invites");
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/calendrier");
+  revalidatePath("/");
   applyPublicWrites();
   return { ok: true, message: "Invité enregistré." };
 }
@@ -249,6 +253,7 @@ export async function setArenaGuestVisible(formData: FormData) {
   revalidatePath("/arena-culture/invites");
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/calendrier");
+  revalidatePath("/");
   applyPublicWrites();
 }
 
@@ -261,6 +266,7 @@ export async function deleteArenaGuest(formData: FormData) {
   revalidatePath("/arena-culture/invites");
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/calendrier");
+  revalidatePath("/");
   applyPublicWrites();
 }
 
@@ -304,6 +310,7 @@ export async function saveArenaSeason(
   revalidatePath("/admin/arena/seasons");
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/calendrier");
+  revalidatePath("/");
   applyPublicWrites();
   return { ok: true, message: "Saison enregistrée." };
 }

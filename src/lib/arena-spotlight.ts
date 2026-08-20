@@ -23,6 +23,15 @@ export function arenaSpotlightMode(
   return "headline";
 }
 
+export function arenaSpotlightGuest<T extends { visible?: boolean | null }>(
+  show: { guests?: Array<{ guest: T | null | undefined }> } | null | undefined
+): T | null {
+  const guests = (show?.guests || [])
+    .map((row) => row.guest)
+    .filter((guest): guest is T => Boolean(guest));
+  return guests.find((guest) => guest.visible !== false) || guests[0] || null;
+}
+
 export function planArenaSpotlight(
   rows: ArenaShowSpotlightRow[],
   promotingId: string,

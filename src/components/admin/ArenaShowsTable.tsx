@@ -60,6 +60,15 @@ export function ArenaShowsTable({ shows }: { shows: ShowRow[] }) {
                   <Link href={`/admin/arena/${s.id}`} className="admin-btn admin-btn-ghost text-xs">
                     Éditer
                   </Link>
+                  {s.status === "DRAFT" || s.status === "ARCHIVED" ? (
+                    <form action={setArenaShowStatus}>
+                      <input type="hidden" name="id" value={s.id} />
+                      <input type="hidden" name="status" value="SCHEDULED" />
+                      <button type="submit" className="admin-btn admin-btn-primary text-xs">
+                        Annoncer
+                      </button>
+                    </form>
+                  ) : null}
                   {s.status !== "PUBLISHED" ? (
                     <form action={setArenaShowStatus}>
                       <input type="hidden" name="id" value={s.id} />

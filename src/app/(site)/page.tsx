@@ -11,7 +11,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PublicImage } from "@/components/media/PublicImage";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getHomePageData } from "@/lib/data";
-import { arenaSpotlightMode } from "@/lib/arena-spotlight";
+import { arenaSpotlightGuest, arenaSpotlightMode } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -33,8 +33,9 @@ export default async function HomePage() {
     arenaHome,
   } = await getHomePageData();
 
-  const guest = spotlightShow?.guests[0]?.guest;
+  const guest = arenaSpotlightGuest(spotlightShow);
   const mode = arenaSpotlightMode(spotlightShow);
+  const announcedOrLive = mode !== "empty" && Boolean(spotlightShow);
   const spotlightPoster =
     (mode === "empty" ? arenaHome.hero.poster : "") ||
     spotlightShow?.poster ||
@@ -72,36 +73,33 @@ export default async function HomePage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#ffb347]">
               Arena Culture ·{" "}
-              {mode === "announced"
-                ? arenaHome.spotlight.emptyLabel
-                : mode === "headline"
-                  ? "À la une"
-                  : arenaHome.spotlight.emptyLabel}
+              {mode === "headline" ? "À la une" : arenaHome.spotlight.emptyLabel}
             </p>
             <h2 className="mt-4 font-display text-4xl uppercase leading-[0.95] text-white md:text-6xl lg:text-7xl">
-              {guest?.name || spotlightShow?.title || arenaHome.spotlight.emptyTitle}
+              {announcedOrLive
+                ? guest?.name || spotlightShow?.title || arenaHome.spotlight.emptyTitle
+                : arenaHome.spotlight.emptyTitle}
             </h2>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
-              {spotlightShow
-                ? spotlightShow.theme ||
-                  guest?.profession ||
+              {announcedOrLive
+                ? [spotlightShow?.theme, guest?.profession].filter(Boolean).join(" · ") ||
                   arenaHome.hero.text
                 : arenaHome.spotlight.emptyBody}
-              {spotlightShow?.airDate
+              {announcedOrLive && spotlightShow?.airDate
                 ? ` · ${formatDate(spotlightShow.airDate)}${spotlightShow.airTime ? ` · ${spotlightShow.airTime}` : ""}`
                 : ""}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <ButtonLink
                 href={
-                  spotlightShow
+                  announcedOrLive && spotlightShow
                     ? `/arena-culture/emissions/${spotlightShow.slug}`
                     : "/contact"
                 }
                 className="!bg-[#ff8c00] !text-black hover:!bg-[#ff9f2e]"
               >
-                {spotlightShow
-                  ? spotlightShow.videoUrl
+                {announcedOrLive
+                  ? spotlightShow?.videoUrl
                     ? "Voir la vidéo"
                     : "Voir l'affiche"
                   : arenaHome.spotlight.emptyCta}
