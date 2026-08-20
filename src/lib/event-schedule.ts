@@ -21,6 +21,18 @@ export function calendarDayKey(date: Date, timeZone = EVENT_TZ) {
   }).format(date);
 }
 
+export function formatEventClock(date: Date, timeZone = EVENT_TZ) {
+  const parts = new Intl.DateTimeFormat("fr-FR", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const hour = parts.find((part) => part.type === "hour")?.value || "00";
+  const minute = parts.find((part) => part.type === "minute")?.value || "00";
+  return `${hour}:${minute}`;
+}
+
 export function sessionEnd(session: { startsAt: Date; endsAt?: Date | null }) {
   return session.endsAt && session.endsAt > session.startsAt ? session.endsAt : session.startsAt;
 }

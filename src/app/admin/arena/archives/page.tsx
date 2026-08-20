@@ -1,18 +1,24 @@
 import Link from "next/link";
+import { deleteArenaShow } from "@/actions/admin/arena";
+import { deleteMedia } from "@/actions/admin/media";
 import { ArenaAdminNav } from "@/components/admin/ArenaAdminNav";
+import { AdminConfirmForm } from "@/components/admin/AdminConfirmForm";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
-import { ArenaShowsTable } from "@/components/admin/ArenaShowsTable";
+import { archiveLabel } from "@/lib/arena-archive";
+import { videoPoster } from "@/lib/media";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
-import { videoPoster } from "@/lib/media";
 
 export const metadata = { title: "Archives Arena" };
 
 export default async function AdminArenaArchivesPage() {
-  const [shows, videos, visuals] = await Promise.all([
+  const [shows, videos, visualAssets] = await Promise.all([
     prisma.arenaShow.findMany({
       where: { status: "ARCHIVED" },
-      include: { season: true },
+      include: {
+        season: true,
+        guests: { include: { guest: { select: { name: true } } } },
+      },
       orderBy: [{ airDate: "desc" }, { number: "desc" }],
     }),
     prisma.mediaAsset.findMany({
@@ -30,11 +36,34 @@ export default async function AdminArenaArchivesPage() {
     }),
   ]);
 
+  const visualUrls = new Set(visualAssets.map((item) => item.url));
+  const posterVisuals = shows
+    .filter((show) => show.poster && !visualUrls.has(show.poster))
+    .map((show) => ({
+      id: `show-poster:${show.id}`,
+      showId: show.id,
+      title: show.title,
+      url: show.poster,
+      thumbnail: show.poster,
+      date: show.airDate,
+    }));
+  const visuals = [
+    ...visualAssets.map((item) => ({
+      id: item.id,
+      showId: null as string | null,
+      title: archiveLabel(item.title),
+      url: item.url,
+      thumbnail: item.thumbnail || item.url,
+      date: item.date,
+    })),
+    ...posterVisuals,
+  ];
+
   return (
     <div>
       <AdminPageIntro
         title="Archives Arena"
-        hint="Trois tiroirs : émissions remplacées par une nouvelle vidéo, anciennes vidéos, et visuels de page remplacés. Rien ne disparaît : ça descend ici."
+        hint="Tout ce qui quitte l’accueil arrive ici. Modifier un contenu en ligne archive l’ancienne pièce. Supprimer ici le retire définitivement : le public constate seulement qu’il n’est plus dans ses archives."
         actions={
           <Link href="/arena-culture/archives" className="admin-btn admin-btn-ghost" target="_blank" rel="noreferrer">
             Voir les archives
@@ -43,69 +72,124 @@ export default async function AdminArenaArchivesPage() {
       />
       <ArenaAdminNav current="/admin/arena/archives" />
 
-      <section className="mb-10">
-        <div className="mb-3 flex items-end justify-between gap-3">
+      <nav className="admin-archive-nav" aria-label="Tiroirs d’archives">
+        <a href="#archives-emissions">Émissions · {shows.length}</a>
+        <a href="#archives-videos">Vidéos · {videos.length}</a>
+        <a href="#archives-visuels">Affiches & visuels · {visuals.length}</a>
+      </nav>
+
+      <section id="archives-emissions" className="admin-archive-section">
+        <div className="admin-archive-head">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#9aa3b5]">01 · Émissions</p>
-            <h2 className="mt-1 font-[family-name:var(--font-syne)] text-lg font-bold">
-              Épisodes archivés ({shows.length})
-            </h2>
-            <p className="mt-1 text-sm text-[#9aa3b5]">
-              Chaque nouvelle vidéo à la une envoie l’émission précédente ici. Elles restent en rediffusion.
-            </p>
+            <p className="admin-archive-kicker">01 · Émissions</p>
+            <h2>Épisodes archivés</h2>
+            <p>Rediffusions retirées de la une. Le public les voit encore, jusqu’à suppression ici.</p>
           </div>
           <Link href="/admin/arena/emissions" className="admin-btn admin-btn-ghost text-xs">
             Toutes les émissions
           </Link>
         </div>
-        <ArenaShowsTable shows={shows} />
+        {shows.length ? (
+          <div className="admin-archive-grid admin-archive-grid--shows">
+            {shows.map((show) => {
+              const guest = show.guests[0]?.guest?.name;
+              const cover = show.poster || show.videoThumbnail;
+              return (
+                <article key={show.id} className="admin-archive-card">
+                  <div className="admin-archive-card__media">
+                    {cover ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={cover} alt="" />
+                    ) : (
+                      <div className="admin-archive-card__placeholder">Sans visuel</div>
+                    )}
+                    {show.videoUrl ? <span className="admin-archive-badge">Vidéo</span> : null}
+                  </div>
+                  <div className="admin-archive-card__body">
+                    <p className="admin-archive-meta">
+                      Ép. {String(show.number).padStart(2, "0")}
+                      {show.season ? ` · S${show.season.number}` : ""}
+                      {show.airDate ? ` · ${formatDate(show.airDate, "d MMM yyyy")}` : ""}
+                    </p>
+                    <h3>{show.title}</h3>
+                    {guest ? <p className="admin-archive-guest">{guest}</p> : null}
+                    <div className="admin-archive-actions">
+                      <Link href={`/admin/arena/${show.id}`} className="admin-btn admin-btn-ghost text-xs">
+                        Modifier
+                      </Link>
+                      <AdminConfirmForm
+                        action={deleteArenaShow}
+                        label="Supprimer"
+                        title="Retirer définitivement des archives ?"
+                        description="Le public ne verra plus cet épisode. Cette action est irréversible."
+                        confirmLabel="Oui, retirer"
+                      >
+                        <input type="hidden" name="id" value={show.id} />
+                        <input type="hidden" name="next" value="/admin/arena/archives" />
+                      </AdminConfirmForm>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="admin-card text-sm text-[#9aa3b5]">Aucune émission archivée pour l’instant.</p>
+        )}
       </section>
 
-      <section className="mb-10">
-        <div className="mb-3 flex items-end justify-between gap-3">
+      <section id="archives-videos" className="admin-archive-section">
+        <div className="admin-archive-head">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#9aa3b5]">02 · Vidéos</p>
-            <h2 className="mt-1 font-[family-name:var(--font-syne)] text-lg font-bold">
-              Vidéos archivées ({videos.length})
-            </h2>
-            <p className="mt-1 text-sm text-[#9aa3b5]">
-              Fichiers et liens (YouTube, Facebook, Instagram, TikTok) qui ne sont plus en première.
-            </p>
+            <p className="admin-archive-kicker">02 · Vidéos</p>
+            <h2>Vidéos archivées</h2>
+            <p>Anciennes émissions et extraits. Les supprimer ici les fait disparaître du site public.</p>
           </div>
           <Link href="/admin/arena/videos" className="admin-btn admin-btn-ghost text-xs">
             Gérer les vidéos
           </Link>
         </div>
         {videos.length ? (
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="admin-archive-grid admin-archive-grid--videos">
             {videos.map((video) => {
               const poster = videoPoster(video.url, video.thumbnail);
               return (
-                <div key={video.id} className="admin-card flex gap-3">
-                  {poster ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={poster} alt="" className="h-20 w-32 shrink-0 rounded object-cover" />
-                  ) : null}
-                  <div className="min-w-0">
-                    <p className="font-semibold">{video.title}</p>
-                    <p className="text-xs text-[#9aa3b5]">
+                <article key={video.id} className="admin-archive-card">
+                  <div className="admin-archive-card__media admin-archive-card__media--wide">
+                    {poster ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={poster} alt="" />
+                    ) : (
+                      <div className="admin-archive-card__placeholder">Sans miniature</div>
+                    )}
+                    <span className="admin-archive-badge">Vidéo</span>
+                  </div>
+                  <div className="admin-archive-card__body">
+                    <p className="admin-archive-meta">
                       {video.arenaShow ? `Émission · ${video.arenaShow.title}` : "Vidéo seule"}
                       {video.date ? ` · ${formatDate(video.date, "d MMM yyyy")}` : ""}
                     </p>
-                    {video.arenaShow ? (
+                    <h3>{archiveLabel(video.title)}</h3>
+                    <div className="admin-archive-actions">
                       <Link
-                        href={`/admin/arena/${video.arenaShow.id}`}
-                        className="mt-2 inline-block text-xs text-amber-200 hover:underline"
+                        href={video.arenaShow ? `/admin/arena/${video.arenaShow.id}` : "/admin/arena/videos"}
+                        className="admin-btn admin-btn-ghost text-xs"
                       >
-                        Ouvrir l’émission
+                        Modifier
                       </Link>
-                    ) : (
-                      <Link href="/admin/arena/videos" className="mt-2 inline-block text-xs text-amber-200 hover:underline">
-                        Ouvrir les vidéos
-                      </Link>
-                    )}
+                      <AdminConfirmForm
+                        action={deleteMedia}
+                        label="Supprimer"
+                        title="Retirer définitivement des archives ?"
+                        description="Le public ne verra plus cette vidéo. Cette action est irréversible."
+                        confirmLabel="Oui, retirer"
+                      >
+                        <input type="hidden" name="id" value={video.id} />
+                        <input type="hidden" name="next" value="/admin/arena/archives" />
+                      </AdminConfirmForm>
+                    </div>
                   </div>
-                </div>
+                </article>
               );
             })}
           </div>
@@ -114,29 +198,66 @@ export default async function AdminArenaArchivesPage() {
         )}
       </section>
 
-      <section>
-        <div className="mb-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#9aa3b5]">03 · Visuels</p>
-          <h2 className="mt-1 font-[family-name:var(--font-syne)] text-lg font-bold">
-            Visuels de page remplacés ({visuals.length})
-          </h2>
-          <p className="mt-1 text-sm text-[#9aa3b5]">
-            Images de rubriques Arena quand vous en téléversez une nouvelle.
-          </p>
+      <section id="archives-visuels" className="admin-archive-section">
+        <div className="admin-archive-head">
+          <div>
+            <p className="admin-archive-kicker">03 · Affiches & visuels</p>
+            <h2>Visuels remplacés</h2>
+            <p>Affiches de prochain invité et images de page. Un retrait ici les cache au public.</p>
+          </div>
         </div>
         {visuals.length ? (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {visuals.map((item) => (
-              <div key={item.id} className="admin-card p-2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.thumbnail || item.url}
-                  alt={item.alt || item.title}
-                  className="h-28 w-full rounded object-cover"
-                />
-                <p className="mt-2 text-xs text-[#c5ccd8]">{item.title.replace(/^Archive · /, "")}</p>
-              </div>
-            ))}
+          <div className="admin-archive-grid admin-archive-grid--posters">
+            {visuals.map((item) => {
+              const mediaId = item.id.startsWith("show-poster:") ? null : item.id;
+              return (
+                <article key={item.id} className="admin-archive-card">
+                  <div className="admin-archive-card__media admin-archive-card__media--poster">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={item.thumbnail || item.url} alt="" />
+                  </div>
+                  <div className="admin-archive-card__body">
+                    <p className="admin-archive-meta">
+                      {item.date ? formatDate(item.date, "d MMM yyyy") : "Affiche"}
+                    </p>
+                    <h3>{item.title}</h3>
+                    <div className="admin-archive-actions">
+                      {item.showId || mediaId ? (
+                        <Link
+                          href={item.showId ? `/admin/arena/${item.showId}` : "/admin/arena"}
+                          className="admin-btn admin-btn-ghost text-xs"
+                        >
+                          Modifier
+                        </Link>
+                      ) : null}
+                      {mediaId ? (
+                        <AdminConfirmForm
+                          action={deleteMedia}
+                          label="Supprimer"
+                          title="Retirer définitivement des archives ?"
+                          description="Le public ne verra plus ce visuel. Cette action est irréversible."
+                          confirmLabel="Oui, retirer"
+                        >
+                          <input type="hidden" name="id" value={mediaId} />
+                          <input type="hidden" name="next" value="/admin/arena/archives" />
+                        </AdminConfirmForm>
+                      ) : item.showId ? (
+                        <AdminConfirmForm
+                          action={deleteArenaShow}
+                          label="Supprimer"
+                          title="Retirer l’émission et son affiche ?"
+                          description="Cette affiche est liée à un épisode archivé. Le public ne le verra plus."
+                          confirmLabel="Oui, retirer"
+                        >
+                          <input type="hidden" name="id" value={item.showId} />
+                          <input type="hidden" name="next" value="/admin/arena/archives" />
+                        </AdminConfirmForm>
+                      ) : null}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         ) : (
           <p className="admin-card text-sm text-[#9aa3b5]">Aucun visuel archivé pour l’instant.</p>

@@ -15,8 +15,10 @@ import {
 } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { createSlug } from "@/lib/utils";
+import { snapshotArenaMedia, snapshotShowForArchive } from "@/lib/arena-archive";
 import { queueArenaAlert } from "@/lib/arena-alert-dispatch";
 import { applyArenaSpotlight, isArenaLiveStatus } from "@/lib/arena-spotlight";
+import { formatEventClock } from "@/lib/event-schedule";
 import { videoPoster } from "@/lib/media";
 
 const showSchema = z.object({
@@ -49,29 +51,73 @@ async function uniqueShowSlug(base: string, excludeId?: string) {
   }
 }
 
+async function resolveShowGuestIds(guestName: string, domain: string, existingIds: string[]) {
+  if (existingIds.length) return existingIds;
+  const name = guestName.trim();
+  if (!name) return [];
+  const existing = await prisma.arenaGuest.findFirst({
+    where: { name },
+    select: { id: true, profession: true },
+  });
+  if (existing) {
+    if (domain && !existing.profession) {
+      await prisma.arenaGuest.update({
+        where: { id: existing.id },
+        data: { profession: domain },
+      });
+    }
+    return [existing.id];
+  }
+  let slug = createSlug(name) || `invite-${Date.now().toString(36)}`;
+  const clash = await prisma.arenaGuest.findUnique({ where: { slug }, select: { id: true } });
+  if (clash) slug = `${slug}-${Date.now().toString(36)}`;
+  const created = await prisma.arenaGuest.create({
+    data: { name, slug, profession: domain, visible: true },
+  });
+  return [created.id];
+}
+
 export async function saveArenaShow(
   _prev: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
   await requireAdmin();
   const id = formOptionalId(formData, "id");
-  const guestIds = Array.from(new Set(formData.getAll("guestIds").map(String).filter(Boolean)));
+  const guestName = formString(formData, "guestName");
+  const domain = formString(formData, "theme");
+  const title = formString(formData, "title") || guestName;
+  const videoUrl = formString(formData, "videoUrl");
+  if (!videoUrl) {
+    return { ok: false, message: "Ajoutez la vidéo de l’émission." };
+  }
+  if (!guestName && !formString(formData, "title")) {
+    return { ok: false, message: "Indiquez le nom de l’invité." };
+  }
+
+  const selectedGuestIds = Array.from(
+    new Set(formData.getAll("guestIds").map(String).filter(Boolean))
+  );
+  const guestIds = await resolveShowGuestIds(guestName, domain, selectedGuestIds);
+
+  let number = formInt(formData, "number", 0);
+  if (!number) {
+    const last = await prisma.arenaShow.aggregate({ _max: { number: true } });
+    number = (last._max.number || 0) + 1;
+  }
 
   const parsed = showSchema.safeParse({
-    title: formString(formData, "title"),
-    number: formInt(formData, "number", 1),
-    theme: formString(formData, "theme"),
+    title,
+    number,
+    theme: domain,
     description: formString(formData, "description"),
-    airDate: formDate(formData, "airDate"),
-    airTime: formString(formData, "airTime"),
     venueName: formString(formData, "venueName"),
     eventId: formOptionalId(formData, "eventId"),
     poster: formString(formData, "poster"),
-    videoUrl: formString(formData, "videoUrl"),
+    videoUrl,
     videoThumbnail: formString(formData, "videoThumbnail"),
-    status: formString(formData, "status") || "DRAFT",
-    isFeatured: isArenaLiveStatus(formString(formData, "status") || "DRAFT"),
-    isGuestOfWeek: isArenaLiveStatus(formString(formData, "status") || "DRAFT"),
+    status: formString(formData, "status") || "PUBLISHED",
+    isFeatured: true,
+    isGuestOfWeek: false,
     seasonId: formOptionalId(formData, "seasonId"),
     guestIds,
   });
@@ -89,8 +135,26 @@ export async function saveArenaShow(
   const hasVideo = Boolean(String(data.videoUrl || "").trim());
   const status = hasVideo && data.status === "SCHEDULED" ? "PUBLISHED" : data.status;
   const previous = id
-    ? await prisma.arenaShow.findUnique({ where: { id }, select: { status: true } })
+    ? await prisma.arenaShow.findUnique({
+        where: { id },
+        select: {
+          status: true,
+          title: true,
+          videoUrl: true,
+          videoThumbnail: true,
+          poster: true,
+          airDate: true,
+          airTime: true,
+        },
+      })
     : null;
+
+  const launchedAt = new Date();
+  const goingLive = status === "PUBLISHED";
+  const airDate = goingLive ? previous?.airDate || launchedAt : previous?.airDate || null;
+  const airTime = goingLive
+    ? previous?.airTime || formatEventClock(launchedAt)
+    : previous?.airTime || "";
 
   const payload = {
     title: data.title,
@@ -98,8 +162,8 @@ export async function saveArenaShow(
     slug,
     theme: data.theme || "",
     description: data.description || "",
-    airDate: data.airDate,
-    airTime: data.airTime || "",
+    airDate,
+    airTime,
     venueName: data.venueName || "",
     eventId: data.eventId,
     poster: data.poster || "",
@@ -124,6 +188,29 @@ export async function saveArenaShow(
     }
     return saved;
   });
+
+  if (previous?.videoUrl && previous.videoUrl !== payload.videoUrl) {
+    await snapshotArenaMedia({
+      title: previous.title,
+      kind: "VIDEO",
+      url: previous.videoUrl,
+      thumbnail: previous.videoThumbnail,
+    });
+  }
+  if (previous?.videoThumbnail && previous.videoThumbnail !== payload.videoThumbnail) {
+    await snapshotArenaMedia({
+      title: `${previous.title} · miniature`,
+      kind: "IMAGE",
+      url: previous.videoThumbnail,
+    });
+  }
+  if (previous?.poster && previous.poster !== payload.poster) {
+    await snapshotArenaMedia({
+      title: previous.title,
+      kind: "IMAGE",
+      url: previous.poster,
+    });
+  }
 
   if (payload.videoUrl) {
     const existingVideo = await prisma.mediaAsset.findFirst({
@@ -153,6 +240,7 @@ export async function saveArenaShow(
   revalidatePath("/admin/arena");
   revalidatePath("/admin/arena/prochain-invite");
   revalidatePath("/admin/arena/emissions");
+  revalidatePath("/admin/arena/guests");
   revalidatePath("/admin/arena/videos");
   revalidatePath("/admin/arena/archives");
   revalidatePath("/arena-culture");
@@ -164,7 +252,36 @@ export async function saveArenaShow(
   revalidatePath("/arena-culture/invites");
   revalidatePath("/");
   applyPublicWrites();
-  redirect(`/admin/arena/${show.id}`);
+  redirect("/admin/arena/emissions");
+}
+
+export async function archiveArenaShow(formData: FormData) {
+  await requireAdmin();
+  const id = formString(formData, "id");
+  if (!id) return;
+  const current = await prisma.arenaShow.findUnique({
+    where: { id },
+    select: { status: true, title: true, videoUrl: true, videoThumbnail: true, poster: true },
+  });
+  if (current) await snapshotShowForArchive(current);
+  await prisma.arenaShow.update({
+    where: { id },
+    data: { status: "ARCHIVED", isFeatured: false, isGuestOfWeek: false },
+  });
+  await applyArenaSpotlight(id, "ARCHIVED");
+  queueArenaAlert(id, current?.status, "ARCHIVED");
+  revalidatePath("/admin/arena");
+  revalidatePath("/admin/arena/emissions");
+  revalidatePath("/admin/arena/archives");
+  revalidatePath("/admin/arena/prochain-invite");
+  revalidatePath("/arena-culture");
+  revalidatePath("/arena-culture/emissions");
+  revalidatePath("/arena-culture/videos");
+  revalidatePath("/arena-culture/archives");
+  revalidatePath("/arena-culture/affiches");
+  revalidatePath("/");
+  applyPublicWrites();
+  redirect(formString(formData, "next") || "/admin/arena/archives");
 }
 
 export async function deleteArenaShow(formData: FormData) {
@@ -174,11 +291,13 @@ export async function deleteArenaShow(formData: FormData) {
   await prisma.arenaShow.delete({ where: { id } });
   revalidatePath("/admin/arena");
   revalidatePath("/admin/arena/emissions");
+  revalidatePath("/admin/arena/archives");
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/calendrier");
+  revalidatePath("/arena-culture/archives");
   revalidatePath("/");
   applyPublicWrites();
-  redirect("/admin/arena/emissions");
+  redirect(formString(formData, "next") || "/admin/arena/archives");
 }
 
 export async function setArenaShowStatus(formData: FormData) {
@@ -244,6 +363,13 @@ export async function announceNextGuest(
     return { ok: false, message: "Annonce introuvable. Créez-en une nouvelle." };
   }
 
+  const previousPoster = currentId
+    ? await prisma.arenaShow.findUnique({
+        where: { id: currentId },
+        select: { poster: true, title: true },
+      })
+    : null;
+
   const last = await prisma.arenaShow.findFirst({
     orderBy: { number: "desc" },
     select: { number: true },
@@ -279,6 +405,13 @@ export async function announceNextGuest(
   });
 
   await applyArenaSpotlight(show.id, "SCHEDULED");
+  if (previousPoster?.poster && previousPoster.poster !== payload.poster) {
+    await snapshotArenaMedia({
+      title: previousPoster.title,
+      kind: "IMAGE",
+      url: previousPoster.poster,
+    });
+  }
   queueArenaAlert(show.id, existing?.status, "SCHEDULED");
 
   revalidatePath("/admin/arena");

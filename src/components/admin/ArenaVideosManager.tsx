@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { deleteMedia, saveMedia } from "@/actions/admin/media";
+import { archiveMedia, deleteMedia, saveMedia } from "@/actions/admin/media";
+import { AdminConfirmForm } from "@/components/admin/AdminConfirmForm";
 import { MediaField } from "@/components/admin/MediaField";
 import { AdminHint } from "@/components/admin/AdminHint";
 import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
@@ -146,12 +147,29 @@ export function ArenaVideosManager({
                     {poster ? "" : " · sans miniature"}
                   </p>
                 </div>
-                <form action={deleteMedia}>
-                  <input type="hidden" name="id" value={video.id} />
-                  <button type="submit" className="admin-btn admin-btn-danger text-xs">
-                    Suppr.
-                  </button>
-                </form>
+                {video.featured || !video.title.startsWith("Archive ·") ? (
+                  <AdminConfirmForm
+                    action={archiveMedia}
+                    label="Supprimer"
+                    title="Envoyer cette vidéo aux archives ?"
+                    description="Elle quitte la une et la page Vidéos. Le public la retrouvera dans Archives, jusqu’à un retrait définitif."
+                    confirmLabel="Oui, archiver"
+                  >
+                    <input type="hidden" name="id" value={video.id} />
+                    <input type="hidden" name="next" value="/admin/arena/archives" />
+                  </AdminConfirmForm>
+                ) : (
+                  <AdminConfirmForm
+                    action={deleteMedia}
+                    label="Supprimer"
+                    title="Retirer définitivement des archives ?"
+                    description="Le public ne verra plus cette vidéo. Cette action est irréversible."
+                    confirmLabel="Oui, retirer"
+                  >
+                    <input type="hidden" name="id" value={video.id} />
+                    <input type="hidden" name="next" value="/admin/arena/archives" />
+                  </AdminConfirmForm>
+                )}
               </div>
               {poster ? (
                 // eslint-disable-next-line @next/next/no-img-element

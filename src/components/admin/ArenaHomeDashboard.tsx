@@ -3,7 +3,9 @@
 import { useActionState, useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { archiveArenaShow } from "@/actions/admin/arena";
 import { saveArenaHomeSection } from "@/actions/admin/arena-home";
+import { AdminConfirmForm } from "@/components/admin/AdminConfirmForm";
 import { AdminHint } from "@/components/admin/AdminHint";
 import { AdminTabs } from "@/components/admin/AdminTabs";
 import { MediaField } from "@/components/admin/MediaField";
@@ -35,7 +37,7 @@ export type ArenaHomeLive = {
     guestName: string | null;
   } | null;
   guests: { id: string; name: string; photo: string }[];
-  shows: { id: string; title: string; poster: string }[];
+  shows: { id: string; title: string; poster: string; videoThumbnail?: string }[];
   albums: { slug: string; title: string; cover: string }[];
   archivedCount: number;
 };
@@ -276,13 +278,20 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
       </SectionForm>
       </div>
 
-      <div hidden={active !== "spotlight"}>
-      <SectionForm
-        section="spotlight"
-        kicker="À la une"
-        title="Vidéo et prochain invité"
-        hint="Deux places : la vidéo d’émission en première, l’affiche du prochain invité juste en dessous. Une nouvelle vidéo archive l’ancienne, sans toucher à l’annonce."
-      >
+      <div hidden={active !== "spotlight"} className="space-y-5">
+      <div className="admin-card space-y-4">
+        <div>
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#9aa3b5]">
+            En ligne maintenant
+          </p>
+          <h2 className="mt-1 font-[family-name:var(--font-syne)] text-xl font-bold">
+            Vidéo et prochain invité
+          </h2>
+          <p className="admin-page-hint mt-2 max-w-2xl">
+            Modifier change le contenu en place : l’ancienne pièce part aux archives. Supprimer
+            retire de l’accueil et envoie aussi aux archives. Le public ne peut rien effacer.
+          </p>
+        </div>
         <div className="grid gap-3 lg:grid-cols-2">
           {live.headline ? (
             <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3">
@@ -295,14 +304,24 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
                 <p className="font-medium">{live.headline.guestName || live.headline.title}</p>
                 <p className="text-sm text-[#9aa3b5]">
                   {live.headline.hasVideo
-                    ? "Visible en haut de l’accueil et Arena. La prochaine vidéo enverra celle-ci aux archives."
+                    ? "Visible en haut de l’accueil et Arena. Modifier ou supprimer envoie l’ancienne aux archives."
                     : "En première, sans vidéo pour l’instant. Ajoutez un fichier ou un lien dans l’émission."}
                 </p>
               </div>
               <StatusBadge status={live.headline.status} />
               <Link href={`/admin/arena/${live.headline.id}`} className="admin-btn admin-btn-primary text-xs">
-                Modifier la vidéo
+                Modifier
               </Link>
+              <AdminConfirmForm
+                action={archiveArenaShow}
+                label="Supprimer"
+                title="Envoyer cette émission aux archives ?"
+                description="Elle quitte la première place. Le public la retrouvera dans Archives, jusqu’à ce que vous la retiriez définitivement."
+                confirmLabel="Oui, archiver"
+              >
+                <input type="hidden" name="id" value={live.headline.id} />
+                <input type="hidden" name="next" value="/admin/arena/archives" />
+              </AdminConfirmForm>
             </div>
           ) : (
             <div className="rounded-xl border border-white/10 bg-black/20 p-3">
@@ -323,13 +342,23 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
                 <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">Prochain invité (en dessous)</p>
                 <p className="font-medium">{live.announced.guestName || live.announced.title}</p>
                 <p className="text-sm text-[#9aa3b5]">
-                  Affiche sous la vidéo. Un nouvel invité archive celui-ci, sans toucher à la vidéo.
+                  Affiche sous la vidéo. Modifier ou supprimer envoie l’ancienne affiche aux archives.
                 </p>
               </div>
               <StatusBadge status={live.announced.status} />
               <Link href="/admin/arena/prochain-invite" className="admin-btn admin-btn-primary text-xs">
-                Modifier l’affiche
+                Modifier
               </Link>
+              <AdminConfirmForm
+                action={archiveArenaShow}
+                label="Supprimer"
+                title="Envoyer cette affiche aux archives ?"
+                description="Le prochain invité quitte l’accueil. L’affiche reste dans Archives jusqu’à suppression définitive."
+                confirmLabel="Oui, archiver"
+              >
+                <input type="hidden" name="id" value={live.announced.id} />
+                <input type="hidden" name="next" value="/admin/arena/archives" />
+              </AdminConfirmForm>
             </div>
           ) : (
             <div className="rounded-xl border border-white/10 bg-black/20 p-3">
@@ -343,9 +372,13 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
             </div>
           )}
         </div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#9aa3b5]">
-          Textes d’attente (seulement s’il n’y a aucune affiche)
-        </p>
+      </div>
+      <SectionForm
+        section="spotlight"
+        kicker="À la une"
+        title="Textes d’attente"
+        hint="Ces textes s’affichent seulement s’il n’y a aucune affiche de prochain invité. La vidéo et l’affiche se gèrent avec Modifier / Supprimer au-dessus."
+      >
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="admin-field">
             <label>Sur-titre (vide)</label>
@@ -438,12 +471,12 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
           items={live.shows.map((show) => ({
             href: `/admin/arena/${show.id}`,
             title: show.title,
-            image: show.poster,
-            meta: "Éditer l’épisode",
+            image: show.videoThumbnail || show.poster,
+            meta: "Ouvrir dans Émissions",
           }))}
-          empty="Aucune émission publiée hors à la une."
+          empty="Aucune émission publiée. Créez-la dans l’onglet Émissions."
           moreHref="/admin/arena/emissions"
-          moreLabel="Toutes les émissions"
+          moreLabel="Onglet Émissions"
         />
       </SectionForm>
       </div>

@@ -33,7 +33,10 @@ export default async function ArenaVideosPage() {
           slug: headline.slug,
         }
       : null;
-  const restVideos = videos.filter((video) => !headline || video.arenaShow?.id !== headline.id);
+  const restVideos = videos.filter(
+    (video) =>
+      !video.title.startsWith("Archive ·") && (!headline || video.arenaShow?.id !== headline.id)
+  );
 
   return (
     <>

@@ -2,8 +2,8 @@ import { AdminTabs } from "@/components/admin/AdminTabs";
 
 export const ARENA_ADMIN_LINKS = [
   { href: "/admin/arena", label: "Page Arena", hint: "Textes et visuels de /arena-culture" },
-  { href: "/admin/arena/prochain-invite", label: "Prochain invité", hint: "Annoncer : visible tout de suite sur l’accueil" },
-  { href: "/admin/arena/emissions", label: "Émissions", hint: "Créer, publier, à la une" },
+  { href: "/admin/arena/prochain-invite", label: "Prochain invité", hint: "Affiche du prochain invité" },
+  { href: "/admin/arena/emissions", label: "Émissions", hint: "Invité, domaine, vidéo, miniature" },
   { href: "/admin/arena/guests", label: "Invités", hint: "Portraits et fiches" },
   { href: "/admin/arena/videos", label: "Vidéos", hint: "Replays et extraits" },
   { href: "/admin/arena/albums", label: "Albums", hint: "Photos plateau" },

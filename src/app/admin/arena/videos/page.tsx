@@ -9,7 +9,11 @@ export const metadata = { title: "Vidéos Arena" };
 export default async function AdminArenaVideosPage() {
   const [videos, shows] = await Promise.all([
     prisma.mediaAsset.findMany({
-      where: { kind: "VIDEO", OR: [{ category: "ARENA_CULTURE" }, { arenaShowId: { not: null } }] },
+      where: {
+        kind: "VIDEO",
+        OR: [{ category: "ARENA_CULTURE" }, { arenaShowId: { not: null } }],
+        NOT: { title: { startsWith: "Archive ·" } },
+      },
       orderBy: [{ featured: "desc" }, { date: "desc" }, { createdAt: "desc" }],
     }),
     prisma.arenaShow.findMany({

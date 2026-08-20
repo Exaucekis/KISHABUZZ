@@ -32,6 +32,18 @@ export function arenaSpotlightGuest<T extends { visible?: boolean | null }>(
   return guests.find((guest) => guest.visible !== false) || guests[0] || null;
 }
 
+export function arenaShowCover(show: {
+  videoThumbnail?: string | null;
+  poster?: string | null;
+  guests?: Array<{ guest?: { photo?: string | null } | null }>;
+}) {
+  return (
+    String(show.videoThumbnail || "").trim() ||
+    String(show.poster || "").trim() ||
+    String(show.guests?.[0]?.guest?.photo || "").trim()
+  );
+}
+
 export function planArenaSpotlight(
   rows: ArenaShowSpotlightRow[],
   promotingId: string,

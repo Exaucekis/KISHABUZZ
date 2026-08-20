@@ -3,7 +3,8 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { announceNextGuest } from "@/actions/admin/arena";
+import { archiveArenaShow, announceNextGuest } from "@/actions/admin/arena";
+import { AdminConfirmForm } from "@/components/admin/AdminConfirmForm";
 import { AdminHint } from "@/components/admin/AdminHint";
 import { MediaField } from "@/components/admin/MediaField";
 import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
@@ -66,6 +67,19 @@ export function NextGuestAnnounceForm({
           >
             Voir l’accueil
           </a>
+          <Link href="#annonce" className="admin-btn admin-btn-primary text-xs">
+            Modifier
+          </Link>
+          <AdminConfirmForm
+            action={archiveArenaShow}
+            label="Supprimer"
+            title="Envoyer cette affiche aux archives ?"
+            description="Le prochain invité quitte l’accueil. L’affiche reste dans Archives jusqu’à ce que vous la retiriez définitivement."
+            confirmLabel="Oui, archiver"
+          >
+            <input type="hidden" name="id" value={current.id} />
+            <input type="hidden" name="next" value="/admin/arena/archives" />
+          </AdminConfirmForm>
         </div>
       ) : (
         <p className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-[#9aa3b5]">
@@ -73,7 +87,7 @@ export function NextGuestAnnounceForm({
         </p>
       )}
 
-      <form action={action} className="admin-card space-y-4">
+      <form id="annonce" action={action} className="admin-card space-y-4">
         {current?.id ? <input type="hidden" name="id" value={current.id} /> : null}
         <div className="admin-field">
           <label htmlFor="guestId">Invité à annoncer</label>

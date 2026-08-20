@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { applyPublicWrites } from "@/lib/cache";
 import {
@@ -11,6 +12,7 @@ import {
   requireAdmin,
   type AdminActionState,
 } from "@/lib/admin";
+import { snapshotArenaMedia, snapshotShowForArchive } from "@/lib/arena-archive";
 import { applyArenaSpotlight } from "@/lib/arena-spotlight";
 import { isPlayableMedia, videoPoster } from "@/lib/media";
 import { prisma } from "@/lib/prisma";
@@ -95,6 +97,18 @@ export async function saveMedia(
   const manageShow = formData.has("arenaShowId");
 
   if (id) {
+    const before = await prisma.mediaAsset.findUnique({
+      where: { id },
+      select: { url: true, title: true, kind: true, thumbnail: true },
+    });
+    if (before && before.url !== parsed.data.url) {
+      await snapshotArenaMedia({
+        title: before.title.replace(/^Archive · /, ""),
+        kind: before.kind === "VIDEO" ? "VIDEO" : "IMAGE",
+        url: before.url,
+        thumbnail: before.thumbnail,
+      });
+    }
     await prisma.mediaAsset.update({
       where: { id },
       data: {
@@ -138,6 +152,41 @@ export async function saveMedia(
   return { ok: true, message: "Média enregistré." };
 }
 
+export async function archiveMedia(formData: FormData) {
+  await requireAdmin();
+  const id = formString(formData, "id");
+  if (!id) return;
+  const row = await prisma.mediaAsset.findUnique({ where: { id } });
+  if (!row) return;
+  await prisma.mediaAsset.update({
+    where: { id },
+    data: {
+      featured: false,
+      visible: true,
+      title: row.title.startsWith("Archive ·") ? row.title : `Archive · ${row.title}`,
+    },
+  });
+  if (row.featured && row.kind === "VIDEO" && row.arenaShowId) {
+    const show = await prisma.arenaShow.findUnique({
+      where: { id: row.arenaShowId },
+      select: { title: true, videoUrl: true, videoThumbnail: true, poster: true },
+    });
+    if (show) await snapshotShowForArchive(show);
+    await applyArenaSpotlight(row.arenaShowId, "ARCHIVED");
+  }
+  revalidatePath("/admin/media");
+  revalidatePath("/admin/arena");
+  revalidatePath("/admin/arena/videos");
+  revalidatePath("/admin/arena/archives");
+  revalidatePath("/arena-culture/videos");
+  revalidatePath("/arena-culture/archives");
+  revalidatePath("/arena-culture");
+  revalidatePath("/");
+  applyPublicWrites();
+  const next = formString(formData, "next");
+  if (next) redirect(next);
+}
+
 export async function deleteMedia(formData: FormData) {
   await requireAdmin();
   const id = formString(formData, "id");
@@ -146,8 +195,13 @@ export async function deleteMedia(formData: FormData) {
   revalidatePath("/admin/media");
   revalidatePath("/admin/arena");
   revalidatePath("/admin/arena/videos");
+  revalidatePath("/admin/arena/archives");
   revalidatePath("/arena-culture/photos");
   revalidatePath("/arena-culture/videos");
+  revalidatePath("/arena-culture/archives");
+  revalidatePath("/arena-culture/affiches");
   revalidatePath("/arena-culture");
   applyPublicWrites();
+  const next = formString(formData, "next");
+  if (next) redirect(next);
 }

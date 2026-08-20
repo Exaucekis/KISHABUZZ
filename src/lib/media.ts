@@ -13,7 +13,12 @@ const VIDEO_EXT = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
 
 export function isDirectVideo(url: string) {
   if (!url) return false;
-  return VIDEO_EXT.test(url) || url.startsWith("/arena/videos/");
+  if (parseMediaEmbed(url)) return false;
+  if (IMAGE_EXT.test(url)) return false;
+  if (VIDEO_EXT.test(url)) return true;
+  if (url.startsWith("/arena/videos/") || url.startsWith("/uploads/media/")) return true;
+  if (url.includes("blob.vercel-storage.com") && /\/media\//.test(url)) return true;
+  return false;
 }
 
 export function isDirectImage(url: string) {

@@ -64,8 +64,9 @@ export function VideoEmbed({
           preload={lazy ? "auto" : "metadata"}
           poster={poster || undefined}
           title={title || "Vidéo"}
+          src={url}
         >
-          <source src={url} type="video/mp4" />
+          <source src={url} />
           Votre navigateur ne prend pas en charge la lecture vidéo.
         </video>
       </div>

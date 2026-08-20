@@ -22,7 +22,7 @@ export default async function AdminArenaDashboardPage() {
       where: { status: "PUBLISHED" },
       orderBy: [{ number: "desc" }, { airDate: "desc" }],
       take: 8,
-      select: { id: true, title: true, poster: true },
+      select: { id: true, title: true, poster: true, videoThumbnail: true },
     }),
     prisma.photoAlbum.findMany({
       where: { visible: true },
@@ -37,7 +37,7 @@ export default async function AdminArenaDashboardPage() {
     <div>
       <AdminPageIntro
         title="Page Arena Culture"
-        hint="Un onglet = une rubrique de /arena-culture. Enregistrez avant de changer d’onglet. Un visuel remplacé part aux archives."
+        hint="Un onglet = une rubrique. À la une, Prochain invité et Émissions ont chacun leur formulaire. Les épisodes se créent dans l’onglet Émissions."
         actions={[
           {
             href: "/arena-culture",
@@ -46,9 +46,9 @@ export default async function AdminArenaDashboardPage() {
             target: "_blank",
           },
           {
-            href: "/admin/arena/new",
-            label: "Nouvelle émission",
-            hint: "Créer un épisode (pas une rubrique)",
+            href: "/admin/arena/emissions",
+            label: "Émissions",
+            hint: "Invité, domaine et vidéo",
             variant: "primary",
           },
         ]}
@@ -77,7 +77,12 @@ export default async function AdminArenaDashboardPage() {
               }
             : null,
           guests,
-          shows,
+          shows: shows.map((show) => ({
+            id: show.id,
+            title: show.title,
+            poster: show.poster,
+            videoThumbnail: show.videoThumbnail,
+          })),
           albums: albums.map((album) => ({
             slug: album.slug,
             title: album.guestName || album.title,

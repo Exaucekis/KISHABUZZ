@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { deleteArenaShow, setArenaShowStatus } from "@/actions/admin/arena";
+import { archiveArenaShow, deleteArenaShow, setArenaShowStatus } from "@/actions/admin/arena";
+import { AdminConfirmForm } from "@/components/admin/AdminConfirmForm";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { formatViews } from "@/lib/page-views";
 import { formatDate } from "@/lib/utils";
@@ -16,7 +17,13 @@ type ShowRow = {
   season: { number: number } | null;
 };
 
-export function ArenaShowsTable({ shows }: { shows: ShowRow[] }) {
+export function ArenaShowsTable({
+  shows,
+  inArchive = false,
+}: {
+  shows: ShowRow[];
+  inArchive?: boolean;
+}) {
   return (
     <div className="admin-card overflow-x-auto p-0">
       <table className="admin-table">
@@ -61,18 +68,9 @@ export function ArenaShowsTable({ shows }: { shows: ShowRow[] }) {
               <td>
                 <div className="flex flex-wrap gap-1">
                   <Link href={`/admin/arena/${s.id}`} className="admin-btn admin-btn-ghost text-xs">
-                    Éditer
+                    Modifier
                   </Link>
-                  {s.status === "DRAFT" || s.status === "ARCHIVED" ? (
-                    <form action={setArenaShowStatus}>
-                      <input type="hidden" name="id" value={s.id} />
-                      <input type="hidden" name="status" value="SCHEDULED" />
-                      <button type="submit" className="admin-btn admin-btn-primary text-xs">
-                        Annoncer
-                      </button>
-                    </form>
-                  ) : null}
-                  {s.status !== "PUBLISHED" ? (
+                  {!inArchive && s.status !== "PUBLISHED" ? (
                     <form action={setArenaShowStatus}>
                       <input type="hidden" name="id" value={s.id} />
                       <input type="hidden" name="status" value="PUBLISHED" />
@@ -80,21 +78,30 @@ export function ArenaShowsTable({ shows }: { shows: ShowRow[] }) {
                         Mettre en première
                       </button>
                     </form>
-                  ) : (
-                    <form action={setArenaShowStatus}>
+                  ) : null}
+                  {inArchive || s.status === "ARCHIVED" ? (
+                    <AdminConfirmForm
+                      action={deleteArenaShow}
+                      label="Supprimer"
+                      title="Retirer définitivement des archives ?"
+                      description="Le public ne verra plus cet épisode dans les archives. Cette action est irréversible."
+                      confirmLabel="Oui, retirer"
+                    >
                       <input type="hidden" name="id" value={s.id} />
-                      <input type="hidden" name="status" value="ARCHIVED" />
-                      <button type="submit" className="admin-btn admin-btn-ghost text-xs">
-                        Archiver
-                      </button>
-                    </form>
+                      <input type="hidden" name="next" value="/admin/arena/archives" />
+                    </AdminConfirmForm>
+                  ) : (
+                    <AdminConfirmForm
+                      action={archiveArenaShow}
+                      label="Supprimer"
+                      title="Envoyer aux archives ?"
+                      description="L’émission quitte l’accueil et Arena. Elle reste visible dans Archives jusqu’à ce que vous la retiriez."
+                      confirmLabel="Oui, archiver"
+                    >
+                      <input type="hidden" name="id" value={s.id} />
+                      <input type="hidden" name="next" value="/admin/arena/archives" />
+                    </AdminConfirmForm>
                   )}
-                  <form action={deleteArenaShow}>
-                    <input type="hidden" name="id" value={s.id} />
-                    <button type="submit" className="admin-btn admin-btn-danger text-xs">
-                      Suppr.
-                    </button>
-                  </form>
                 </div>
               </td>
             </tr>

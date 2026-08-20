@@ -14,18 +14,19 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function EditArenaShowPage({ params }: Props) {
   const { id } = await params;
-  const [show, seasons, guests, events] = await Promise.all([
+  const [show, guests, domains] = await Promise.all([
     prisma.arenaShow.findUnique({
       where: { id },
       include: { guests: true },
     }),
-    prisma.arenaSeason.findMany({ orderBy: [{ year: "desc" }, { number: "desc" }] }),
-    prisma.arenaGuest.findMany({ orderBy: { name: "asc" } }),
-    prisma.event.findMany({
-      where: { status: { in: ["PUBLISHED", "SOLD_OUT", "ENDED"] } },
-      select: { id: true, title: true, startsAt: true, status: true },
-      orderBy: { startsAt: "desc" },
-      take: 80,
+    prisma.arenaGuest.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, profession: true },
+    }),
+    prisma.domain.findMany({
+      where: { visible: true },
+      orderBy: { order: "asc" },
+      select: { id: true, name: true },
     }),
   ]);
   if (!show) notFound();
@@ -34,10 +35,10 @@ export default async function EditArenaShowPage({ params }: Props) {
     <div>
       <AdminPageIntro
         title={`Éditer · ${show.title}`}
-        hint="Nouvelle émission : titre, nom de l’artiste, vidéo + miniature. Pas d’affiche ici. Le prochain invité (affiche) se gère à part."
+        hint="Nom de l’invité, domaine, vidéo et miniature. Pas d’affiche ici — le prochain invité se gère dans son onglet."
       />
       <ArenaAdminNav current="/admin/arena/emissions" />
-      <ArenaShowForm show={show} seasons={seasons} guests={guests} events={events} />
+      <ArenaShowForm show={show} guests={guests} domains={domains} />
     </div>
   );
 }

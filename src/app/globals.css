@@ -1424,6 +1424,162 @@ html[data-theme="dark"] .home-arena__card {
   color: #8b93a5;
 }
 
+.admin-archive-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1.75rem;
+}
+
+.admin-archive-nav a {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #c5ccd8;
+  text-decoration: none;
+}
+
+.admin-archive-nav a:hover {
+  border-color: rgba(232, 93, 4, 0.5);
+  color: #fff;
+}
+
+.admin-archive-section {
+  scroll-margin-top: 5rem;
+  margin-bottom: 2.75rem;
+}
+
+.admin-archive-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.admin-archive-kicker {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9aa3b5;
+}
+
+.admin-archive-head h2 {
+  margin: 0.25rem 0 0;
+  font-family: var(--font-syne), sans-serif;
+  font-size: 1.2rem;
+}
+
+.admin-archive-head p {
+  margin: 0.35rem 0 0;
+  max-width: 36rem;
+  font-size: 0.85rem;
+  color: #9aa3b5;
+}
+
+.admin-archive-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.admin-archive-grid--shows,
+.admin-archive-grid--videos {
+  grid-template-columns: 1fr;
+}
+
+.admin-archive-grid--posters {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 800px) {
+  .admin-archive-grid--shows,
+  .admin-archive-grid--videos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-archive-grid--posters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.admin-archive-card {
+  overflow: hidden;
+  background: #121722;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.85rem;
+}
+
+.admin-archive-card__media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: #0b0f16;
+}
+
+.admin-archive-card__media--poster {
+  aspect-ratio: 2 / 3;
+}
+
+.admin-archive-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-archive-card__placeholder {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: #6d7588;
+  font-size: 0.8rem;
+}
+
+.admin-archive-badge {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  background: rgba(232, 93, 4, 0.92);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-archive-card__body {
+  padding: 0.9rem 1rem 1rem;
+}
+
+.admin-archive-meta,
+.admin-archive-guest {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #9aa3b5;
+}
+
+.admin-archive-card__body h3 {
+  margin: 0.3rem 0 0;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.admin-archive-guest {
+  margin-top: 0.25rem;
+}
+
+.admin-archive-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
 .admin-page-intro {
   display: flex;
   flex-direction: column;

@@ -17,7 +17,7 @@ import {
   getPublishedShows,
   getUpcomingArenaDates,
 } from "@/lib/data";
-import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
+import { arenaShowCover, arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -51,17 +51,17 @@ export default async function ArenaCulturePage() {
     .filter((show) => show.id !== headline?.id && show.id !== spotlight?.id)
     .map((s) => ({
       href: `/arena-culture/emissions/${s.slug}`,
-      title: s.title,
+      title: arenaSpotlightGuest(s)?.name || s.title,
       subtitle: s.theme || `Épisode ${String(s.number).padStart(2, "0")}`,
-      image: s.poster || "/artists/fally-ipupa.jpg",
+      image: arenaShowCover(s) || "/artists/fally-ipupa.jpg",
     }));
 
   const currentShows = shows.filter((s) => s.id !== headline?.id && s.id !== spotlight?.id);
   const showTiles = currentShows.map((s) => ({
     href: `/arena-culture/emissions/${s.slug}`,
-    title: s.title,
-    subtitle: s.theme || `Épisode ${String(s.number).padStart(2, "0")}`,
-    image: s.poster || "/artists/fally-ipupa.jpg",
+    title: arenaSpotlightGuest(s)?.name || s.title,
+    subtitle: s.theme || arenaSpotlightGuest(s)?.profession || `Épisode ${String(s.number).padStart(2, "0")}`,
+    image: arenaShowCover(s) || "/artists/fally-ipupa.jpg",
   }));
 
   const posterTiles =

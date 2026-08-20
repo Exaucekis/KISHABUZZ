@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArenaPageIntro } from "@/components/arena/ArenaPageIntro";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getArchivedShows, getArenaStage, getPublishedShows } from "@/lib/data";
+import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
+import { videoPoster } from "@/lib/media";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -12,46 +15,59 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-function ShowCard({
+type ShowItem = {
+  id: string;
+  slug: string;
+  title: string;
+  theme: string;
+  poster: string;
+  videoUrl: string;
+  videoThumbnail: string;
+  number: number;
+  airDate: Date | null;
+  season: { number: number } | null;
+  guests: {
+    guest: {
+      name: string;
+      profession?: string | null;
+      photo?: string | null;
+      visible?: boolean | null;
+    };
+  }[];
+};
+
+function episodeVideo(show: ShowItem) {
+  return String(show.videoUrl || "").trim();
+}
+
+function ShowEpisode({
   show,
   kicker,
+  featured = false,
 }: {
-  show: {
-    id: string;
-    slug: string;
-    title: string;
-    theme: string;
-    poster: string;
-    number: number;
-    airDate: Date | null;
-    season: { number: number } | null;
-    guests: { guest: { name: string } }[];
-  };
+  show: ShowItem;
   kicker?: string;
+  featured?: boolean;
 }) {
-  const guestNames = show.guests.map((g) => g.guest.name).filter(Boolean);
+  const guest = arenaSpotlightGuest(show);
+  const video = episodeVideo(show);
+  const poster = videoPoster(video, show.videoThumbnail) || String(show.videoThumbnail || "").trim();
+  const domain = show.theme || guest?.profession || "";
+
   return (
-    <Link href={`/arena-culture/emissions/${show.slug}`} className="ac-show-card focus-ring">
-      <div className="ac-show-card__media">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={show.poster || "/artists/fally-ipupa.jpg"} alt="" loading="lazy" />
+    <article className={featured ? "ac-episode ac-episode--featured" : "ac-episode"}>
+      {video ? (
+        <VideoEmbed url={video} title={guest?.name || show.title} poster={poster || undefined} />
+      ) : null}
+      <div className="ac-episode__body">
+        <p className="ac-kicker">{kicker || (domain ? domain : "Émission")}</p>
+        <h2>
+          <Link href={`/arena-culture/emissions/${show.slug}`}>{guest?.name || show.title}</Link>
+        </h2>
+        {domain && guest?.name ? <p className="ac-episode__domain">{domain}</p> : null}
+        {show.airDate ? <p className="ac-episode__date">{formatDate(show.airDate)}</p> : null}
       </div>
-      <div className="ac-show-card__body">
-        <p className="ac-kicker">
-          {kicker ||
-            `Épisode ${String(show.number).padStart(2, "0")}${
-              show.season ? ` · Saison ${show.season.number}` : ""
-            }`}
-        </p>
-        <h2>{show.title}</h2>
-        {show.theme ? <p>{show.theme}</p> : null}
-        <p>
-          {[show.airDate ? formatDate(show.airDate) : null, guestNames.join(", ")]
-            .filter(Boolean)
-            .join(" · ")}
-        </p>
-      </div>
-    </Link>
+    </article>
   );
 }
 
@@ -61,45 +77,40 @@ export default async function ArenaEmissionsPage() {
     getArenaStage(),
     getArchivedShows({ take: 12 }),
   ]);
-  const headline = stage.headline;
-  const announced = stage.announced;
-  const rest = shows.filter((show) => show.id !== headline?.id && show.id !== announced?.id);
-  const replays = archived.filter((show) => show.id !== headline?.id && show.id !== announced?.id);
+
+  const withVideo = [stage.headline, ...shows].filter(
+    (show): show is NonNullable<typeof show> => Boolean(show && episodeVideo(show))
+  );
+  const seen = new Set<string>();
+  const uniqueVideos = withVideo.filter((show) => {
+    if (seen.has(show.id)) return false;
+    seen.add(show.id);
+    return true;
+  });
+  const featured = uniqueVideos[0] || null;
+  const rest = uniqueVideos.slice(1);
+  const replays = archived.filter((show) => show.id !== featured?.id && episodeVideo(show));
 
   return (
     <>
       <ArenaPageIntro
         title="Émissions"
-        description="La nouvelle émission, le prochain invité, puis les rediffusions."
+        description="La nouvelle émission en vidéo, le nom de l’invité et le domaine."
       />
 
-      <section className="ac-page space-y-14">
-        {headline ? (
-          <div>
-            <p className="ac-kicker mb-4">Nouvelle émission</p>
-            <div className="ac-grid-shows">
-              <ShowCard
-                show={headline}
-                kicker={`Épisode ${String(headline.number).padStart(2, "0")}`}
-              />
-            </div>
-          </div>
-        ) : null}
-
-        {announced ? (
-          <div>
-            <p className="ac-kicker mb-4">Prochain invité</p>
-            <div className="ac-grid-shows">
-              <ShowCard show={announced} kicker="Annoncé" />
-            </div>
-          </div>
+      <section className="ac-page space-y-16">
+        {featured ? (
+          <ShowEpisode show={featured} kicker="Nouvelle émission" featured />
         ) : null}
 
         {rest.length ? (
-          <div className="ac-grid-shows">
-            {rest.map((show) => (
-              <ShowCard key={show.id} show={show} />
-            ))}
+          <div>
+            <p className="ac-kicker mb-4">À (re)découvrir</p>
+            <div className="ac-episode-grid">
+              {rest.map((show) => (
+                <ShowEpisode key={show.id} show={show} />
+              ))}
+            </div>
           </div>
         ) : null}
 
@@ -111,18 +122,18 @@ export default async function ArenaEmissionsPage() {
                 Toutes les archives
               </Link>
             </div>
-            <div className="ac-grid-shows">
+            <div className="ac-episode-grid">
               {replays.map((show) => (
-                <ShowCard key={show.id} show={show} />
+                <ShowEpisode key={show.id} show={show} />
               ))}
             </div>
           </div>
         ) : null}
 
-        {!headline && !announced && !rest.length && !replays.length ? (
+        {!featured && !rest.length && !replays.length ? (
           <EmptyState
             title="Aucune émission publiée"
-            description="Les émissions Arena Culture apparaîtront ici dès leur mise en ligne."
+            description="Publiez une émission depuis l’onglet Émissions : la vidéo apparaît ici tout de suite."
           />
         ) : null}
       </section>

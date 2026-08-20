@@ -5,6 +5,7 @@ import { ShareButtons } from "@/components/content/ShareButtons";
 import { PageViews } from "@/components/content/PageViews";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getShowBySlug } from "@/lib/data";
+import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { videoPoster } from "@/lib/media";
 import { arenaShowPlace, arenaTicketCta } from "@/lib/arena-calendar";
 import { formatDate } from "@/lib/utils";
@@ -17,9 +18,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const show = await getShowBySlug(slug);
   if (!show) return { title: "Émission" };
+  const guest = arenaSpotlightGuest(show);
   return {
-    title: `${show.title} · Arena Culture`,
-    description: show.theme || show.description || `Émission ${show.number} — Arena Culture`,
+    title: `${guest?.name || show.title} · Arena Culture`,
+    description: show.theme || guest?.profession || show.description || `Émission ${show.number} — Arena Culture`,
   };
 }
 
@@ -29,10 +31,14 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
   if (!show) notFound();
 
   const guests = show.guests.map((g) => g.guest).filter((g) => g.visible !== false);
+  const lead = arenaSpotlightGuest(show);
   const images = show.media.filter((m) => m.kind === "IMAGE");
-  const videos = show.media.filter((m) => m.kind === "VIDEO");
+  const extraVideos = show.media.filter(
+    (m) => m.kind === "VIDEO" && m.url !== show.videoUrl
+  );
   const place = arenaShowPlace(show, show.event);
   const ticket = arenaTicketCta(show.event);
+  const video = String(show.videoUrl || "").trim();
 
   return (
     <article>
@@ -41,16 +47,18 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
           {show.status === "SCHEDULED"
             ? "Prochain invité"
             : show.status === "PUBLISHED"
-              ? "À la une"
+              ? "Nouvelle émission"
               : "Rediffusion · Archives"}
           {` · Épisode ${String(show.number).padStart(2, "0")}`}
           {show.season ? ` · Saison ${show.season.number} (${show.season.year})` : ""}
         </p>
         <h1 className="font-display text-4xl uppercase leading-[0.95] md:text-5xl lg:text-6xl">
-          {show.title}
+          {lead?.name || show.title}
         </h1>
-        {show.theme ? (
-          <p className="mt-4 text-lg text-paper-muted md:text-xl">{show.theme}</p>
+        {show.theme || lead?.profession ? (
+          <p className="mt-4 text-lg text-paper-muted md:text-xl">
+            {show.theme || lead?.profession}
+          </p>
         ) : null}
         <div className="mt-5 flex flex-wrap gap-3 text-sm text-paper-muted">
           {show.airDate ? (
@@ -74,16 +82,18 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
               Toutes les dates
             </Link>
           </div>
-        ) : (
-          <div className="ac-cal-card__actions">
-            <Link href="/arena-culture/calendrier" className="ac-btn ac-btn--ghost">
-              Calendrier Arena
-            </Link>
-          </div>
-        )}
+        ) : null}
       </header>
 
-      {show.poster ? (
+      {video ? (
+        <div className="mx-auto max-w-4xl px-4 pt-8 md:px-6">
+          <VideoEmbed
+            url={video}
+            title={show.title}
+            poster={videoPoster(video, show.videoThumbnail)}
+          />
+        </div>
+      ) : show.poster ? (
         <div className="mx-auto max-w-4xl px-4 pt-10 md:px-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={show.poster} alt="" className="mx-auto max-h-[70vh] object-contain" />
@@ -99,17 +109,13 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
 
         {guests.length ? (
           <div className="mt-12">
-            <h2 className="font-display text-2xl">Invités</h2>
+            <h2 className="font-display text-2xl">Invité</h2>
             <ul className="mt-6 space-y-4">
               {guests.map((g) => (
                 <li key={g.id} className="flex gap-4 border border-line p-4">
                   {g.photo ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={g.photo}
-                      alt={g.name}
-                      className="h-20 w-20 object-cover"
-                    />
+                    <img src={g.photo} alt={g.name} className="h-20 w-20 object-cover" />
                   ) : (
                     <div className="flex h-20 w-20 items-center justify-center bg-ink-3 font-display text-xl text-paper/30">
                       {g.name.slice(0, 1)}
@@ -134,27 +140,12 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
           </div>
         ) : null}
 
-        {show.videoUrl ? (
-          <div className="mt-12">
-            <h2 className="mb-4 font-display text-2xl">Vidéo</h2>
-            <VideoEmbed
-              url={show.videoUrl}
-              title={show.title}
-              poster={videoPoster(show.videoUrl, show.videoThumbnail)}
-            />
-          </div>
-        ) : null}
-
-        {videos.length ? (
+        {extraVideos.length ? (
           <div className="mt-12 space-y-6">
             <h2 className="font-display text-2xl">Autres vidéos</h2>
-            {videos.map((v) => (
+            {extraVideos.map((v) => (
               <div key={v.id}>
-                <VideoEmbed
-                  url={v.url}
-                  title={v.title}
-                  poster={videoPoster(v.url, v.thumbnail)}
-                />
+                <VideoEmbed url={v.url} title={v.title} poster={videoPoster(v.url, v.thumbnail)} />
                 <p className="mt-2 text-sm text-paper-muted">{v.title}</p>
               </div>
             ))}

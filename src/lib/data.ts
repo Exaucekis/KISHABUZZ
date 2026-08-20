@@ -245,7 +245,7 @@ export async function getArenaStage() {
   } as const;
   const headline =
     (await prisma.arenaShow.findFirst({
-      where: { isFeatured: true, status: "PUBLISHED" },
+      where: { isFeatured: true, status: "PUBLISHED", NOT: { videoUrl: "" } },
       include,
       orderBy: [{ updatedAt: "desc" }, { airDate: "desc" }],
     })) ||
@@ -253,6 +253,11 @@ export async function getArenaStage() {
       where: { status: "PUBLISHED", NOT: { videoUrl: "" } },
       include,
       orderBy: [{ airDate: "desc" }, { number: "desc" }],
+    })) ||
+    (await prisma.arenaShow.findFirst({
+      where: { isFeatured: true, status: "PUBLISHED" },
+      include,
+      orderBy: [{ updatedAt: "desc" }, { airDate: "desc" }],
     }));
   const announced = await prisma.arenaShow.findFirst({
     where: {
@@ -513,17 +518,24 @@ export async function getArchivedShows(opts?: {
 }
 
 export async function getArenaArchiveBundle(opts?: { year?: number; seasonId?: string }) {
-  const { headline, announced } = await getArenaStage();
-  const liveIds = [headline?.id, announced?.id].filter(Boolean) as string[];
-  const [shows, videos, visuals] = await Promise.all([
+  const yearStart = opts?.year ? new Date(`${opts.year}-01-01`) : null;
+  const yearEnd = opts?.year ? new Date(`${opts.year + 1}-01-01`) : null;
+  const yearClause =
+    yearStart && yearEnd
+      ? { OR: [{ date: { gte: yearStart, lt: yearEnd } }, { date: null }] }
+      : null;
+
+  const [shows, videos, visualAssets] = await Promise.all([
     getArchivedShows(opts),
     prisma.mediaAsset.findMany({
       where: {
         kind: "VIDEO",
         visible: true,
         featured: false,
-        OR: [{ category: "ARENA_CULTURE" }, { arenaShowId: { not: null } }],
-        ...(liveIds.length ? { NOT: { arenaShowId: { in: liveIds } } } : {}),
+        AND: [
+          { OR: [{ category: "ARENA_CULTURE" }, { arenaShowId: { not: null } }] },
+          ...(yearClause ? [yearClause] : []),
+        ],
       },
       include: { arenaShow: { select: { slug: true, title: true } } },
       orderBy: [{ date: "desc" }, { createdAt: "desc" }],
@@ -534,11 +546,39 @@ export async function getArenaArchiveBundle(opts?: { year?: number; seasonId?: s
         visible: true,
         category: "ARENA_CULTURE",
         title: { startsWith: "Archive ·" },
+        ...(yearClause || {}),
       },
       orderBy: { createdAt: "desc" },
     }),
   ]);
-  return { shows, videos, visuals };
+
+  const visualUrls = new Set(visualAssets.map((item) => item.url));
+  const posterVisuals = shows
+    .filter((show) => show.poster && !visualUrls.has(show.poster))
+    .map((show) => ({
+      id: `show-poster:${show.id}`,
+      title: `Archive · ${show.title}`,
+      url: show.poster,
+      thumbnail: show.poster,
+      alt: show.title,
+      date: show.airDate,
+    }));
+
+  return {
+    shows,
+    videos,
+    visuals: [
+      ...visualAssets.map((item) => ({
+        id: item.id,
+        title: item.title,
+        url: item.url,
+        thumbnail: item.thumbnail || item.url,
+        alt: item.alt || item.title,
+        date: item.date,
+      })),
+      ...posterVisuals,
+    ],
+  };
 }
 
 export async function getUpcomingShow() {
