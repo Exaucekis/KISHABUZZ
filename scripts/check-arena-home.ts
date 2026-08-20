@@ -39,6 +39,7 @@ async function main() {
     "src/app/admin/arena/archives/page.tsx",
     "src/components/admin/ArenaHomeDashboard.tsx",
     "src/app/(site)/arena-culture/page.tsx",
+    "src/app/(site)/arena-culture/calendrier/page.tsx",
     "src/app/(site)/page.tsx",
   ];
   for (const file of files) {
@@ -117,6 +118,7 @@ async function main() {
       "/arena-culture/photos",
       "/arena-culture/videos",
       "/arena-culture/archives",
+      "/arena-culture/calendrier",
     ]) {
       const page = await fetchPage(path);
       check(Boolean(page && page.status === 200), `GET ${path} → ${page?.status ?? "injoignable"}`);

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
+import { ArenaCalendarCard } from "@/components/arena/ArenaCalendarCard";
 import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaMediaRow } from "@/components/arena/ArenaMediaRow";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -12,6 +13,7 @@ import {
   getFeaturedArenaGuests,
   getGallery,
   getPublishedShows,
+  getUpcomingArenaDates,
 } from "@/lib/data";
 import { arenaSpotlightMode } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
@@ -27,7 +29,7 @@ export const revalidate = 0;
 
 export default async function ArenaCulturePage() {
   await connection();
-  const [home, spotlight, shows, posters, featuredGuests, albums, archived] = await Promise.all([
+  const [home, spotlight, shows, posters, featuredGuests, albums, archived, upcoming] = await Promise.all([
     getArenaHome(),
     getArenaSpotlight(),
     getPublishedShows({ take: 8 }),
@@ -35,6 +37,7 @@ export default async function ArenaCulturePage() {
     getFeaturedArenaGuests(8),
     getArenaPhotoAlbums(),
     getArchivedShows({ take: 8 }),
+    getUpcomingArenaDates(),
   ]);
 
   const guest = spotlight?.guests.map((item) => item.guest).find((item) => item.visible !== false);
@@ -211,6 +214,9 @@ export default async function ArenaCulturePage() {
             )}
 
             <div className="ac-chips">
+              <Link href="/arena-culture/calendrier" className="ac-chip">
+                Dates
+              </Link>
               <Link href="/arena-culture/emissions" className="ac-chip">
                 {home.spotlight.chipShows}
               </Link>
@@ -227,6 +233,25 @@ export default async function ArenaCulturePage() {
           </div>
         </div>
       </section>
+
+      {upcoming.length ? (
+        <section className="ac-cal-home">
+          <div className="ac-row__head">
+            <div>
+              <p className="ac-kicker">Agenda</p>
+              <h2 className="ac-row__title">Prochaines dates</h2>
+            </div>
+            <Link href="/arena-culture/calendrier" className="ac-row__more">
+              Tout voir
+            </Link>
+          </div>
+          <div className="ac-cal-list">
+            {upcoming.slice(0, 3).map((show) => (
+              <ArenaCalendarCard key={show.id} show={show} />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <ArenaMediaRow
         eyebrow={home.scene.eyebrow}

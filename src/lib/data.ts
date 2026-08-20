@@ -1,5 +1,6 @@
 import { unstable_cache, unstable_noStore as noStore } from "next/cache";
 import { cache } from "react";
+import { compareArenaDates, isUpcomingArenaDate } from "@/lib/arena-calendar";
 import { ARENA_HOME_KEY, parseArenaHome } from "@/lib/arena-home";
 import { CACHE_TAGS } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
@@ -286,8 +287,46 @@ export async function getShowBySlug(slug: string) {
       season: true,
       guests: { include: { guest: true } },
       media: { where: { visible: true }, orderBy: { createdAt: "desc" } },
+      event: {
+        select: {
+          slug: true,
+          status: true,
+          venueName: true,
+          city: true,
+          address: true,
+          sessions: { select: { access: true, startsAt: true, endsAt: true } },
+          ticketTypes: {
+            select: { quantity: true, soldCount: true, reservedCount: true, visible: true },
+          },
+        },
+      },
     },
   });
+}
+
+const upcomingEventSelect = {
+  slug: true,
+  status: true,
+  venueName: true,
+  city: true,
+  address: true,
+  sessions: { select: { access: true, startsAt: true, endsAt: true } },
+  ticketTypes: {
+    select: { quantity: true, soldCount: true, reservedCount: true, visible: true },
+  },
+} as const;
+
+export async function getUpcomingArenaDates() {
+  await publishDueArenaShows();
+  const shows = await prisma.arenaShow.findMany({
+    where: { status: { in: ["SCHEDULED", "PUBLISHED"] } },
+    include: {
+      guests: { include: { guest: true } },
+      event: { select: upcomingEventSelect },
+    },
+    orderBy: [{ airDate: "asc" }, { number: "asc" }],
+  });
+  return shows.filter((show) => isUpcomingArenaDate(show)).sort(compareArenaDates);
 }
 
 export async function getVisiblePartners() {

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 const nav = [
   { href: "/arena-culture", label: "Accueil", exact: true },
+  { href: "/arena-culture/calendrier", label: "Dates" },
   { href: "/arena-culture/emissions", label: "Émissions" },
   { href: "/arena-culture/invites", label: "Invités" },
   { href: "/arena-culture/affiches", label: "Affiches" },

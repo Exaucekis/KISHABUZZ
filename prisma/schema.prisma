@@ -150,9 +150,15 @@ model ArenaShow {
   season        ArenaSeason?     @relation(fields: [seasonId], references: [id])
   guests        ArenaShowGuest[]
   media         MediaAsset[]
+  venueName     String           @default("")
+  eventId       String?
+  event         Event?           @relation(fields: [eventId], references: [id], onDelete: SetNull)
   views         Int              @default(0)
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+
+  @@index([status, airDate])
+  @@index([eventId])
 }
 
 model ArenaShowGuest {
@@ -380,6 +386,7 @@ model Event {
   scans         TicketScan[]
   refunds       Refund[]
   auditLogs     EventAuditLog[]
+  arenaShows    ArenaShow[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 

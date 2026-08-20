@@ -7,9 +7,11 @@ import { MediaField } from "@/components/admin/MediaField";
 import { AdminHint } from "@/components/admin/AdminHint";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
+import { formatDate } from "@/lib/utils";
 
 type Season = { id: string; title: string; number: number; year: number };
 type Guest = { id: string; name: string };
+type EventOption = { id: string; title: string; startsAt: Date; status: string };
 type Show = {
   id: string;
   title: string;
@@ -18,6 +20,8 @@ type Show = {
   description: string;
   airDate: Date | null;
   airTime: string;
+  venueName: string;
+  eventId: string | null;
   poster: string;
   videoUrl: string;
   videoThumbnail: string;
@@ -39,10 +43,12 @@ export function ArenaShowForm({
   show,
   seasons,
   guests,
+  events = [],
 }: {
   show?: Show;
   seasons: Season[];
   guests: Guest[];
+  events?: EventOption[];
 }) {
   const [state, action] = useActionState(saveArenaShow, initial);
   const selected = new Set(show?.guests.map((g) => g.guestId) || []);
@@ -98,7 +104,31 @@ export function ArenaShowForm({
         <div className="admin-field">
           <label htmlFor="airTime">Heure</label>
           <input id="airTime" name="airTime" defaultValue={show?.airTime || ""} placeholder="20:00" />
-          <AdminHint>Heure d’antenne. Ex. 20:00.</AdminHint>
+          <AdminHint>Heure d’antenne, fuseau Lubumbashi. Ex. 20:00.</AdminHint>
+        </div>
+        <div className="admin-field">
+          <label htmlFor="venueName">Lieu</label>
+          <input
+            id="venueName"
+            name="venueName"
+            defaultValue={show?.venueName || ""}
+            placeholder="Studio Arena Grand Culture, Lubumbashi"
+          />
+          <AdminHint>Visible sur le calendrier. Si vide, on reprend le lieu de l’événement billets.</AdminHint>
+        </div>
+        <div className="admin-field">
+          <label htmlFor="eventId">Billets (événement)</label>
+          <select id="eventId" name="eventId" defaultValue={show?.eventId || ""}>
+            <option value="">— Pas de billets —</option>
+            {events.map((event) => (
+              <option key={event.id} value={event.id}>
+                {event.title} · {formatDate(event.startsAt, "d MMM yyyy")} · {event.status}
+              </option>
+            ))}
+          </select>
+          <AdminHint>
+            Lie un événement publié pour afficher « Prendre un billet » sur le calendrier Arena.
+          </AdminHint>
         </div>
         <MediaField
           name="poster"

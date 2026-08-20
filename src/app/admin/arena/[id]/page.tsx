@@ -14,13 +14,19 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function EditArenaShowPage({ params }: Props) {
   const { id } = await params;
-  const [show, seasons, guests] = await Promise.all([
+  const [show, seasons, guests, events] = await Promise.all([
     prisma.arenaShow.findUnique({
       where: { id },
       include: { guests: true },
     }),
     prisma.arenaSeason.findMany({ orderBy: [{ year: "desc" }, { number: "desc" }] }),
     prisma.arenaGuest.findMany({ orderBy: { name: "asc" } }),
+    prisma.event.findMany({
+      where: { status: { in: ["PUBLISHED", "SOLD_OUT", "ENDED"] } },
+      select: { id: true, title: true, startsAt: true, status: true },
+      orderBy: { startsAt: "desc" },
+      take: 80,
+    }),
   ]);
   if (!show) notFound();
 
@@ -28,10 +34,10 @@ export default async function EditArenaShowPage({ params }: Props) {
     <div>
       <AdminPageIntro
         title={`Éditer · ${show.title}`}
-        hint="Annoncer le prochain invité ou publier à la une. L’émission précédente part aux archives."
+        hint="Annoncer le prochain invité ou publier à la une. Lie un événement pour les billets du calendrier."
       />
       <ArenaAdminNav current="/admin/arena/emissions" />
-      <ArenaShowForm show={show} seasons={seasons} guests={guests} />
+      <ArenaShowForm show={show} seasons={seasons} guests={guests} events={events} />
     </div>
   );
 }

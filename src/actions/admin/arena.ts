@@ -25,6 +25,8 @@ const showSchema = z.object({
   description: z.string().optional().default(""),
   airDate: z.date().nullable().optional(),
   airTime: z.string().max(40).optional().default(""),
+  venueName: z.string().max(220).optional().default(""),
+  eventId: z.string().nullable().optional(),
   poster: z.string().optional().default(""),
   videoUrl: z.string().optional().default(""),
   videoThumbnail: z.string().optional().default(""),
@@ -61,6 +63,8 @@ export async function saveArenaShow(
     description: formString(formData, "description"),
     airDate: formDate(formData, "airDate"),
     airTime: formString(formData, "airTime"),
+    venueName: formString(formData, "venueName"),
+    eventId: formOptionalId(formData, "eventId"),
     poster: formString(formData, "poster"),
     videoUrl: formString(formData, "videoUrl"),
     videoThumbnail: formString(formData, "videoThumbnail"),
@@ -91,6 +95,8 @@ export async function saveArenaShow(
     description: data.description || "",
     airDate: data.airDate,
     airTime: data.airTime || "",
+    venueName: data.venueName || "",
+    eventId: data.eventId,
     poster: data.poster || "",
     videoUrl: data.videoUrl || "",
     videoThumbnail: data.videoThumbnail || videoPoster(data.videoUrl),
@@ -121,6 +127,7 @@ export async function saveArenaShow(
   revalidatePath("/admin/arena/videos");
   revalidatePath("/admin/arena/archives");
   revalidatePath("/arena-culture");
+  revalidatePath("/arena-culture/calendrier");
   revalidatePath("/arena-culture/emissions");
   revalidatePath("/arena-culture/videos");
   revalidatePath("/arena-culture/archives");
@@ -138,6 +145,7 @@ export async function deleteArenaShow(formData: FormData) {
   revalidatePath("/admin/arena");
   revalidatePath("/admin/arena/emissions");
   revalidatePath("/arena-culture");
+  revalidatePath("/arena-culture/calendrier");
   revalidatePublic();
   redirect("/admin/arena/emissions");
 }
@@ -160,6 +168,7 @@ export async function setArenaShowStatus(formData: FormData) {
   revalidatePath("/admin/arena/emissions");
   revalidatePath("/admin/arena/archives");
   revalidatePath("/arena-culture");
+  revalidatePath("/arena-culture/calendrier");
   revalidatePath("/arena-culture/emissions");
   revalidatePath("/arena-culture/videos");
   revalidatePath("/arena-culture/archives");
@@ -217,6 +226,7 @@ export async function saveArenaGuest(
   revalidatePath("/admin/arena/guests");
   revalidatePath("/arena-culture/invites");
   revalidatePath("/arena-culture");
+  revalidatePath("/arena-culture/calendrier");
   revalidatePublic();
   return { ok: true, message: "Invité enregistré." };
 }
@@ -231,6 +241,7 @@ export async function setArenaGuestVisible(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/arena-culture/invites");
   revalidatePath("/arena-culture");
+  revalidatePath("/arena-culture/calendrier");
   revalidatePublic();
 }
 
@@ -242,6 +253,7 @@ export async function deleteArenaGuest(formData: FormData) {
   revalidatePath("/admin/arena/guests");
   revalidatePath("/arena-culture/invites");
   revalidatePath("/arena-culture");
+  revalidatePath("/arena-culture/calendrier");
   revalidatePublic();
 }
 
@@ -284,6 +296,7 @@ export async function saveArenaSeason(
 
   revalidatePath("/admin/arena/seasons");
   revalidatePath("/arena-culture");
+  revalidatePath("/arena-culture/calendrier");
   revalidatePublic();
   return { ok: true, message: "Saison enregistrée." };
 }

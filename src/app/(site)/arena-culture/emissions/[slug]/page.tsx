@@ -6,6 +6,7 @@ import { PageViews } from "@/components/content/PageViews";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getShowBySlug } from "@/lib/data";
 import { videoPoster } from "@/lib/media";
+import { arenaShowPlace, arenaTicketCta } from "@/lib/arena-calendar";
 import { formatDate } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -30,6 +31,8 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
   const guests = show.guests.map((g) => g.guest).filter((g) => g.visible !== false);
   const images = show.media.filter((m) => m.kind === "IMAGE");
   const videos = show.media.filter((m) => m.kind === "VIDEO");
+  const place = arenaShowPlace(show, show.event);
+  const ticket = arenaTicketCta(show.event);
 
   return (
     <article>
@@ -56,8 +59,28 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
               {show.airTime ? ` · ${show.airTime}` : ""}
             </span>
           ) : null}
+          {place ? <span>{place}</span> : null}
           <PageViews kind="show" id={show.id} initial={show.views} />
         </div>
+        {ticket ? (
+          <div className="ac-cal-card__actions">
+            <Link
+              href={ticket.href}
+              className={`ac-btn ${ticket.kind === "soldout" ? "ac-btn--ghost" : "ac-btn--primary"}`}
+            >
+              {ticket.label}
+            </Link>
+            <Link href="/arena-culture/calendrier" className="ac-btn ac-btn--ghost">
+              Toutes les dates
+            </Link>
+          </div>
+        ) : (
+          <div className="ac-cal-card__actions">
+            <Link href="/arena-culture/calendrier" className="ac-btn ac-btn--ghost">
+              Calendrier Arena
+            </Link>
+          </div>
+        )}
       </header>
 
       {show.poster ? (
