@@ -9,6 +9,7 @@ import {
   requireAdmin,
   type AdminActionState,
 } from "@/lib/admin";
+import { PUBLIC_CONTACT_EMAIL } from "@/lib/contact";
 import { prisma } from "@/lib/prisma";
 
 const settingsSchema = z.object({
@@ -66,10 +67,15 @@ export async function saveSettings(
     };
   }
 
+  const data = {
+    ...parsed.data,
+    email: parsed.data.email.trim() || PUBLIC_CONTACT_EMAIL,
+  };
+
   await prisma.siteSetting.upsert({
     where: { id: "main" },
-    create: { id: "main", ...parsed.data },
-    update: parsed.data,
+    create: { id: "main", ...data },
+    update: data,
   });
 
   revalidatePath("/admin/settings");

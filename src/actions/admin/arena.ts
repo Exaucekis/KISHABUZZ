@@ -15,6 +15,7 @@ import {
 } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { createSlug } from "@/lib/utils";
+import { queueArenaAlert } from "@/lib/arena-alert-dispatch";
 import { applyArenaSpotlight, isArenaLiveStatus } from "@/lib/arena-spotlight";
 import { videoPoster } from "@/lib/media";
 
@@ -86,6 +87,9 @@ export async function saveArenaShow(
   const data = parsed.data;
   const slug = await uniqueShowSlug(`${data.title}-${data.number}`, id || undefined);
   const live = isArenaLiveStatus(data.status);
+  const previous = id
+    ? await prisma.arenaShow.findUnique({ where: { id }, select: { status: true } })
+    : null;
 
   const payload = {
     title: data.title,
@@ -121,6 +125,7 @@ export async function saveArenaShow(
   });
 
   await applyArenaSpotlight(show.id, data.status);
+  queueArenaAlert(show.id, previous?.status, data.status);
 
   revalidatePath("/admin/arena");
   revalidatePath("/admin/arena/emissions");
@@ -155,6 +160,7 @@ export async function setArenaShowStatus(formData: FormData) {
   const id = formString(formData, "id");
   const status = formString(formData, "status");
   if (!id || !status) return;
+  const current = await prisma.arenaShow.findUnique({ where: { id }, select: { status: true } });
   await prisma.arenaShow.update({
     where: { id },
     data: {
@@ -164,6 +170,7 @@ export async function setArenaShowStatus(formData: FormData) {
     },
   });
   await applyArenaSpotlight(id, status);
+  queueArenaAlert(id, current?.status, status);
   revalidatePath("/admin/arena");
   revalidatePath("/admin/arena/emissions");
   revalidatePath("/admin/arena/archives");

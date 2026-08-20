@@ -6,6 +6,7 @@ import {
   isNewsletterEmail,
   normalizeNewsletterEmail,
 } from "@/lib/newsletter";
+import { parseArenaAlertSignup, upsertArenaAlertSubscriber } from "@/lib/arena-alerts";
 import { prisma } from "@/lib/prisma";
 
 export type NewsletterActionState = {
@@ -50,7 +51,14 @@ export async function subscribeNewsletter(
 
   const existing = await prisma.newsletterSubscriber.findUnique({ where: { email } });
   if (existing?.status === "ACTIVE") {
-    return { ok: true, message: "Vous êtes déjà inscrit." };
+    const whatsappResult = await maybeSaveArenaWhatsApp(formData, email, source);
+    if (whatsappResult.ok === false) return whatsappResult;
+    return {
+      ok: true,
+      message: whatsappResult.added
+        ? "Vous êtes déjà inscrit. WhatsApp Arena ajouté."
+        : "Vous êtes déjà inscrit.",
+    };
   }
 
   if (existing) {
@@ -62,6 +70,8 @@ export async function subscribeNewsletter(
         unsubscribeToken: createUnsubscribeToken(),
       },
     });
+    const whatsappResult = await maybeSaveArenaWhatsApp(formData, email, source);
+    if (whatsappResult.ok === false) return whatsappResult;
     return { ok: true, message: "Réinscription confirmée. Merci." };
   }
 
@@ -72,8 +82,29 @@ export async function subscribeNewsletter(
       unsubscribeToken: createUnsubscribeToken(),
     },
   });
+  const whatsappResult = await maybeSaveArenaWhatsApp(formData, email, source);
+  if (whatsappResult.ok === false) return whatsappResult;
 
   return { ok: true, message: "Inscription confirmée. Merci." };
+}
+
+async function maybeSaveArenaWhatsApp(
+  formData: FormData,
+  email: string,
+  source: string
+): Promise<NewsletterActionState & { added?: boolean }> {
+  const raw = String(formData.get("whatsapp") || "").trim();
+  if (!raw) return { ok: true, message: "", added: false };
+  const parsed = parseArenaAlertSignup({ email, whatsapp: raw });
+  if (parsed.errors.length) {
+    return { ok: false, message: parsed.errors[0] };
+  }
+  await upsertArenaAlertSubscriber({
+    email: parsed.email,
+    whatsapp: parsed.whatsapp,
+    source,
+  });
+  return { ok: true, message: "", added: true };
 }
 
 export async function unsubscribeNewsletter(

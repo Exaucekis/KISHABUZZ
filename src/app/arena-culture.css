@@ -590,6 +590,109 @@
   }
 }
 
+/* ——— Alertes email / WhatsApp ——— */
+.ac-alert {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 7vw, 5rem) var(--ac-pad) clamp(3.5rem, 9vw, 6rem);
+  border-top: 1px solid var(--ac-line);
+  text-align: center;
+}
+
+.ac-alert h2 {
+  margin: 0.6rem 0 0;
+  font-family: var(--font-syne), sans-serif;
+  font-size: clamp(1.85rem, 4.5vw, 2.85rem);
+  letter-spacing: -0.035em;
+}
+
+.ac-alert > p {
+  margin: 1rem auto 0;
+  max-width: 32rem;
+  color: var(--ac-muted);
+  line-height: 1.65;
+}
+
+.ac-alert__form {
+  margin: 1.75rem auto 0;
+  max-width: 42rem;
+  text-align: left;
+}
+
+.ac-alert__fields {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 700px) {
+  .ac-alert__fields {
+    grid-template-columns: 1fr 1fr auto;
+    align-items: end;
+  }
+}
+
+.ac-alert__fields label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ac-muted);
+}
+
+.ac-alert__input {
+  width: 100%;
+  min-height: 3.15rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--ac-line);
+  border-radius: 0.35rem;
+  background: var(--ac-panel);
+  color: #fff;
+}
+
+.ac-alert__input::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.ac-alert__input:focus {
+  outline: 2px solid var(--ac-amber);
+  outline-offset: 1px;
+}
+
+.ac-alert__submit {
+  width: 100%;
+}
+
+.ac-alert__legal {
+  margin: 0.85rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--ac-muted);
+}
+
+.ac-alert__legal a {
+  color: var(--ac-amber);
+  text-decoration: none;
+}
+
+.ac-alert__legal a:hover {
+  text-decoration: underline;
+}
+
+.ac-alert__status {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+}
+
+.ac-alert__status.is-ok {
+  color: #6ee7b7;
+}
+
+.ac-alert__status.is-err {
+  color: #fca5a5;
+}
+
 /* ——— Grilles sous-pages ——— */
 .ac-page {
   max-width: 1400px;
@@ -1263,9 +1366,13 @@ html[data-theme="light"] .ac-close {
 
 html.light .ac-spotlight__copy p,
 html.light .ac-close p,
+html.light .ac-alert > p,
+html.light .ac-alert__legal,
 html.light .ac-intro p:last-child,
 html[data-theme="light"] .ac-spotlight__copy p,
 html[data-theme="light"] .ac-close p,
+html[data-theme="light"] .ac-alert > p,
+html[data-theme="light"] .ac-alert__legal,
 html[data-theme="light"] .ac-intro p:last-child {
   color: rgba(26, 22, 16, 0.65);
 }
@@ -1274,10 +1381,12 @@ html.light .ac-intro h1,
 html.light .ac-row__title,
 html.light .ac-spotlight__copy h2,
 html.light .ac-close h2,
+html.light .ac-alert h2,
 html[data-theme="light"] .ac-intro h1,
 html[data-theme="light"] .ac-row__title,
 html[data-theme="light"] .ac-spotlight__copy h2,
-html[data-theme="light"] .ac-close h2 {
+html[data-theme="light"] .ac-close h2,
+html[data-theme="light"] .ac-alert h2 {
   color: #1a1610;
 }
 
@@ -1307,4 +1416,16 @@ html.light .ac-viewer__overlay,
 html[data-theme="light"] .ac-viewer__overlay {
   background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
   color: #fff;
+}
+
+html.light .ac-alert__input,
+html[data-theme="light"] .ac-alert__input {
+  background: #fff;
+  color: #1a1610;
+  border-color: rgba(26, 22, 16, 0.16);
+}
+
+html.light .ac-alert__input::placeholder,
+html[data-theme="light"] .ac-alert__input::placeholder {
+  color: rgba(26, 22, 16, 0.4);
 }

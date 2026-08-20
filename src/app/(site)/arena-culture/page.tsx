@@ -217,6 +217,9 @@ export default async function ArenaCulturePage() {
               <Link href="/arena-culture/calendrier" className="ac-chip">
                 Dates
               </Link>
+              <Link href="#alertes" className="ac-chip">
+                Alertes
+              </Link>
               <Link href="/arena-culture/emissions" className="ac-chip">
                 {home.spotlight.chipShows}
               </Link>

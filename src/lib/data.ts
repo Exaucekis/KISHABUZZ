@@ -3,6 +3,7 @@ import { cache } from "react";
 import { compareArenaDates, isUpcomingArenaDate } from "@/lib/arena-calendar";
 import { ARENA_HOME_KEY, parseArenaHome } from "@/lib/arena-home";
 import { CACHE_TAGS } from "@/lib/cache";
+import { withPublicContactEmail } from "@/lib/contact";
 import { prisma } from "@/lib/prisma";
 import { publishDueArticles, publishDueArenaShows } from "@/lib/publish-scheduled";
 import { toSpotlightArtistCards } from "@/lib/spotlight-artists";
@@ -16,7 +17,7 @@ const fallbackSettings = {
     "KISHA BUZZ est une plateforme média et professionnelle dédiée à la communication, aux chroniques, aux productions et à la couverture culturelle.",
   aboutLong: "",
   phone: "0974105940",
-  email: "",
+  email: "contact@kisha-buzz.com",
   address: "",
   whatsappEnabled: false,
   socialFacebook: "",
@@ -35,7 +36,8 @@ const fallbackSettings = {
 
 async function loadSettings() {
   try {
-    return (await prisma.siteSetting.findUnique({ where: { id: "main" } })) ?? fallbackSettings;
+    const row = await prisma.siteSetting.findUnique({ where: { id: "main" } });
+    return withPublicContactEmail(row ?? fallbackSettings);
   } catch (error) {
     console.error("settings: database unreachable, using fallback", error);
     return fallbackSettings;

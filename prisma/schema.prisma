@@ -156,6 +156,7 @@ model ArenaShow {
   views         Int              @default(0)
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+  alertDispatches ArenaAlertDispatch[]
 
   @@index([status, airDate])
   @@index([eventId])
@@ -328,6 +329,39 @@ model NewsletterCampaign {
   createdBy  String   @default("")
   createdAt  DateTime @default(now())
 
+  @@index([createdAt])
+}
+
+model ArenaAlertSubscriber {
+  id               String   @id @default(cuid())
+  email            String?  @unique
+  whatsapp         String   @default("")
+  emailStatus      String   @default("NONE") // NONE | ACTIVE | UNSUBSCRIBED
+  whatsappStatus   String   @default("NONE") // NONE | ACTIVE | UNSUBSCRIBED
+  source           String   @default("arena")
+  unsubscribeToken String   @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([emailStatus])
+  @@index([whatsappStatus, whatsapp])
+}
+
+model ArenaAlertDispatch {
+  id             String    @id @default(cuid())
+  showId         String
+  show           ArenaShow @relation(fields: [showId], references: [id], onDelete: Cascade)
+  kind           String
+  emailSent      Int       @default(0)
+  emailFailed    Int       @default(0)
+  whatsappSent   Int       @default(0)
+  whatsappFailed Int       @default(0)
+  status         String    @default("PENDING") // PENDING | SENT | PARTIAL | FAILED | SKIPPED
+  errorNote      String    @default("")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([showId, kind])
   @@index([createdAt])
 }
 

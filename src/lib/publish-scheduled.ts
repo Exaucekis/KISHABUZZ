@@ -1,4 +1,5 @@
 import { applyArenaSpotlight } from "@/lib/arena-spotlight";
+import { queueArenaAlert } from "@/lib/arena-alert-dispatch";
 import { revalidatePublic } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 
@@ -51,6 +52,7 @@ export async function publishDueArenaShows() {
     due.sort((a, b) => (a.airDate?.getTime() || 0) - (b.airDate?.getTime() || 0));
     for (const show of due) {
       await applyArenaSpotlight(show.id, "PUBLISHED");
+      queueArenaAlert(show.id, "SCHEDULED", "PUBLISHED");
     }
 
     revalidatePublic();

@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { notifyContactInbox } from "@/lib/contact-mail";
 import { prisma } from "@/lib/prisma";
 
 const COLLAB_TYPES = [
@@ -93,6 +94,12 @@ export async function submitContact(
       status: "NEW",
     },
   });
+
+  try {
+    await notifyContactInbox(parsed.data);
+  } catch (error) {
+    console.error("contact notify failed", error);
+  }
 
   return {
     ok: true,

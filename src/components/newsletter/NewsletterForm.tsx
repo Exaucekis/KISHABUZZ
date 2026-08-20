@@ -10,9 +10,11 @@ const initial: NewsletterActionState = { ok: false, message: "" };
 export function NewsletterForm({
   source = "footer",
   compact = false,
+  allowWhatsApp = false,
 }: {
   source?: string;
   compact?: boolean;
+  allowWhatsApp?: boolean;
 }) {
   const [state, action, pending] = useActionState(subscribeNewsletter, initial);
 
@@ -46,6 +48,22 @@ export function NewsletterForm({
           {pending ? "Envoi…" : "S’inscrire"}
         </button>
       </div>
+      {allowWhatsApp ? (
+        <div>
+          <label htmlFor={`newsletter-whatsapp-${source}`} className="sr-only">
+            WhatsApp (optionnel)
+          </label>
+          <input
+            id={`newsletter-whatsapp-${source}`}
+            name="whatsapp"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="WhatsApp (optionnel) — 0974 105 940"
+            className="w-full border border-line bg-ink px-4 py-3 text-paper focus-ring"
+          />
+        </div>
+      ) : null}
       <p className="text-xs leading-relaxed text-paper-muted">
         Actualités et chroniques, sans spam.{" "}
         <Link href="/politique-de-confidentialite" className="text-ember-text hover:underline">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { NewsletterForm } from "@/components/newsletter/NewsletterForm";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { PUBLIC_CONTACT_EMAIL } from "@/lib/contact";
 import { getPageContent, getSettings } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export default async function ContactPage() {
   ]);
 
   const phone = settings.phone || "0974105940";
+  const email = settings.email || PUBLIC_CONTACT_EMAIL;
   const telHref = `tel:${phone.replace(/\s/g, "")}`;
   const waHref = `https://wa.me/${phone.replace(/\D/g, "")}`;
 
@@ -54,14 +56,12 @@ export default async function ContactPage() {
             ) : null}
           </div>
 
-          {settings.email ? (
-            <div className="border border-line bg-ink-2 p-6">
-              <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">Email</p>
-              <a href={`mailto:${settings.email}`} className="mt-3 block text-lg">
-                {settings.email}
-              </a>
-            </div>
-          ) : null}
+          <div className="border border-line bg-ink-2 p-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">Email</p>
+            <a href={`mailto:${email}`} className="mt-3 block text-lg">
+              {email}
+            </a>
+          </div>
 
           {settings.address ? (
             <div className="border border-line bg-ink-2 p-6">

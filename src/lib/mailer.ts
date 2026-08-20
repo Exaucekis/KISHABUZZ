@@ -6,6 +6,7 @@ export type MailMessage = {
   subject: string;
   html: string;
   text: string;
+  replyTo?: string;
 };
 
 export function isMailerConfigured() {
@@ -54,6 +55,7 @@ async function sendResendBatch(from: string, messages: MailMessage[]) {
         subject: message.subject,
         html: message.html,
         text: message.text,
+        ...(message.replyTo ? { reply_to: [message.replyTo] } : {}),
       }))
     ),
   });

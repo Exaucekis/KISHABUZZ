@@ -33,6 +33,12 @@ export default async function PolitiqueConfidentialitePage() {
           vous envoyer les chroniques et actualités KISHA BUZZ. Vous pouvez vous désinscrire à
           tout moment via le lien fourni ou en nous contactant.
         </p>
+        <p>
+          Les alertes Arena Culture (prochain invité, à la une) peuvent aussi collecter un numéro
+          WhatsApp, en plus ou à la place de l&apos;email. Ces données servent uniquement à vous
+          prévenir au moment de l&apos;annonce. Désinscription via le lien du message, ou en nous
+          contactant.
+        </p>
         <h2>Finalités</h2>
         <p>
           Traitement des demandes de collaboration, suivi commercial ou éditorial, et amélioration

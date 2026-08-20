@@ -8,6 +8,7 @@ export const ARENA_ADMIN_LINKS = [
   { href: "/admin/arena/albums", label: "Albums" },
   { href: "/admin/arena/seasons", label: "Saisons" },
   { href: "/admin/arena/archives", label: "Archives" },
+  { href: "/admin/arena/alertes", label: "Alertes" },
 ] as const;
 
 export function ArenaAdminNav({ current }: { current?: string }) {

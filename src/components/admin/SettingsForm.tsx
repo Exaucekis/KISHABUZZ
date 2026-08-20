@@ -53,8 +53,11 @@ export function SettingsForm({ settings }: { settings: Settings }) {
         </div>
         <div className="admin-field">
           <label>Email</label>
-          <input name="email" defaultValue={settings.email} />
-          <AdminHint>Email public affiché sur Contact.</AdminHint>
+          <input name="email" type="email" defaultValue={settings.email || "contact@kisha-buzz.com"} />
+          <AdminHint>
+            Email public (Contact, mentions). Les demandes du formulaire lui sont envoyées. Défaut :
+            contact@kisha-buzz.com.
+          </AdminHint>
         </div>
         <div className="admin-field">
           <label>Adresse</label>

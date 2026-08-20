@@ -53,9 +53,10 @@ export async function SiteFooter() {
             Newsletter
           </p>
           <p className="mb-4 text-sm text-paper-muted">
-            Recevez les chroniques et actualités KISHA BUZZ.
+            Recevez les chroniques et actualités KISHA BUZZ. Sur Arena Culture, vous pouvez aussi
+            laisser un WhatsApp pour l’annonce du prochain invité.
           </p>
-          <NewsletterForm source="footer" compact />
+          <NewsletterForm source="footer" compact allowWhatsApp />
           <p className="mt-6 text-lg font-medium">{settings.phone}</p>
           {settings.email ? (
             <a href={`mailto:${settings.email}`} className="mt-2 block text-paper-muted">

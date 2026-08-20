@@ -166,8 +166,9 @@ export function ArenaShowForm({
             <option value="ARCHIVED">Archives / rediffusion</option>
           </select>
           <AdminHint>
-            Une seule émission à la une. « Annoncer » remplace le bloc « Bientôt annoncé ». « Publier
-            à la une » prend l’accueil, Arena et la vidéo. L’émission précédente passe aux archives.
+            Une seule émission à la une. « Annoncer » remplace le bloc « Bientôt annoncé » et envoie
+            l’alerte (email + WhatsApp) aux abonnés. « Publier à la une » prend l’accueil, Arena et
+            la vidéo, puis envoie une seconde alerte. L’émission précédente passe aux archives.
           </AdminHint>
         </div>
         <div className="admin-field md:col-span-2">

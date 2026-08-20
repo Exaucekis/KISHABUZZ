@@ -26,7 +26,7 @@ async function main() {
 
   await prisma.siteSetting.upsert({
     where: { id: "main" },
-    update: {},
+    update: { email: "contact@kisha-buzz.com" },
     create: {
       id: "main",
       siteTitle: "KISHA BUZZ",
@@ -36,6 +36,7 @@ async function main() {
         "KISHA BUZZ — La révolution culturelle et marketing. Plateforme média et professionnelle dédiée à la communication, aux chroniques, aux productions et à la couverture culturelle.",
       aboutLong: "",
       phone: "0974105940",
+      email: "contact@kisha-buzz.com",
       whatsappEnabled: false,
       metaTitle: "KISHA BUZZ — Média, culture & contenus",
       metaDescription:

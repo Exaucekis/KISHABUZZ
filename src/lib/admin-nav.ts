@@ -35,13 +35,15 @@ export function isAdminNavActive(pathname: string, item: Pick<AdminNavItem, "hre
       pathname.startsWith("/admin/arena/new") ||
       pathname.startsWith("/admin/arena/emissions") ||
       pathname.startsWith("/admin/arena/archives") ||
+      pathname.startsWith("/admin/arena/alertes") ||
       (/^\/admin\/arena\/[^/]+$/.test(pathname) &&
         !pathname.startsWith("/admin/arena/guests") &&
         !pathname.startsWith("/admin/arena/seasons") &&
         !pathname.startsWith("/admin/arena/albums") &&
         !pathname.startsWith("/admin/arena/videos") &&
         !pathname.startsWith("/admin/arena/emissions") &&
-        !pathname.startsWith("/admin/arena/archives"))
+        !pathname.startsWith("/admin/arena/archives") &&
+        !pathname.startsWith("/admin/arena/alertes"))
     );
   }
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
