@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { deleteEvent, setEventStatus } from "@/actions/admin/events";
 import { EventAdminNav } from "@/components/admin/EventAdminNav";
+import {
+  matchesEventListView,
+  parseEventListView,
+  type EventListView,
+} from "@/lib/event-admin-views";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { remainingSeats } from "@/lib/events";
@@ -9,7 +14,34 @@ import { formatDate } from "@/lib/utils";
 
 export const metadata = { title: "Événements" };
 
-export default async function AdminEventsPage() {
+const VIEW_COPY: Record<EventListView, { title: string; hint: string; empty: string }> = {
+  "en-cours": {
+    title: "Événements en cours",
+    hint: "Publiés ou complets : ventes, scan et staff. La création reste sur « Nouvel événement ».",
+    empty: "Aucun événement en cours. Publiez un événement pour le voir ici.",
+  },
+  brouillons: {
+    title: "Brouillons",
+    hint: "Événements pas encore publiés. Terminez la fiche puis passez le statut à Publié.",
+    empty: "Aucun brouillon.",
+  },
+  passes: {
+    title: "Événements passés",
+    hint: "Terminés ou annulés.",
+    empty: "Aucun événement terminé ou annulé.",
+  },
+  tous: {
+    title: "Tous les événements",
+    hint: "Créez l’événement, définissez la jauge et les tarifs, puis publiez.",
+    empty: "Aucun événement. Créez le premier pour ouvrir la billetterie.",
+  },
+};
+
+type Props = { searchParams: Promise<{ vue?: string }> };
+
+export default async function AdminEventsPage({ searchParams }: Props) {
+  const { vue } = await searchParams;
+  const view = parseEventListView(vue);
   const events = await prisma.event.findMany({
     include: {
       category: { select: { name: true } },
@@ -18,19 +50,27 @@ export default async function AdminEventsPage() {
     },
     orderBy: [{ startsAt: "desc" }, { createdAt: "desc" }],
   });
+  const counts = {
+    "en-cours": events.filter((event) => matchesEventListView(event.status, "en-cours")).length,
+    brouillons: events.filter((event) => matchesEventListView(event.status, "brouillons")).length,
+    passes: events.filter((event) => matchesEventListView(event.status, "passes")).length,
+    tous: events.length,
+  };
+  const visible = events.filter((event) => matchesEventListView(event.status, view));
+  const copy = VIEW_COPY[view];
 
   return (
     <div>
       <AdminPageIntro
-        title="Événements & billetterie"
-        hint="Créez l’événement, définissez la jauge et les tarifs, puis publiez. La somme des tarifs ne peut pas dépasser la capacité."
+        title={copy.title}
+        hint={copy.hint}
         actions={
           <Link href="/admin/evenements/new" className="admin-btn admin-btn-primary">
             Nouvel événement
           </Link>
         }
       />
-      <EventAdminNav current="/admin/evenements" />
+      <EventAdminNav current={view} counts={counts} />
 
       <div className="admin-card overflow-x-auto p-0">
         <table className="admin-table">
@@ -45,14 +85,18 @@ export default async function AdminEventsPage() {
             </tr>
           </thead>
           <tbody>
-            {events.map((event) => {
+            {visible.map((event) => {
               const remaining = event.ticketTypes.reduce((sum, type) => sum + remainingSeats(type), 0);
               const stock = event.ticketTypes.reduce((sum, type) => sum + type.quantity, 0);
               const capacity = event.capacity > 0 ? event.capacity : stock;
+              const openTab = event.status === "DRAFT" ? "fiche" : "en-cours";
               return (
                 <tr key={event.id}>
                   <td>
-                    <Link href={`/admin/evenements/${event.id}`} className="font-medium hover:underline">
+                    <Link
+                      href={`/admin/evenements/${event.id}?onglet=${openTab}`}
+                      className="font-medium hover:underline"
+                    >
                       {event.title}
                     </Link>
                     <p className="text-xs text-[#9aa3b5]">
@@ -74,16 +118,22 @@ export default async function AdminEventsPage() {
                   <td>
                     <div className="flex flex-wrap gap-1">
                       <Link
+                        href={`/admin/evenements/${event.id}?onglet=en-cours`}
+                        className="admin-btn admin-btn-ghost text-xs"
+                      >
+                        En cours
+                      </Link>
+                      <Link
                         href={`/organisateur/evenements/${event.id}`}
                         className="admin-btn admin-btn-ghost text-xs"
                       >
                         Stats
                       </Link>
                       <Link
-                        href={`/admin/evenements/${event.id}`}
+                        href={`/admin/evenements/${event.id}?onglet=fiche`}
                         className="admin-btn admin-btn-ghost text-xs"
                       >
-                        Éditer
+                        Fiche
                       </Link>
                       {event.status !== "PUBLISHED" ? (
                         <form action={setEventStatus}>
@@ -115,10 +165,10 @@ export default async function AdminEventsPage() {
                 </tr>
               );
             })}
-            {!events.length ? (
+            {!visible.length ? (
               <tr>
                 <td colSpan={6} className="py-8 text-center text-[#9aa3b5]">
-                  Aucun événement. Créez le premier pour ouvrir la billetterie.
+                  {copy.empty}
                 </td>
               </tr>
             ) : null}

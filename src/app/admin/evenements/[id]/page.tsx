@@ -1,30 +1,38 @@
 import { notFound } from "next/navigation";
-import { EventAdminNav } from "@/components/admin/EventAdminNav";
+import Link from "next/link";
+import {
+  EventAdminNav,
+  EventEditNav,
+} from "@/components/admin/EventAdminNav";
+import { parseEventEditTab } from "@/lib/event-admin-views";
 import { EventForm } from "@/components/admin/EventForm";
 import { EventStaffManager } from "@/components/admin/EventStaffManager";
 import { EventCancelForm } from "@/components/admin/EventCancelForm";
 import { EventAuditList } from "@/components/admin/EventAuditList";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
+import { StatusBadge } from "@/components/admin/StatusBadge";
 import { RefundOrderForm } from "@/components/events/RefundOrderForm";
 import { auth } from "@/lib/auth";
-import { formatMoney, orderStatusLabel } from "@/lib/events";
+import { isLiveEventStatus } from "@/lib/event-capacity";
+import { eventPlace, eventStatusLabel, formatMoney, orderStatusLabel } from "@/lib/events";
 import { listEventOrganizerOptions } from "@/lib/organizer";
 import { prisma } from "@/lib/prisma";
+import { formatDate } from "@/lib/utils";
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ notice?: string }>;
+  searchParams: Promise<{ notice?: string; saved?: string; onglet?: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
   const { id } = await params;
   const event = await prisma.event.findUnique({ where: { id }, select: { title: true } });
-  return { title: event ? `Éditer · ${event.title}` : "Événement" };
+  return { title: event ? `Événement · ${event.title}` : "Événement" };
 }
 
 export default async function EditEventPage({ params, searchParams }: Props) {
   const { id } = await params;
-  const { notice } = await searchParams;
+  const { notice, saved, onglet } = await searchParams;
   const session = await auth();
   const [event, categories, paidOrders, auditLogs] = await Promise.all([
     prisma.event.findUnique({
@@ -63,60 +71,97 @@ export default async function EditEventPage({ params, searchParams }: Props) {
   if (!event) notFound();
 
   const organizers = await listEventOrganizerOptions(event.organizerId || session?.user?.id);
+  const tab = parseEventEditTab(onglet, event.status);
+  const live = isLiveEventStatus(event.status);
+  const navCurrent = live ? "en-cours" : event.status === "DRAFT" ? "brouillons" : "passes";
 
-  return (
-    <div>
-      <AdminPageIntro
-        title={`Éditer · ${event.title}`}
-        hint="Capacité, tarifs, galerie et organisateur. La jauge ne peut pas passer sous les places déjà prises."
-      />
-      <EventAdminNav current="/admin/evenements" />
-      <EventForm
-        notice={notice}
-        event={{
-          id: event.id,
-          title: event.title,
-          summary: event.summary,
-          description: event.description,
-          poster: event.poster,
-          startsAt: event.startsAt,
-          endsAt: event.endsAt,
-          venueName: event.venueName,
-          address: event.address,
-          city: event.city,
-          categoryId: event.categoryId,
-          organizerId: event.organizerId,
-          capacity: event.capacity,
-          status: event.status,
-          currency: event.currency,
-          salesOpensAt: event.salesOpensAt,
-          salesClosesAt: event.salesClosesAt,
-          featured: event.featured,
-          gallery: event.media.map((item) => ({ id: item.id, url: item.url })),
-          sessions: event.sessions.map((session) => ({
-            id: session.id,
-            startsAt: session.startsAt,
-            endsAt: session.endsAt,
-            access: session.access,
-          })),
-          ticketTypes: event.ticketTypes.map((type) => ({
-            id: type.id,
-            name: type.name,
-            description: type.description,
-            benefits: type.benefits,
-            price: type.price,
-            quantity: type.quantity,
-            maxPerOrder: type.maxPerOrder,
-            visible: type.visible,
-            soldCount: type.soldCount,
-            reservedCount: type.reservedCount,
-            sessionKeys: type.sessions.map((row) => row.sessionId),
-          })),
-        }}
-        categories={categories}
-        organizers={organizers}
-        currentUserId={session?.user?.id}
-      />
+  const form = (
+    <EventForm
+      notice={notice}
+      event={{
+        id: event.id,
+        title: event.title,
+        summary: event.summary,
+        description: event.description,
+        poster: event.poster,
+        startsAt: event.startsAt,
+        endsAt: event.endsAt,
+        venueName: event.venueName,
+        address: event.address,
+        city: event.city,
+        categoryId: event.categoryId,
+        organizerId: event.organizerId,
+        capacity: event.capacity,
+        status: event.status,
+        currency: event.currency,
+        salesOpensAt: event.salesOpensAt,
+        salesClosesAt: event.salesClosesAt,
+        featured: event.featured,
+        gallery: event.media.map((item) => ({ id: item.id, url: item.url })),
+        sessions: event.sessions.map((session) => ({
+          id: session.id,
+          startsAt: session.startsAt,
+          endsAt: session.endsAt,
+          access: session.access,
+        })),
+        ticketTypes: event.ticketTypes.map((type) => ({
+          id: type.id,
+          name: type.name,
+          description: type.description,
+          benefits: type.benefits,
+          price: type.price,
+          quantity: type.quantity,
+          maxPerOrder: type.maxPerOrder,
+          visible: type.visible,
+          soldCount: type.soldCount,
+          reservedCount: type.reservedCount,
+          sessionKeys: type.sessions.map((row) => row.sessionId),
+        })),
+      }}
+      categories={categories}
+      organizers={organizers}
+      currentUserId={session?.user?.id}
+    />
+  );
+
+  const livePanel = (
+    <>
+      <div className="admin-card">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">
+          Événement en cours
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <h2 className="font-display text-2xl uppercase">{event.title}</h2>
+          <StatusBadge status={event.status} />
+        </div>
+        <p className="mt-3 text-sm text-[#aeb6c5]">
+          {formatDate(event.startsAt, "EEEE d MMMM yyyy · HH:mm")}
+          {eventPlace(event) ? ` · ${eventPlace(event)}` : ""}
+        </p>
+        {!live ? (
+          <p className="mt-3 text-sm text-amber-200">
+            Statut : {eventStatusLabel(event.status)}. Passez-le à Publié dans l’onglet Fiche pour
+            ouvrir les ventes.
+          </p>
+        ) : null}
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Link href={`/evenements/${event.slug}`} className="admin-btn admin-btn-primary text-xs">
+            Voir la fiche publique
+          </Link>
+          <Link href={`/scan?event=${event.id}`} className="admin-btn admin-btn-ghost text-xs">
+            Scanner l’entrée
+          </Link>
+          <Link href={`/organisateur/evenements/${event.id}`} className="admin-btn admin-btn-ghost text-xs">
+            Tableau organisateur
+          </Link>
+          <Link
+            href={`/admin/evenements/${event.id}?onglet=fiche`}
+            className="admin-btn admin-btn-ghost text-xs"
+          >
+            Modifier la fiche
+          </Link>
+        </div>
+      </div>
       <EventStaffManager
         eventId={event.id}
         staff={event.staff.map((row) => ({
@@ -130,8 +175,8 @@ export default async function EditEventPage({ params, searchParams }: Props) {
           Commandes payées
         </h2>
         <p className="admin-hint">
-          Remboursez d’abord dans CinetPay, puis marquez ici. Le restock remet les places non scannées en
-          vente.
+          Remboursez d’abord dans CinetPay, puis marquez ici. Le restock remet les places non scannées
+          en vente.
         </p>
         <div className="mt-4 space-y-4">
           {paidOrders.map((order) => (
@@ -159,7 +204,46 @@ export default async function EditEventPage({ params, searchParams }: Props) {
         </div>
       </div>
       <EventCancelForm eventId={event.id} disabled={event.status === "CANCELLED"} />
-      <EventAuditList logs={auditLogs} />
+    </>
+  );
+
+  return (
+    <div>
+      <AdminPageIntro
+        title={tab === "en-cours" ? event.title : `Fiche · ${event.title}`}
+        hint={
+          tab === "en-cours"
+            ? "Pilotage : fiche publique, scan, staff et commandes. La fiche de création est dans l’onglet Fiche."
+            : tab === "journal"
+              ? "Historique des changements, annulations et remboursements."
+              : "Capacité, tarifs, galerie et organisateur. La jauge ne peut pas passer sous les places déjà prises."
+        }
+        actions={
+          <>
+            <Link href={`/evenements/${event.slug}`} className="admin-btn admin-btn-primary text-xs">
+              Voir la fiche publique
+            </Link>
+            <Link href="/admin/evenements?vue=en-cours" className="admin-btn admin-btn-ghost text-xs">
+              Événements en cours
+            </Link>
+          </>
+        }
+      />
+      {saved ? (
+        <p className="mb-4 text-sm text-emerald-300">
+          Enregistré
+          {live ? " et publié" : ""}. Il apparaît dans l’onglet{" "}
+          <Link href="/admin/evenements?vue=en-cours" className="underline">
+            En cours
+          </Link>
+          .
+        </p>
+      ) : null}
+      <EventAdminNav current={navCurrent} />
+      <EventEditNav eventId={event.id} current={tab} />
+      {tab === "en-cours" ? livePanel : null}
+      {tab === "fiche" ? form : null}
+      {tab === "journal" ? <EventAuditList logs={auditLogs} /> : null}
     </div>
   );
 }

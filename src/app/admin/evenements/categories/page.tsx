@@ -16,7 +16,7 @@ export default async function AdminEventCategoriesPage() {
         title="Catégories d’événements"
         hint="Concert, festival, conférence… Ces filtres apparaissent sur la page Événements."
       />
-      <EventAdminNav current="/admin/evenements/categories" />
+      <EventAdminNav current="categories" />
       <EventCategoriesManager categories={categories} />
     </div>
   );

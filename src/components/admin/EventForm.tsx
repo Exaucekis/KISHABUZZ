@@ -66,6 +66,15 @@ function toInputDate(d: Date | null | undefined) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+function toDatePart(d: Date | null | undefined) {
+  return toInputDate(d).slice(0, 10);
+}
+
+function toTimePart(d: Date | null | undefined) {
+  const value = toInputDate(d);
+  return value.length >= 16 ? value.slice(11, 16) : "";
+}
+
 function sessionDate(value: string) {
   return value.slice(0, 10);
 }
@@ -207,6 +216,13 @@ export function EventForm({
     quantities: types.map((type) => type.quantity),
     takenSeats,
   });
+  const paidDayError =
+    status === "PUBLISHED" &&
+    types.some((type) => type.visible !== false && type.name.trim() && type.quantity > 0) &&
+    !paidDays.length
+      ? "Décochez « Entrée libre » sur au moins un jour : vous vendez des billets."
+      : null;
+  const publishError = liveError || paidDayError;
 
   function updateType(index: number, patch: Partial<TicketType>) {
     setTypes((rows) => rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
@@ -326,36 +342,41 @@ export function EventForm({
                       }
                     />
                   </div>
-                  <div className="admin-field md:col-span-3 flex flex-wrap items-center justify-between gap-3">
-                    <label className="admin-check">
-                      <input
-                        type="checkbox"
-                        checked={session.access === "FREE"}
-                        onChange={(e) =>
-                          setSessions((rows) =>
-                            patchSession(rows, index, { access: e.target.checked ? "FREE" : "PAID" })
-                          )
-                        }
-                      />
-                      Entrée libre ce jour-là (pas de billet)
-                    </label>
-                    {sessions.length > 1 ? (
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn-danger text-xs"
-                        onClick={() => {
-                          const removed = session.key;
-                          setSessions((rows) => rows.filter((_, i) => i !== index));
-                          setTypes((rows) =>
-                            rows.map((type) => ({
-                              ...type,
-                              sessionKeys: type.sessionKeys.filter((key) => key !== removed),
-                            }))
-                          );
-                        }}
-                      >
-                        Retirer ce jour
-                      </button>
+                  <div className="admin-field md:col-span-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <label className="admin-check">
+                        <input
+                          type="checkbox"
+                          checked={session.access === "FREE"}
+                          onChange={(e) =>
+                            setSessions((rows) =>
+                              patchSession(rows, index, { access: e.target.checked ? "FREE" : "PAID" })
+                            )
+                          }
+                        />
+                        Entrée libre ce jour-là (pas de billet)
+                      </label>
+                      {sessions.length > 1 ? (
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-danger text-xs"
+                          onClick={() => {
+                            const removed = session.key;
+                            setSessions((rows) => rows.filter((_, i) => i !== index));
+                            setTypes((rows) =>
+                              rows.map((type) => ({
+                                ...type,
+                                sessionKeys: type.sessionKeys.filter((key) => key !== removed),
+                              }))
+                            );
+                          }}
+                        >
+                          Retirer ce jour
+                        </button>
+                      ) : null}
+                    </div>
+                    {session.access === "FREE" ? (
+                      <AdminHint>Ce jour n’aura pas de billet. Décochez pour vendre des places.</AdminHint>
                     ) : null}
                   </div>
                 </div>
@@ -430,26 +451,44 @@ export function EventForm({
           </AdminHint>
         </div>
         <div className="admin-field">
-          <label htmlFor="salesOpensAt">Ouverture des ventes</label>
-          <input
-            id="salesOpensAt"
-            name="salesOpensAt"
-            type="datetime-local"
-            defaultValue={toInputDate(event?.salesOpensAt)}
-          />
-          <AdminHint>Vide = vente dès la publication. Indépendant des journées ci-dessus.</AdminHint>
+          <label htmlFor="salesOpensAtDate">Ouverture des ventes</label>
+          <div className="grid gap-2 sm:grid-cols-[1.2fr_0.8fr]">
+            <input
+              id="salesOpensAtDate"
+              name="salesOpensAtDate"
+              type="date"
+              defaultValue={toDatePart(event?.salesOpensAt)}
+            />
+            <input
+              id="salesOpensAtTime"
+              name="salesOpensAtTime"
+              type="time"
+              defaultValue={toTimePart(event?.salesOpensAt)}
+            />
+          </div>
+          <AdminHint>
+            Vide = vente dès la publication. Date seule = 00:00. Indépendant des journées
+            ci-dessus.
+          </AdminHint>
         </div>
         <div className="admin-field">
-          <label htmlFor="salesClosesAt">Fermeture des ventes</label>
-          <input
-            id="salesClosesAt"
-            name="salesClosesAt"
-            type="datetime-local"
-            defaultValue={toInputDate(event?.salesClosesAt)}
-          />
+          <label htmlFor="salesClosesAtDate">Fermeture des ventes</label>
+          <div className="grid gap-2 sm:grid-cols-[1.2fr_0.8fr]">
+            <input
+              id="salesClosesAtDate"
+              name="salesClosesAtDate"
+              type="date"
+              defaultValue={toDatePart(event?.salesClosesAt)}
+            />
+            <input
+              id="salesClosesAtTime"
+              name="salesClosesAtTime"
+              type="time"
+              defaultValue={toTimePart(event?.salesClosesAt)}
+            />
+          </div>
           <AdminHint>
-            Vide = vente jusqu’à la fin du dernier jour payant. Renseignez une heure si la caisse
-            doit fermer avant (ex. la veille).
+            Vide = vente jusqu’à la fin du dernier jour payant. Date seule = 23:59.
           </AdminHint>
         </div>
         <div className="admin-field md:col-span-2">
@@ -460,7 +499,7 @@ export function EventForm({
         </div>
       </div>
 
-      {liveError ? <p className="mt-4 text-sm text-red-300">{liveError}</p> : null}
+      {publishError ? <p className="mt-4 text-sm text-red-300">{publishError}</p> : null}
 
       <div className="mt-6">
         <div className="mb-3 flex items-center justify-between gap-2">
@@ -687,6 +726,9 @@ export function EventForm({
         <p className={`mt-4 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>
           {state.message}
         </p>
+      ) : null}
+      {publishError && !state.message ? (
+        <p className="mt-4 text-sm text-red-300">{publishError}</p>
       ) : null}
       <div className="mt-4">
         <SubmitButton>{event ? "Enregistrer" : "Créer l’événement"}</SubmitButton>

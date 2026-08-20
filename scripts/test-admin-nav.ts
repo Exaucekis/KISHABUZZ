@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
 import { ADMIN_NAV, adminNavTitle, isAdminNavActive } from "../src/lib/admin-nav";
+import {
+  matchesEventListView,
+  parseEventEditTab,
+  parseEventListView,
+} from "../src/lib/event-admin-views";
 
 const dashboard = ADMIN_NAV[0];
 const articles = ADMIN_NAV.find((item) => item.href === "/admin/articles")!;
@@ -27,5 +32,13 @@ assert.equal(adminNavTitle("/admin/arena/videos"), "Vidéos Arena");
 assert.equal(adminNavTitle("/admin/evenements"), "Événements");
 assert.equal(adminNavTitle("/admin/evenements/new"), "Événements");
 assert.equal(adminNavTitle("/admin/newsletter"), "Newsletter");
+
+assert.equal(parseEventListView(undefined), "en-cours");
+assert.equal(parseEventListView("brouillons"), "brouillons");
+assert.equal(matchesEventListView("PUBLISHED", "en-cours"), true);
+assert.equal(matchesEventListView("DRAFT", "en-cours"), false);
+assert.equal(matchesEventListView("ENDED", "passes"), true);
+assert.equal(parseEventEditTab(undefined, "PUBLISHED"), "en-cours");
+assert.equal(parseEventEditTab(undefined, "DRAFT"), "fiche");
 
 console.log("admin nav tests: ok");

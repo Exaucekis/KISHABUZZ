@@ -7,13 +7,14 @@ import { revalidatePublic } from "@/lib/cache";
 import {
   formBool,
   formDate,
+  formDateTime,
   formInt,
   formOptionalId,
   formString,
   requireAdmin,
   type AdminActionState,
 } from "@/lib/admin";
-import { eventCapacityError, ticketQuantityFloorError } from "@/lib/event-capacity";
+import { eventCapacityError, isLiveEventStatus, ticketQuantityFloorError } from "@/lib/event-capacity";
 import { snapshotEvent, writeEventAudit } from "@/lib/event-audit";
 import { deriveEventBounds } from "@/lib/event-schedule";
 import { isCinetPayAmount, normalizeEventCurrency } from "@/lib/events";
@@ -178,8 +179,8 @@ export async function saveEvent(
     capacity: formInt(formData, "capacity", 0),
     status: formString(formData, "status") || "DRAFT",
     currency: normalizeEventCurrency(formString(formData, "currency")),
-    salesOpensAt: formDate(formData, "salesOpensAt"),
-    salesClosesAt: formDate(formData, "salesClosesAt"),
+    salesOpensAt: formDateTime(formData, "salesOpensAtDate", "salesOpensAtTime", "00:00"),
+    salesClosesAt: formDateTime(formData, "salesClosesAtDate", "salesClosesAtTime", "23:59"),
     featured: formBool(formData, "featured"),
   });
 
@@ -459,7 +460,8 @@ export async function saveEvent(
   }
 
   revalidateEvents(event.slug);
-  redirect(`/admin/evenements/${event.id}`);
+  const tab = isLiveEventStatus(event.status) ? "en-cours" : "fiche";
+  redirect(`/admin/evenements/${event.id}?onglet=${tab}&saved=1`);
 }
 
 export async function deleteEvent(formData: FormData) {
@@ -470,7 +472,7 @@ export async function deleteEvent(formData: FormData) {
   if (orders) return;
   const event = await prisma.event.delete({ where: { id } });
   revalidateEvents(event.slug);
-  redirect("/admin/evenements");
+  redirect("/admin/evenements?vue=en-cours");
 }
 
 const EVENT_STATUS = new Set(["DRAFT", "PUBLISHED", "SOLD_OUT", "ENDED", "CANCELLED"]);
@@ -505,7 +507,7 @@ export async function setEventStatus(formData: FormData) {
     takenSeats: event.ticketTypes.reduce((sum, type) => sum + type.soldCount + type.reservedCount, 0),
   });
   if (capacityMessage) {
-    redirect(`/admin/evenements/${event.id}?notice=${encodeURIComponent(capacityMessage)}`);
+    redirect(`/admin/evenements/${event.id}?onglet=fiche&notice=${encodeURIComponent(capacityMessage)}`);
   }
   const updated = await prisma.$transaction(async (tx) => {
     const next = await tx.event.update({ where: { id }, data: { status } });
@@ -520,6 +522,8 @@ export async function setEventStatus(formData: FormData) {
     return next;
   });
   revalidateEvents(updated.slug);
+  const tab = isLiveEventStatus(updated.status) ? "en-cours" : "fiche";
+  redirect(`/admin/evenements/${updated.id}?onglet=${tab}`);
 }
 
 const categorySchema = z.object({

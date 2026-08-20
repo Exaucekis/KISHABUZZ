@@ -23,7 +23,7 @@ export default async function NewEventPage() {
         title="Nouvel événement"
         hint="Journées (payantes ou entrée libre), fenêtre de vente, jauge, puis tarifs liés aux jours payants."
       />
-      <EventAdminNav current="/admin/evenements" />
+      <EventAdminNav current="nouveau" />
       <EventForm
         categories={categories}
         organizers={organizers}

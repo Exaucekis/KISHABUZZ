@@ -53,3 +53,16 @@ export function formDate(formData: FormData, key: string) {
   const d = new Date(raw);
   return Number.isNaN(d.getTime()) ? null : d;
 }
+
+export function formDateTime(
+  formData: FormData,
+  dateKey: string,
+  timeKey: string,
+  fallbackTime = "00:00"
+) {
+  const date = formString(formData, dateKey);
+  if (!date) return null;
+  const time = formString(formData, timeKey) || fallbackTime;
+  const d = new Date(`${date}T${time}`);
+  return Number.isNaN(d.getTime()) ? null : d;
+}

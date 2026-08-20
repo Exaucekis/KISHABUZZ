@@ -17,7 +17,7 @@ export function EventStaffManager({ eventId, staff }: { eventId: string; staff: 
   const [state, action] = useActionState(addEventStaff, initial);
 
   return (
-    <section className="admin-card mt-8">
+    <section className="admin-card mt-6">
       <h2 className="font-display text-lg uppercase">Contrôle d’entrée</h2>
       <p className="admin-card-hint mt-1">
         Ajoutez un compte existant. Un scanner n’accède qu’à /scan, un manager aura aussi le tableau de bord organisateur.
