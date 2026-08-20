@@ -5,7 +5,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getArenaStage, getGallery, getPublishedShows } from "@/lib/data";
 import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
-import { videoPoster } from "@/lib/media";
+import { arenaShowVideo, videoPoster } from "@/lib/media";
 
 export const metadata: Metadata = {
   title: "Vidéos · Arena Culture",
@@ -21,8 +21,8 @@ export default async function ArenaVideosPage() {
 
   const headline = stage.headline;
   const headlineGuest = arenaSpotlightGuest(headline);
-  const showVideos = shows.filter((s) => s.videoUrl && s.id !== headline?.id);
-  const spotlightVideo = String(headline?.videoUrl || "").trim();
+  const showVideos = shows.filter((s) => arenaShowVideo(s) && s.id !== headline?.id);
+  const spotlightVideo = headline ? arenaShowVideo(headline) : "";
   const featured =
     headline && spotlightVideo
       ? {
@@ -46,16 +46,18 @@ export default async function ArenaVideosPage() {
         {featured ? (
           <div>
             <p className="ac-kicker mb-3">Nouvelle émission</p>
-            <h2 className="font-display text-2xl md:text-3xl">{featured.title}</h2>
+            <h2 className="font-display text-2xl md:text-3xl">
+              {featured.artistName || featured.title}
+            </h2>
             {featured.artistName ? (
-              <p className="mt-2 mb-6 text-lg text-paper-muted">{featured.artistName}</p>
+              <p className="mt-2 mb-6 text-lg text-paper-muted">{headline?.theme || ""}</p>
             ) : (
               <div className="mb-6" />
             )}
             <div className="ac-video-featured">
               <VideoEmbed
                 url={featured.url}
-                title={featured.title}
+                title={featured.artistName || featured.title}
                 poster={videoPoster(featured.url, featured.thumbnail)}
               />
               {featured.slug ? (
@@ -79,9 +81,9 @@ export default async function ArenaVideosPage() {
               {showVideos.map((s) => (
                 <div key={s.id} className="min-w-0">
                   <VideoEmbed
-                    url={s.videoUrl}
+                    url={arenaShowVideo(s)}
                     title={s.title}
-                    poster={videoPoster(s.videoUrl, s.videoThumbnail)}
+                    poster={videoPoster(arenaShowVideo(s), s.videoThumbnail)}
                     lazy
                   />
                   <Link

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { isDirectVideo, parseMediaEmbed } from "@/lib/media";
+import { IMAGE_EXT, isDirectVideo, parseMediaEmbed } from "@/lib/media";
 
 function PlayPoster({
   title,
@@ -36,6 +36,35 @@ function PlayPoster({
   );
 }
 
+function FileVideo({
+  url,
+  title,
+  poster,
+  autoPlay,
+}: {
+  url: string;
+  title?: string;
+  poster?: string;
+  autoPlay?: boolean;
+}) {
+  return (
+    <div className="kb-embed kb-embed--16-9">
+      <video
+        className="absolute inset-0 h-full w-full bg-black object-contain"
+        controls
+        playsInline
+        autoPlay={autoPlay}
+        preload={autoPlay ? "auto" : "metadata"}
+        poster={poster || undefined}
+        title={title || "Vidéo"}
+      >
+        <source src={url} />
+        Votre navigateur ne prend pas en charge la lecture vidéo.
+      </video>
+    </div>
+  );
+}
+
 export function VideoEmbed({
   url,
   title,
@@ -47,37 +76,24 @@ export function VideoEmbed({
   poster?: string;
   lazy?: boolean;
 }) {
+  const src = String(url || "").trim();
   const [playing, setPlaying] = useState(!lazy);
+  const embed = parseMediaEmbed(src);
+  const fileVideo = !embed && (isDirectVideo(src) || (!IMAGE_EXT.test(src) && Boolean(src)));
 
-  if (isDirectVideo(url)) {
+  if (!src) return null;
+
+  if (fileVideo) {
     if (!playing) {
       return <PlayPoster title={title} poster={poster} onPlay={() => setPlaying(true)} />;
     }
-
-    return (
-      <div className="kb-embed kb-embed--16-9">
-        <video
-          className="absolute inset-0 h-full w-full"
-          controls
-          playsInline
-          autoPlay={lazy}
-          preload={lazy ? "auto" : "metadata"}
-          poster={poster || undefined}
-          title={title || "Vidéo"}
-          src={url}
-        >
-          <source src={url} />
-          Votre navigateur ne prend pas en charge la lecture vidéo.
-        </video>
-      </div>
-    );
+    return <FileVideo url={src} title={title} poster={poster} autoPlay={lazy} />;
   }
 
-  const embed = parseMediaEmbed(url);
   if (!embed) {
     return (
       <a
-        href={url}
+        href={src}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex rounded-md border border-line px-4 py-3 text-sm text-ember-text"
@@ -104,7 +120,6 @@ export function VideoEmbed({
         src={embed.src}
         title={title || `Vidéo ${embed.provider}`}
         className="absolute inset-0 h-full w-full"
-        loading="lazy"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
         referrerPolicy="strict-origin-when-cross-origin"

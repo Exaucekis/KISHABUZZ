@@ -4,6 +4,7 @@ import { compareArenaDates, isUpcomingArenaDate } from "@/lib/arena-calendar";
 import { ARENA_HOME_KEY, parseArenaHome } from "@/lib/arena-home";
 import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { withPublicContactEmail } from "@/lib/contact";
+import { arenaShowVideo } from "@/lib/media";
 import { prisma } from "@/lib/prisma";
 import { publishDueArticles, publishDueArenaShows } from "@/lib/publish-scheduled";
 import { toSpotlightArtistCards } from "@/lib/spotlight-artists";
@@ -119,7 +120,7 @@ async function loadHomePageData() {
   const headlineShow = stage.headline;
   const announcedShow = stage.announced;
   const spotlightShow = announcedShow || headlineShow;
-  const showVideo = String(headlineShow?.videoUrl || "").trim();
+  const showVideo = headlineShow ? arenaShowVideo(headlineShow) : "";
   return {
     settings,
     feed,
@@ -242,6 +243,7 @@ export async function getArenaStage() {
   const include = {
     guests: { include: { guest: true } },
     season: true,
+    media: { where: { visible: true } },
   } as const;
   const headline =
     (await prisma.arenaShow.findFirst({

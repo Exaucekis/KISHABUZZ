@@ -6,7 +6,7 @@ import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaMediaRow } from "@/components/arena/ArenaMediaRow";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
-import { videoPoster } from "@/lib/media";
+import { arenaShowVideo, videoPoster } from "@/lib/media";
 import {
   getArenaHome,
   getArenaPhotoAlbums,
@@ -93,7 +93,7 @@ export default async function ArenaCulturePage() {
     spotlight?.poster ||
     guest?.photo ||
     home.hero.poster;
-  const headlineVideo = String(headline?.videoUrl || "").trim();
+  const headlineVideo = headline ? arenaShowVideo(headline) : "";
 
   return (
     <>
@@ -126,15 +126,17 @@ export default async function ArenaCulturePage() {
       {headlineVideo ? (
         <section className="ac-page">
           <p className="ac-kicker">Nouvelle émission</p>
-          <h2 className="font-display text-3xl md:text-4xl">{headline.title}</h2>
-          {headlineGuest ? (
-            <p className="mt-2 mb-6 text-lg text-paper-muted">{headlineGuest.name}</p>
+          <h2 className="font-display text-3xl md:text-4xl">{headlineGuest?.name || headline.title}</h2>
+          {headline.theme || headlineGuest?.profession ? (
+            <p className="mt-2 mb-6 text-lg text-paper-muted">
+              {headline.theme || headlineGuest?.profession}
+            </p>
           ) : (
             <div className="mb-6" />
           )}
           <VideoEmbed
             url={headlineVideo}
-            title={headline.title}
+            title={headlineGuest?.name || headline.title}
             poster={videoPoster(headlineVideo, headline.videoThumbnail)}
           />
         </section>

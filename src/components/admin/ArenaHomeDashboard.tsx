@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { archiveArenaShow } from "@/actions/admin/arena";
 import { saveArenaHomeSection } from "@/actions/admin/arena-home";
 import { AdminConfirmForm } from "@/components/admin/AdminConfirmForm";
+import { ArenaShowForm } from "@/components/admin/ArenaShowForm";
 import { AdminHint } from "@/components/admin/AdminHint";
 import { AdminTabs } from "@/components/admin/AdminTabs";
 import { MediaField } from "@/components/admin/MediaField";
@@ -161,7 +162,17 @@ function LiveTiles({
   );
 }
 
-export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live: ArenaHomeLive }) {
+export function ArenaHomeDashboard({
+  home,
+  live,
+  showGuests = [],
+  showDomains = [],
+}: {
+  home: ArenaHomeConfig;
+  live: ArenaHomeLive;
+  showGuests?: { id: string; name: string; profession: string }[];
+  showDomains?: { id: string; name: string }[];
+}) {
   const [active, setActive] = useState<ArenaHomeSection>("hero");
 
   useEffect(() => {
@@ -450,35 +461,33 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
       </SectionForm>
       </div>
 
-      <div hidden={active !== "shows"}>
-      <SectionForm
-        section="shows"
-        kicker={home.shows.eyebrow}
-        title={home.shows.title}
-        hint="Titres de la rangée À (re)découvrir. Les épisodes se gèrent un par un dans Émissions."
-      >
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="admin-field">
-            <label>Sur-titre</label>
-            <input name="eyebrow" required defaultValue={home.shows.eyebrow} />
-          </div>
-          <div className="admin-field">
-            <label>Titre</label>
-            <input name="title" required defaultValue={home.shows.title} />
-          </div>
+      <div hidden={active !== "shows"} className="space-y-5">
+      <ArenaShowForm guests={showGuests} domains={showDomains} />
+      <div className="admin-card space-y-4">
+        <div>
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#9aa3b5]">
+            En ligne maintenant
+          </p>
+          <h2 className="mt-1 font-[family-name:var(--font-syne)] text-xl font-bold">
+            Émissions publiées
+          </h2>
+          <p className="admin-page-hint mt-2 max-w-2xl">
+            Le formulaire ci-dessus publie tout de suite : nom de l’invité, domaine, vidéo et
+            miniature. Pas d’affiche, ni date, ni heure.
+          </p>
         </div>
         <LiveTiles
           items={live.shows.map((show) => ({
             href: `/admin/arena/${show.id}`,
             title: show.title,
             image: show.videoThumbnail || show.poster,
-            meta: "Ouvrir dans Émissions",
+            meta: "Ouvrir pour modifier",
           }))}
-          empty="Aucune émission publiée. Créez-la dans l’onglet Émissions."
+          empty="Aucune émission publiée. Créez-la avec le formulaire ci-dessus."
           moreHref="/admin/arena/emissions"
-          moreLabel="Onglet Émissions"
+          moreLabel="Toutes les émissions"
         />
-      </SectionForm>
+      </div>
       </div>
 
       <div hidden={active !== "posters"}>

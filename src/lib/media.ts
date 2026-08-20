@@ -8,7 +8,7 @@ export type MediaEmbed = {
   originalUrl: string;
 };
 
-const IMAGE_EXT = /\.(avif|bmp|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
+export const IMAGE_EXT = /\.(avif|bmp|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
 const VIDEO_EXT = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
 
 export function isDirectVideo(url: string) {
@@ -17,8 +17,23 @@ export function isDirectVideo(url: string) {
   if (IMAGE_EXT.test(url)) return false;
   if (VIDEO_EXT.test(url)) return true;
   if (url.startsWith("/arena/videos/") || url.startsWith("/uploads/media/")) return true;
-  if (url.includes("blob.vercel-storage.com") && /\/media\//.test(url)) return true;
+  if (url.startsWith("/uploads/") && /\/(media|videos)\//.test(url)) return true;
+  if (/blob\.vercel-storage\.com|vercel-storage\.com/.test(url) && /\/(media|videos)\//.test(url)) {
+    return true;
+  }
   return false;
+}
+
+export function arenaShowVideo(show: {
+  videoUrl?: string | null;
+  media?: Array<{ kind?: string | null; url?: string | null }> | null;
+}) {
+  const direct = String(show.videoUrl || "").trim();
+  if (direct) return direct;
+  const fromMedia = (show.media || []).find(
+    (item) => item.kind === "VIDEO" && String(item.url || "").trim()
+  );
+  return String(fromMedia?.url || "").trim();
 }
 
 export function isDirectImage(url: string) {

@@ -165,7 +165,7 @@ export const ARENA_HOME_SECTION_META: Record<
   },
   shows: {
     label: "Émissions",
-    where: "la rangée des épisodes à (re)découvrir",
+    where: "invité, domaine, vidéo et miniature, sur /arena-culture/emissions",
   },
   posters: {
     label: "Affiches",

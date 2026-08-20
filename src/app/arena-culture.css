@@ -754,11 +754,17 @@
 
 .ac-episode {
   display: grid;
-  gap: 1rem;
+  gap: 1.15rem;
 }
 
 .ac-episode--featured {
   max-width: 960px;
+}
+
+.ac-episode .kb-embed {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--ac-line);
 }
 
 .ac-episode__poster {

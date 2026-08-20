@@ -9,7 +9,7 @@ export const metadata = { title: "Arena Culture" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminArenaDashboardPage() {
-  const [home, stage, guests, shows, albums, archivedCount] = await Promise.all([
+  const [home, stage, guests, formGuests, formDomains, shows, albums, archivedCount] = await Promise.all([
     getArenaHome(),
     getArenaStage(),
     prisma.arenaGuest.findMany({
@@ -17,6 +17,15 @@ export default async function AdminArenaDashboardPage() {
       orderBy: [{ featured: "desc" }, { name: "asc" }],
       take: 8,
       select: { id: true, name: true, photo: true },
+    }),
+    prisma.arenaGuest.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, profession: true },
+    }),
+    prisma.domain.findMany({
+      where: { visible: true },
+      orderBy: { order: "asc" },
+      select: { id: true, name: true },
     }),
     prisma.arenaShow.findMany({
       where: { status: "PUBLISHED" },
@@ -37,7 +46,7 @@ export default async function AdminArenaDashboardPage() {
     <div>
       <AdminPageIntro
         title="Page Arena Culture"
-        hint="Un onglet = une rubrique. À la une, Prochain invité et Émissions ont chacun leur formulaire. Les épisodes se créent dans l’onglet Émissions."
+        hint="Un onglet = un formulaire. Émissions = invité, domaine, vidéo, miniature. Prochain invité = affiche. Les archives sont un autre onglet."
         actions={[
           {
             href: "/arena-culture",
@@ -56,6 +65,8 @@ export default async function AdminArenaDashboardPage() {
       <ArenaAdminNav current="/admin/arena" />
       <ArenaHomeDashboard
         home={home}
+        showGuests={formGuests}
+        showDomains={formDomains}
         live={{
           headline: stage.headline
             ? {

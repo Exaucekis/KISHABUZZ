@@ -6,7 +6,7 @@ import { PageViews } from "@/components/content/PageViews";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getShowBySlug } from "@/lib/data";
 import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
-import { videoPoster } from "@/lib/media";
+import { arenaShowVideo, videoPoster } from "@/lib/media";
 import { arenaShowPlace, arenaTicketCta } from "@/lib/arena-calendar";
 import { formatDate } from "@/lib/utils";
 
@@ -32,13 +32,11 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
 
   const guests = show.guests.map((g) => g.guest).filter((g) => g.visible !== false);
   const lead = arenaSpotlightGuest(show);
+  const video = arenaShowVideo(show);
   const images = show.media.filter((m) => m.kind === "IMAGE");
-  const extraVideos = show.media.filter(
-    (m) => m.kind === "VIDEO" && m.url !== show.videoUrl
-  );
+  const extraVideos = show.media.filter((m) => m.kind === "VIDEO" && m.url !== video);
   const place = arenaShowPlace(show, show.event);
   const ticket = arenaTicketCta(show.event);
-  const video = String(show.videoUrl || "").trim();
 
   return (
     <article>
