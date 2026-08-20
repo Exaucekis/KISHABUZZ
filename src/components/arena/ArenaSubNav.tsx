@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArenaLogo } from "@/components/brand/ArenaLogo";
 import { cn } from "@/lib/utils";
 
 const nav = [
   { href: "/arena-culture", label: "Accueil", exact: true },
-  { href: "/arena-culture/calendrier", label: "Dates" },
   { href: "/arena-culture/emissions", label: "Émissions" },
   { href: "/arena-culture/invites", label: "Invités" },
   { href: "/arena-culture/affiches", label: "Affiches" },
@@ -20,9 +18,8 @@ export function ArenaSubNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="ac-nav" aria-label="Arena Culture">
+    <nav className="ac-nav" aria-label="Rubriques Arena Culture">
       <div className="ac-nav__inner">
-        <ArenaLogo href="/arena-culture" size="sm" className="ac-nav__logo" priority />
         <div className="ac-nav__links">
           {nav.map((item) => {
             const active = item.exact

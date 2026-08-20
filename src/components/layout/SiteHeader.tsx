@@ -219,30 +219,39 @@ export function SiteHeader({
 
           <nav
             className="hidden items-center gap-1 lg:flex"
-            aria-label="Navigation principale"
+            aria-label={isArena ? "Retour au site" : "Navigation principale"}
           >
-            {desktopLinks.map((link) => (
+            {isArena ? (
               <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "rounded-md px-2.5 py-2 text-[0.8rem] font-medium text-paper-muted transition hover:text-paper xl:px-3 xl:text-sm",
-                  pathname === link.href && "bg-ink-3 text-paper"
-                )}
+                href="/"
+                className="rounded-md px-2.5 py-2 text-[0.8rem] font-medium text-paper-muted transition hover:text-paper xl:px-3 xl:text-sm"
               >
-                {link.label}
+                KISHA BUZZ
               </Link>
-            ))}
-            <Link
-              href="/arena-culture"
-              className={cn(
-                "ml-1 inline-flex items-center gap-1.5 rounded-md bg-ember px-3 py-2 text-[0.8rem] font-bold text-on-ember transition hover:bg-ember-hot xl:text-sm"
-              )}
-            >
-              <Mic2 className="h-3.5 w-3.5" aria-hidden />
-              <span>Arena</span>
-              <span className="hidden xl:inline">Culture</span>
-            </Link>
+            ) : (
+              <>
+                {desktopLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      "rounded-md px-2.5 py-2 text-[0.8rem] font-medium text-paper-muted transition hover:text-paper xl:px-3 xl:text-sm",
+                      pathname === link.href && "bg-ink-3 text-paper"
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <Link
+                  href="/arena-culture"
+                  className="ml-1 inline-flex items-center gap-1.5 rounded-md bg-ember px-3 py-2 text-[0.8rem] font-bold text-on-ember transition hover:bg-ember-hot xl:text-sm"
+                >
+                  <Mic2 className="h-3.5 w-3.5" aria-hidden />
+                  <span>Arena</span>
+                  <span className="hidden xl:inline">Culture</span>
+                </Link>
+              </>
+            )}
             <Link
               href="/recherche"
               className="rounded-md p-2 text-paper-muted transition hover:bg-ink-3 hover:text-paper"

@@ -1,16 +1,7 @@
 import { AdminTabs } from "@/components/admin/AdminTabs";
+import { ARENA_ADMIN_LINKS } from "@/lib/admin-nav";
 
-export const ARENA_ADMIN_LINKS = [
-  { href: "/admin/arena", label: "Page Arena", hint: "Textes et visuels de /arena-culture" },
-  { href: "/admin/arena/prochain-invite", label: "Prochain invité", hint: "Affiche du prochain invité" },
-  { href: "/admin/arena/emissions", label: "Émissions", hint: "Invité, domaine, vidéo, miniature" },
-  { href: "/admin/arena/guests", label: "Invités", hint: "Portraits et fiches" },
-  { href: "/admin/arena/videos", label: "Vidéos", hint: "Replays et extraits" },
-  { href: "/admin/arena/albums", label: "Albums", hint: "Photos plateau" },
-  { href: "/admin/arena/seasons", label: "Saisons", hint: "Découpage de l’année" },
-  { href: "/admin/arena/archives", label: "Archives", hint: "Anciennes émissions" },
-  { href: "/admin/arena/alertes", label: "Alertes", hint: "Emails et WhatsApp" },
-] as const;
+export { ARENA_ADMIN_LINKS };
 
 export function ArenaAdminNav({ current }: { current?: string }) {
   return (

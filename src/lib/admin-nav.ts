@@ -25,17 +25,24 @@ export const ADMIN_NAV_GROUPS: { id: AdminNavGroupId; label: string }[] = [
   { id: "account", label: "Compte" },
 ];
 
+export const ARENA_ADMIN_LINKS = [
+  { href: "/admin/arena", label: "Page Arena", hint: "Textes et visuels de /arena-culture" },
+  { href: "/admin/arena/prochain-invite", label: "Prochain invité", hint: "Affiche du prochain invité" },
+  { href: "/admin/arena/emissions", label: "Émissions", hint: "Invité, domaine, vidéo, miniature" },
+  { href: "/admin/arena/guests", label: "Invités", hint: "Portraits et fiches" },
+  { href: "/admin/arena/videos", label: "Vidéos", hint: "Replays et extraits" },
+  { href: "/admin/arena/albums", label: "Photos", hint: "Albums plateau" },
+  { href: "/admin/arena/seasons", label: "Saisons", hint: "Découpage de l’année" },
+  { href: "/admin/arena/archives", label: "Archives", hint: "Anciennes émissions" },
+  { href: "/admin/arena/alertes", label: "Alertes", hint: "Emails et WhatsApp" },
+] as const;
+
 export const ADMIN_NAV: AdminNavItem[] = [
   { href: "/admin", label: "Tableau de bord", exact: true, group: "overview" },
   { href: "/admin/articles", label: "Articles & chroniques", group: "editorial" },
   { href: "/admin/categories", label: "Catégories", group: "editorial" },
   { href: "/admin/pages", label: "Pages", group: "editorial" },
   { href: "/admin/arena", label: "Arena Culture", group: "arena" },
-  { href: "/admin/arena/prochain-invite", label: "Prochain invité", group: "arena" },
-  { href: "/admin/arena/guests", label: "Invités", group: "arena" },
-  { href: "/admin/arena/videos", label: "Vidéos Arena", group: "arena" },
-  { href: "/admin/arena/seasons", label: "Saisons", group: "arena" },
-  { href: "/admin/arena/albums", label: "Albums photos", group: "arena" },
   { href: "/admin/evenements", label: "Événements", group: "events" },
   { href: "/admin/media", label: "Médias", group: "site" },
   { href: "/admin/portfolio", label: "Portfolio", group: "site" },
@@ -51,28 +58,19 @@ export const ADMIN_NAV: AdminNavItem[] = [
 export function isAdminNavActive(pathname: string, item: Pick<AdminNavItem, "href" | "exact">) {
   if (item.exact) return pathname === item.href;
   if (item.href === "/admin/arena") {
-    return (
-      pathname === "/admin/arena" ||
-      pathname.startsWith("/admin/arena/new") ||
-      pathname.startsWith("/admin/arena/emissions") ||
-      pathname.startsWith("/admin/arena/archives") ||
-      pathname.startsWith("/admin/arena/alertes") ||
-      (/^\/admin\/arena\/[^/]+$/.test(pathname) &&
-        !pathname.startsWith("/admin/arena/guests") &&
-        !pathname.startsWith("/admin/arena/prochain-invite") &&
-        !pathname.startsWith("/admin/arena/seasons") &&
-        !pathname.startsWith("/admin/arena/albums") &&
-        !pathname.startsWith("/admin/arena/videos") &&
-        !pathname.startsWith("/admin/arena/emissions") &&
-        !pathname.startsWith("/admin/arena/archives") &&
-        !pathname.startsWith("/admin/arena/alertes"))
-    );
+    return pathname === "/admin/arena" || pathname.startsWith("/admin/arena/");
   }
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
 export function adminNavTitle(pathname: string, items: AdminNavItem[] = ADMIN_NAV) {
   if (pathname === "/admin") return "Tableau de bord";
+  if (pathname.startsWith("/admin/arena")) {
+    const ranked = [...ARENA_ADMIN_LINKS]
+      .filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
+      .sort((a, b) => b.href.length - a.href.length);
+    return ranked[0]?.label ?? "Arena Culture";
+  }
   const ranked = items
     .filter((item) => !item.exact && (pathname === item.href || pathname.startsWith(`${item.href}/`)))
     .sort((a, b) => b.href.length - a.href.length);

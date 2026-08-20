@@ -4,17 +4,13 @@ import { connection } from "next/server";
 import { ArenaCalendarCard } from "@/components/arena/ArenaCalendarCard";
 import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaMediaRow } from "@/components/arena/ArenaMediaRow";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { arenaShowVideo, videoPoster } from "@/lib/media";
 import {
   getArenaHome,
   getArenaPhotoAlbums,
   getArenaStage,
-  getArchivedShows,
   getFeaturedArenaGuests,
-  getGallery,
-  getPublishedShows,
   getUpcomingArenaDates,
 } from "@/lib/data";
 import { arenaShowCover, arenaSpotlightGuest } from "@/lib/arena-spotlight";
@@ -31,14 +27,11 @@ export const revalidate = 0;
 
 export default async function ArenaCulturePage() {
   await connection();
-  const [home, stage, shows, posters, featuredGuests, albums, archived, upcoming] = await Promise.all([
+  const [home, stage, featuredGuests, albums, upcoming] = await Promise.all([
     getArenaHome(),
     getArenaStage(),
-    getPublishedShows({ take: 8 }),
-    getGallery({ category: "ARENA_CULTURE", kind: "IMAGE", take: 8 }),
     getFeaturedArenaGuests(8),
     getArenaPhotoAlbums(),
-    getArchivedShows({ take: 8 }),
     getUpcomingArenaDates(),
   ]);
 
@@ -46,54 +39,35 @@ export default async function ArenaCulturePage() {
   const spotlight = stage.announced;
   const guest = arenaSpotlightGuest(spotlight);
   const headlineGuest = arenaSpotlightGuest(headline);
-  const latest = shows[0];
-  const replayTiles = archived
-    .filter((show) => show.id !== headline?.id && show.id !== spotlight?.id)
-    .map((s) => ({
-      href: `/arena-culture/emissions/${s.slug}`,
-      title: arenaSpotlightGuest(s)?.name || s.title,
-      subtitle: s.theme || `Épisode ${String(s.number).padStart(2, "0")}`,
-      image: arenaShowCover(s) || "/artists/fally-ipupa.jpg",
+  const headlineVideo = headline ? arenaShowVideo(headline) : "";
+  const heroPoster = spotlight?.poster || guest?.photo || home.hero.poster;
+
+  const sceneTiles = featuredGuests
+    .filter((item) => item.photo)
+    .map((item) => ({
+      title: item.name,
+      image: item.photo,
+      href: `/arena-culture/invites/${item.slug}`,
     }));
 
-  const currentShows = shows.filter((s) => s.id !== headline?.id && s.id !== spotlight?.id);
-  const showTiles = currentShows.map((s) => ({
-    href: `/arena-culture/emissions/${s.slug}`,
-    title: arenaSpotlightGuest(s)?.name || s.title,
-    subtitle: s.theme || arenaSpotlightGuest(s)?.profession || `Épisode ${String(s.number).padStart(2, "0")}`,
-    image: arenaShowCover(s) || "/artists/fally-ipupa.jpg",
-  }));
+  const photoTiles = albums
+    .map((album) => ({
+      title: album.guestName || album.title,
+      image: album.coverImage || album.photos[0]?.url || "",
+      href: `/arena-culture/albums/${album.slug}`,
+    }))
+    .filter((tile) => tile.image)
+    .slice(0, 6);
 
-  const posterTiles =
-    shows.filter((s) => s.poster).length > 0
-      ? shows
-          .filter((s) => s.poster)
-          .map((s) => ({
-            href: `/arena-culture/emissions/${s.slug}`,
-            title: s.title,
-            image: s.poster as string,
-          }))
-      : posters.map((p) => ({
-          title: p.title,
-          image: p.thumbnail || p.url,
-        }));
-
-  const photoTiles = albums.slice(0, 6).map((album) => ({
-    title: album.guestName || album.title,
-    image: album.coverImage || album.photos[0]?.url || "/arena/albums/invitee-plateau/01-invitee.jpg",
-    href: `/arena-culture/albums/${album.slug}`,
-  }));
-
-  const sceneTiles = featuredGuests.map((guest) => ({
-    title: guest.name,
-    image: guest.photo || home.hero.poster || "/artists/gaz-mawete.jpg",
-    href: `/arena-culture/invites/${guest.slug}`,
-  }));
-  const heroPoster =
-    spotlight?.poster ||
-    guest?.photo ||
-    home.hero.poster;
-  const headlineVideo = headline ? arenaShowVideo(headline) : "";
+  const posterTiles = [spotlight, headline]
+    .filter((show): show is NonNullable<typeof show> => Boolean(show?.poster))
+    .filter((show, index, list) => list.findIndex((item) => item.id === show.id) === index)
+    .map((show) => ({
+      href: `/arena-culture/emissions/${show.slug}`,
+      title: arenaSpotlightGuest(show)?.name || show.title,
+      image: arenaShowCover(show) || show.poster,
+    }))
+    .filter((tile) => tile.image);
 
   return (
     <>
@@ -104,15 +78,13 @@ export default async function ArenaCulturePage() {
         description={home.hero.text}
         ctaInvites={home.hero.ctaInvites}
         poster={heroPoster}
-        spotlightTitle={headlineGuest?.name || headline?.title || guest?.name || spotlight?.title}
+        spotlightTitle={headlineGuest?.name || guest?.name}
         spotlightHref={
           headline
             ? `/arena-culture/emissions/${headline.slug}`
             : spotlight
               ? `/arena-culture/emissions/${spotlight.slug}`
-              : latest
-                ? `/arena-culture/emissions/${latest.slug}`
-                : undefined
+              : "/arena-culture/emissions"
         }
         ctaLabel={
           headline
@@ -142,33 +114,23 @@ export default async function ArenaCulturePage() {
         </section>
       ) : null}
 
-      <ArenaMediaRow
-        eyebrow={home.explore.eyebrow}
-        title={home.explore.title}
-        items={home.explore.items}
-        variant="wide"
-      />
-
       <section className="ac-spotlight">
         <div className="ac-spotlight__grid">
-          <div className="ac-spotlight__visual">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={
-                spotlight?.poster ||
-                guest?.photo ||
-                "/arena/albums/invitee-plateau/01-invitee.jpg"
-              }
-              alt={guest?.name || spotlight?.title || "Invité Arena Culture"}
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
+          {spotlight?.poster || guest?.photo || home.hero.poster ? (
+            <div className="ac-spotlight__visual">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={spotlight?.poster || guest?.photo || home.hero.poster}
+                alt={guest?.name || spotlight?.title || "Prochain invité Arena Culture"}
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          ) : null}
           <div className="ac-spotlight__copy">
             <p className="ac-kicker">{home.spotlight.emptyLabel}</p>
             {spotlight ? (
               <>
-                <p className="ac-spotlight-label">{home.spotlight.emptyLabel}</p>
                 <h2>
                   {guest ? (
                     <Link href={`/arena-culture/invites/${guest.slug}`}>{guest.name}</Link>
@@ -197,7 +159,6 @@ export default async function ArenaCulturePage() {
               </>
             ) : (
               <>
-                <p className="ac-spotlight-label">{home.spotlight.emptyLabel}</p>
                 <h2>{home.spotlight.emptyTitle}</h2>
                 <p>{home.spotlight.emptyBody}</p>
                 <div className="ac-spotlight__actions">
@@ -210,27 +171,6 @@ export default async function ArenaCulturePage() {
                 </div>
               </>
             )}
-
-            <div className="ac-chips">
-              <Link href="/arena-culture/calendrier" className="ac-chip">
-                Dates
-              </Link>
-              <Link href="#alertes" className="ac-chip">
-                Alertes
-              </Link>
-              <Link href="/arena-culture/emissions" className="ac-chip">
-                {home.spotlight.chipShows}
-              </Link>
-              <Link href="/arena-culture/videos" className="ac-chip">
-                {home.spotlight.chipVideos}
-              </Link>
-              <Link href="/arena-culture/archives" className="ac-chip">
-                {home.spotlight.chipArchives}
-              </Link>
-              <Link href="/contact" className="ac-chip">
-                {home.spotlight.chipCollab}
-              </Link>
-            </div>
           </div>
         </div>
       </section>
@@ -262,47 +202,21 @@ export default async function ArenaCulturePage() {
         variant="poster"
       />
 
-      {showTiles.length ? (
-        <ArenaMediaRow
-          eyebrow={home.shows.eyebrow}
-          title={home.shows.title}
-          href="/arena-culture/emissions"
-          items={showTiles}
-          variant="wide"
-        />
-      ) : replayTiles.length ? (
-        <ArenaMediaRow
-          eyebrow="Rediffusions"
-          title="Dans les archives"
-          href="/arena-culture/archives"
-          items={replayTiles}
-          variant="wide"
-        />
-      ) : null}
+      <ArenaMediaRow
+        eyebrow={home.photos.eyebrow}
+        title="Albums photos"
+        href="/arena-culture/photos"
+        items={photoTiles}
+        variant="square"
+      />
 
-      {posterTiles.length ? (
-        <ArenaMediaRow
-          eyebrow={home.posters.eyebrow}
-          title={home.posters.title}
-          href="/arena-culture/affiches"
-          items={posterTiles}
-          variant="poster"
-        />
-      ) : (
-        <section className="ac-spotlight">
-          <EmptyState title="Affiches à venir" description="Les visuels d'émissions apparaîtront ici." />
-        </section>
-      )}
-
-      {photoTiles.length ? (
-        <ArenaMediaRow
-          eyebrow={home.photos.eyebrow}
-          title={home.photos.title}
-          href="/arena-culture/photos"
-          items={photoTiles}
-          variant="square"
-        />
-      ) : null}
+      <ArenaMediaRow
+        eyebrow={home.posters.eyebrow}
+        title={home.posters.title}
+        href="/arena-culture/affiches"
+        items={posterTiles}
+        variant="poster"
+      />
 
       <section className="ac-close">
         <p className="ac-kicker">{home.memory.eyebrow}</p>

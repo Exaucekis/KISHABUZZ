@@ -9,10 +9,6 @@ import {
 const dashboard = ADMIN_NAV[0];
 const articles = ADMIN_NAV.find((item) => item.href === "/admin/articles")!;
 const arena = ADMIN_NAV.find((item) => item.href === "/admin/arena")!;
-const albums = ADMIN_NAV.find((item) => item.href === "/admin/arena/albums")!;
-const guests = ADMIN_NAV.find((item) => item.href === "/admin/arena/guests")!;
-const nextGuest = ADMIN_NAV.find((item) => item.href === "/admin/arena/prochain-invite")!;
-const videos = ADMIN_NAV.find((item) => item.href === "/admin/arena/videos")!;
 
 assert.equal(isAdminNavActive("/admin", dashboard), true);
 assert.equal(isAdminNavActive("/admin/articles", dashboard), false);
@@ -23,22 +19,22 @@ assert.equal(isAdminNavActive("/admin/arena/show1", arena), true);
 assert.equal(isAdminNavActive("/admin/arena/emissions", arena), true);
 assert.equal(isAdminNavActive("/admin/arena/archives", arena), true);
 assert.equal(isAdminNavActive("/admin/arena/alertes", arena), true);
-assert.equal(isAdminNavActive("/admin/arena/albums", arena), false);
-assert.equal(isAdminNavActive("/admin/arena/videos", arena), false);
-assert.equal(isAdminNavActive("/admin/arena/guests", arena), false);
-assert.equal(isAdminNavActive("/admin/arena/prochain-invite", arena), false);
-assert.equal(isAdminNavActive("/admin/arena/prochain-invite", nextGuest), true);
-assert.equal(isAdminNavActive("/admin/arena/guests", guests), true);
+assert.equal(isAdminNavActive("/admin/arena/albums", arena), true);
+assert.equal(isAdminNavActive("/admin/arena/videos", arena), true);
+assert.equal(isAdminNavActive("/admin/arena/guests", arena), true);
+assert.equal(isAdminNavActive("/admin/arena/prochain-invite", arena), true);
 assert.equal(adminNavTitle("/admin/arena/prochain-invite"), "Prochain invité");
-assert.equal(isAdminNavActive("/admin/arena/videos", videos), true);
-assert.equal(isAdminNavActive("/admin/arena/albums/x", albums), true);
+assert.equal(adminNavTitle("/admin/arena/albums/x"), "Photos");
+assert.equal(adminNavTitle("/admin/arena/videos"), "Vidéos");
 assert.equal(adminNavTitle("/admin"), "Tableau de bord");
 assert.equal(adminNavTitle("/admin/articles/abc"), "Articles & chroniques");
-assert.equal(adminNavTitle("/admin/arena/albums/x"), "Albums photos");
-assert.equal(adminNavTitle("/admin/arena/videos"), "Vidéos Arena");
 assert.equal(adminNavTitle("/admin/evenements"), "Événements");
 assert.equal(adminNavTitle("/admin/evenements/new"), "Événements");
 assert.equal(adminNavTitle("/admin/newsletter"), "Newsletter");
+assert.equal(
+  ADMIN_NAV.filter((item) => item.group === "arena").length,
+  1
+);
 assert.equal(
   ADMIN_NAV.every((item) => Boolean(item.group)),
   true
