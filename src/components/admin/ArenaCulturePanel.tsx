@@ -28,8 +28,8 @@ export function ArenaCulturePanel({
   latestShow: Show | null;
 }) {
   const cards = [
-    { label: "Émissions publiées", value: publishedShows, href: "/admin/arena", hint: "En ligne sur Arena Culture." },
-    { label: "Émissions brouillon", value: draftShows, href: "/admin/arena", hint: "À relire ou publier." },
+    { label: "Émissions publiées", value: publishedShows, href: "/admin/arena/emissions", hint: "En ligne sur Arena Culture." },
+    { label: "Émissions brouillon", value: draftShows, href: "/admin/arena/emissions", hint: "À relire ou publier." },
     { label: "Invités publiés", value: publishedGuests, href: "/admin/arena/guests", hint: "Fiches visibles sur le site." },
     { label: "Vidéos Arena", value: videos, href: "/admin/arena/videos", hint: "Replays et extraits." },
     { label: "Albums photos", value: albums, href: "/admin/arena/albums", hint: "Plateaux et coulisses." },
@@ -77,7 +77,7 @@ export function ArenaCulturePanel({
           <h3 className="text-sm font-semibold uppercase tracking-wide text-[#9aa3b5]">
             Dernière émission
           </h3>
-          <Link href="/admin/arena" className="text-xs text-[#9aa3b5] hover:text-white">
+          <Link href="/admin/arena/emissions" className="text-xs text-[#9aa3b5] hover:text-white">
             Tout voir
           </Link>
         </div>

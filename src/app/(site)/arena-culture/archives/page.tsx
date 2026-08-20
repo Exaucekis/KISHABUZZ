@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArenaPageIntro } from "@/components/arena/ArenaPageIntro";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { getArchivedShows, getArenaSeasons } from "@/lib/data";
+import { getArchivedShows, getArenaSeasons, getGallery } from "@/lib/data";
 import { cn, formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -19,12 +19,13 @@ export default async function ArenaArchivesPage({ searchParams }: Props) {
   const year = sp.annee ? Number(sp.annee) : undefined;
   const seasonId = sp.saison || undefined;
 
-  const [seasons, shows] = await Promise.all([
+  const [seasons, shows, archivedVisuals] = await Promise.all([
     getArenaSeasons(),
     getArchivedShows({
       year: year && !Number.isNaN(year) ? year : undefined,
       seasonId,
     }),
+    getGallery({ category: "ARENA_CULTURE", kind: "IMAGE", take: 40 }),
   ]);
 
   const years = Array.from(new Set(seasons.map((s) => s.year))).sort((a, b) => b - a);
@@ -33,7 +34,7 @@ export default async function ArenaArchivesPage({ searchParams }: Props) {
     <>
       <ArenaPageIntro
         title="Archives"
-        description="Parcours les saisons et émissions déjà diffusées."
+        description="Parcours les saisons et émissions déjà diffusées — tout ce qui n’est plus à la une."
       />
 
       <section className="ac-page">
@@ -121,10 +122,28 @@ export default async function ArenaArchivesPage({ searchParams }: Props) {
             description={
               years.length || seasons.length
                 ? "Modifiez l'année ou la saison, ou revenez à toutes les archives."
-                : "Les archives apparaîtront dès qu'une émission sera publiée."
+                : "Les archives se remplissent dès qu’une nouvelle émission passe à la une."
             }
           />
         )}
+
+        {archivedVisuals.filter((item) => item.title.startsWith("Archive ·")).length ? (
+          <div className="mt-14">
+            <p className="ac-kicker mb-3">Visuels d’archives</p>
+            <h2 className="mb-6 font-display text-2xl">Anciens visuels de la page</h2>
+            <div className="ac-grid-posters">
+              {archivedVisuals
+                .filter((item) => item.title.startsWith("Archive ·"))
+                .map((item) => (
+                  <div key={item.id}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={item.thumbnail || item.url} alt={item.alt || item.title} loading="lazy" />
+                    <p>{item.title.replace(/^Archive · /, "")}</p>
+                  </div>
+                ))}
+            </div>
+          </div>
+        ) : null}
       </section>
     </>
   );

@@ -1,4 +1,5 @@
 import { ArenaShowForm } from "@/components/admin/ArenaShowForm";
+import { ArenaAdminNav } from "@/components/admin/ArenaAdminNav";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { prisma } from "@/lib/prisma";
 
@@ -14,8 +15,9 @@ export default async function NewArenaShowPage() {
     <div>
       <AdminPageIntro
         title="Nouvelle émission Arena"
-        hint="Titre, affiche, vidéo (lien ou fichier), puis Publier. Créez d’abord les invités si besoin."
+        hint="Titre, affiche, vidéo, puis Annoncer le prochain invité ou Publier à la une. L’émission précédente part aux archives."
       />
+      <ArenaAdminNav current="/admin/arena/emissions" />
       <ArenaShowForm seasons={seasons} guests={guests} />
     </div>
   );

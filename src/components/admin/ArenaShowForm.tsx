@@ -127,15 +127,18 @@ export function ArenaShowForm({
           hint="Image avant lecture. Si vide, YouTube fournit une miniature."
           persist={show?.id ? { target: "arenaShow", id: show.id, field: "videoThumbnail" } : undefined}
         />
-        <div className="admin-field">
-          <label htmlFor="status">Statut</label>
+        <div className="admin-field md:col-span-2">
+          <label htmlFor="status">Publication</label>
           <select id="status" name="status" defaultValue={show?.status || "DRAFT"}>
             <option value="DRAFT">Brouillon</option>
-            <option value="SCHEDULED">Programmé</option>
-            <option value="PUBLISHED">Publié</option>
-            <option value="ARCHIVED">Archivé</option>
+            <option value="SCHEDULED">Annoncer le prochain invité</option>
+            <option value="PUBLISHED">Publier à la une</option>
+            <option value="ARCHIVED">Archives / rediffusion</option>
           </select>
-          <AdminHint>Publiez pour afficher l’émission sur le site.</AdminHint>
+          <AdminHint>
+            Une seule émission à la une. « Annoncer » remplace le bloc « Bientôt annoncé ». « Publier
+            à la une » prend l’accueil, Arena et la vidéo. L’émission précédente passe aux archives.
+          </AdminHint>
         </div>
         <div className="admin-field md:col-span-2">
           <label htmlFor="description">Description</label>
@@ -162,31 +165,13 @@ export function ArenaShowForm({
           </div>
           <AdminHint>Cochez les invités de cet épisode (créés dans Invités, puis publiés).</AdminHint>
         </div>
-        <div className="admin-field">
-          <label className="admin-check">
-            <input type="checkbox" name="isFeatured" defaultChecked={show?.isFeatured || false} />
-            Mise en avant
-          </label>
-          <AdminHint>Met l’émission en avant sur l’accueil Arena.</AdminHint>
-        </div>
-        <div className="admin-field">
-          <label className="admin-check">
-            <input
-              type="checkbox"
-              name="isGuestOfWeek"
-              defaultChecked={show?.isGuestOfWeek || false}
-            />
-            Invité de la semaine
-          </label>
-          <AdminHint>Priorité « invité de la semaine » sur l’accueil.</AdminHint>
-        </div>
       </div>
       {!state.ok && state.message ? (
         <p className="text-sm text-red-300">{state.message}</p>
       ) : null}
       <div className="flex flex-wrap gap-2 pt-3">
         <SubmitButton>Enregistrer</SubmitButton>
-        <Link href="/admin/arena" className="admin-btn admin-btn-ghost">
+        <Link href="/admin/arena/emissions" className="admin-btn admin-btn-ghost">
           Retour
         </Link>
       </div>

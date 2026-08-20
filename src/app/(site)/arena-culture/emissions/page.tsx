@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArenaPageIntro } from "@/components/arena/ArenaPageIntro";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { getPublishedShows } from "@/lib/data";
+import { getArchivedShows, getArenaSpotlight, getPublishedShows } from "@/lib/data";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -10,59 +10,116 @@ export const metadata: Metadata = {
   description: "Toutes les émissions Arena Culture publiées.",
 };
 
+export const dynamic = "force-dynamic";
+
+function ShowCard({
+  show,
+  kicker,
+}: {
+  show: {
+    id: string;
+    slug: string;
+    title: string;
+    theme: string;
+    poster: string;
+    number: number;
+    airDate: Date | null;
+    season: { number: number } | null;
+    guests: { guest: { name: string } }[];
+  };
+  kicker?: string;
+}) {
+  const guestNames = show.guests.map((g) => g.guest.name).filter(Boolean);
+  return (
+    <Link href={`/arena-culture/emissions/${show.slug}`} className="ac-show-card focus-ring">
+      <div className="ac-show-card__media">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={show.poster || "/artists/fally-ipupa.jpg"} alt="" loading="lazy" />
+      </div>
+      <div className="ac-show-card__body">
+        <p className="ac-kicker">
+          {kicker ||
+            `Épisode ${String(show.number).padStart(2, "0")}${
+              show.season ? ` · Saison ${show.season.number}` : ""
+            }`}
+        </p>
+        <h2>{show.title}</h2>
+        {show.theme ? <p>{show.theme}</p> : null}
+        <p>
+          {[show.airDate ? formatDate(show.airDate) : null, guestNames.join(", ")]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
+      </div>
+    </Link>
+  );
+}
+
 export default async function ArenaEmissionsPage() {
-  const shows = await getPublishedShows();
+  const [shows, spotlight, archived] = await Promise.all([
+    getPublishedShows(),
+    getArenaSpotlight(),
+    getArchivedShows({ take: 12 }),
+  ]);
+  const rest = shows.filter((show) => show.id !== spotlight?.id);
+  const replays = archived.filter((show) => show.id !== spotlight?.id);
 
   return (
     <>
       <ArenaPageIntro
         title="Émissions"
-        description="Épisodes, thèmes et invités — le plateau Arena Culture."
+        description="L’épisode à la une, puis les rediffusions dans les archives."
       />
 
-      <section className="ac-page">
-        {shows.length ? (
-          <div className="ac-grid-shows">
-            {shows.map((show) => {
-              const guestNames = show.guests.map((g) => g.guest.name).filter(Boolean);
-              return (
-                <Link
-                  key={show.id}
-                  href={`/arena-culture/emissions/${show.slug}`}
-                  className="ac-show-card focus-ring"
-                >
-                  <div className="ac-show-card__media">
-                    {show.poster ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={show.poster} alt="" loading="lazy" />
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src="/artists/fally-ipupa.jpg" alt="" loading="lazy" />
-                    )}
-                  </div>
-                  <div className="ac-show-card__body">
-                    <p className="ac-kicker">
-                      Épisode {String(show.number).padStart(2, "0")}
-                      {show.season ? ` · Saison ${show.season.number}` : ""}
-                    </p>
-                    <h2>{show.title}</h2>
-                    {show.theme ? <p>{show.theme}</p> : null}
-                    <p>
-                      {[show.airDate ? formatDate(show.airDate) : null, guestNames.join(", ")]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
+      <section className="ac-page space-y-14">
+        {spotlight ? (
+          <div>
+            <p className="ac-kicker mb-4">
+              {spotlight.status === "SCHEDULED" ? "Prochain invité" : "À la une"}
+            </p>
+            <div className="ac-grid-shows">
+              <ShowCard
+                show={spotlight}
+                kicker={
+                  spotlight.status === "SCHEDULED"
+                    ? "Annoncé"
+                    : `Épisode ${String(spotlight.number).padStart(2, "0")}`
+                }
+              />
+            </div>
           </div>
-        ) : (
+        ) : null}
+
+        {rest.length ? (
+          <div className="ac-grid-shows">
+            {rest.map((show) => (
+              <ShowCard key={show.id} show={show} />
+            ))}
+          </div>
+        ) : null}
+
+        {replays.length ? (
+          <div>
+            <div className="mb-6 flex items-end justify-between gap-3">
+              <h2 className="font-display text-2xl md:text-3xl">Rediffusions</h2>
+              <Link href="/arena-culture/archives" className="text-sm text-[var(--ac-amber)] hover:underline">
+                Toutes les archives
+              </Link>
+            </div>
+            <div className="ac-grid-shows">
+              {replays.map((show) => (
+                <ShowCard key={show.id} show={show} />
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {!spotlight && !rest.length && !replays.length ? (
           <EmptyState
             title="Aucune émission publiée"
             description="Les émissions Arena Culture apparaîtront ici dès leur mise en ligne."
           />
-        )}
+        ) : null}
       </section>
     </>
   );

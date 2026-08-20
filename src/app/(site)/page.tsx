@@ -10,6 +10,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PublicImage } from "@/components/media/PublicImage";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getHomePageData } from "@/lib/data";
+import { arenaSpotlightMode } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,7 @@ export default async function HomePage() {
   } = await getHomePageData();
 
   const guest = spotlightShow?.guests[0]?.guest;
+  const mode = arenaSpotlightMode(spotlightShow);
   const spotlightPoster =
     spotlightShow?.poster ||
     guest?.photo ||
@@ -83,15 +85,17 @@ export default async function HomePage() {
         <div className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-20 md:grid-cols-[1.05fr_0.95fr] md:items-end md:px-6 md:py-28">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#ffb347]">
-              Arena Culture · À la une
+              Arena Culture · {mode === "announced" ? "Prochain invité" : mode === "headline" ? "À la une" : "Bientôt"}
             </p>
             <h2 className="mt-4 font-display text-4xl uppercase leading-[0.95] text-white md:text-6xl lg:text-7xl">
-              {guest?.name || spotlightShow?.title || "La scène continue"}
+              {guest?.name || spotlightShow?.title || "Bientôt annoncé"}
             </h2>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
-              {spotlightShow?.theme ||
-                guest?.profession ||
-                "Émissions, invités, photos et vidéos — l’univers Arena Grand Culture."}
+              {spotlightShow
+                ? spotlightShow.theme ||
+                  guest?.profession ||
+                  "Émissions, invités, photos et vidéos — l’univers Arena Grand Culture."
+                : "L’invité de la semaine sera annoncé ici. Proposez une collaboration ou explorez Arena Culture."}
               {spotlightShow?.airDate
                 ? ` · ${formatDate(spotlightShow.airDate)}${spotlightShow.airTime ? ` · ${spotlightShow.airTime}` : ""}`
                 : ""}
@@ -101,11 +105,15 @@ export default async function HomePage() {
                 href={
                   spotlightShow
                     ? `/arena-culture/emissions/${spotlightShow.slug}`
-                    : "/arena-culture"
+                    : "/contact"
                 }
                 className="!bg-[#ff8c00] !text-black hover:!bg-[#ff9f2e]"
               >
-                Voir l&apos;affiche
+                {spotlightShow
+                  ? spotlightShow.videoUrl
+                    ? "Voir la vidéo"
+                    : "Voir l'affiche"
+                  : "Proposer un invité"}
               </ButtonLink>
               <ButtonLink
                 href="/arena-culture"

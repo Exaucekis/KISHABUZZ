@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArenaPageIntro } from "@/components/arena/ArenaPageIntro";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { getGallery, getPublishedShows } from "@/lib/data";
+import { getArchivedShows, getGallery, getPublishedShows } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Affiches · Arena Culture",
@@ -10,12 +10,13 @@ export const metadata: Metadata = {
 };
 
 export default async function ArenaAffichesPage() {
-  const [shows, galleryPosters] = await Promise.all([
+  const [shows, archivedShows, galleryPosters] = await Promise.all([
     getPublishedShows(),
+    getArchivedShows(),
     getGallery({ category: "ARENA_CULTURE", kind: "IMAGE" }),
   ]);
 
-  const fromShows = shows.filter((s) => s.poster);
+  const fromShows = [...shows, ...archivedShows].filter((s) => s.poster);
 
   return (
     <>
@@ -31,15 +32,15 @@ export default async function ArenaAffichesPage() {
                 <p>{s.title}</p>
               </Link>
             ))}
-            {!fromShows.length
-              ? galleryPosters.map((p) => (
-                  <div key={p.id}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.thumbnail || p.url} alt={p.title} loading="lazy" />
-                    <p>{p.title}</p>
-                  </div>
-                ))
-              : null}
+            {galleryPosters
+              .filter((p) => !fromShows.some((s) => s.poster === p.url || s.poster === p.thumbnail))
+              .map((p) => (
+                <div key={p.id}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.thumbnail || p.url} alt={p.title} loading="lazy" />
+                  <p>{p.title}</p>
+                </div>
+              ))}
           </div>
         ) : (
           <EmptyState title="Aucune affiche publiée" />

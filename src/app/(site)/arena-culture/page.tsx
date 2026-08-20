@@ -4,14 +4,15 @@ import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaMediaRow } from "@/components/arena/ArenaMediaRow";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
+  getArenaHome,
   getArenaPhotoAlbums,
+  getArenaSpotlight,
+  getArchivedShows,
   getFeaturedArenaGuests,
   getGallery,
-  getGuestOfTheWeek,
-  getPageContent,
   getPublishedShows,
-  getUpcomingShow,
 } from "@/lib/data";
+import { arenaSpotlightMode } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -20,46 +21,7 @@ export const metadata: Metadata = {
     "Émissions, invités, affiches, photos, vidéos et archives — l'univers médiatique de KISHA BUZZ.",
 };
 
-const EXPLORE = [
-  {
-    href: "/arena-culture/emissions",
-    title: "Émissions",
-    subtitle: "Épisodes & replays",
-    image: "/artists/fally-ipupa.jpg",
-  },
-  {
-    href: "/arena-culture/invites",
-    title: "Invités",
-    subtitle: "Talents & voix",
-    image: "/artists/gaz-mawete.jpg",
-  },
-  {
-    href: "/arena-culture/affiches",
-    title: "Affiches",
-    subtitle: "Visuels officiels",
-    image: "/artists/koffi-olomide.jpg",
-  },
-  {
-    href: "/arena-culture/photos",
-    title: "Photos",
-    subtitle: "Plateaux & coulisses",
-    image: "/artists/ferre-gola.jpg",
-  },
-  {
-    href: "/arena-culture/videos",
-    title: "Vidéos",
-    subtitle: "Extraits",
-    image: "/artists/innoss-b.png",
-  },
-  {
-    href: "/arena-culture/archives",
-    title: "Archives",
-    subtitle: "Saisons passées",
-    image: "/artists/damso.jpg",
-  },
-];
-
-const SCENE = [
+const SCENE_FALLBACK = [
   { title: "Gaz Mawete", image: "/artists/gaz-mawete.jpg", href: "/arena-culture/invites" },
   { title: "Fally Ipupa", image: "/artists/fally-ipupa.jpg", href: "/arena-culture/invites" },
   { title: "Innoss'B", image: "/artists/innoss-b.png", href: "/arena-culture/invites" },
@@ -68,25 +30,33 @@ const SCENE = [
   { title: "Damso", image: "/artists/damso.jpg", href: "/arena-culture/invites" },
 ];
 
+export const dynamic = "force-dynamic";
+
 export default async function ArenaCulturePage() {
-  const [presentation, guestWeek, upcoming, shows, posters, featuredGuests, albums] = await Promise.all([
-    getPageContent("arena.presentation"),
-    getGuestOfTheWeek(),
-    getUpcomingShow(),
+  const [home, spotlight, shows, posters, featuredGuests, albums, archived] = await Promise.all([
+    getArenaHome(),
+    getArenaSpotlight(),
     getPublishedShows({ take: 8 }),
     getGallery({ category: "ARENA_CULTURE", kind: "IMAGE", take: 8 }),
     getFeaturedArenaGuests(8),
     getArenaPhotoAlbums(),
+    getArchivedShows({ take: 8 }),
   ]);
 
-  const guest = guestWeek?.guests.map((item) => item.guest).find((item) => item.visible !== false);
+  const guest = spotlight?.guests.map((item) => item.guest).find((item) => item.visible !== false);
+  const mode = arenaSpotlightMode(spotlight);
   const latest = shows[0];
-  const upcomingGuest = upcoming?.guests.map((item) => item.guest).find((item) => item.visible !== false);
-  const copy =
-    presentation?.body ||
-    "Émissions, invités, images et archives — l'univers culturel de KISHA BUZZ.";
+  const replayTiles = archived
+    .filter((show) => show.id !== spotlight?.id)
+    .map((s) => ({
+      href: `/arena-culture/emissions/${s.slug}`,
+      title: s.title,
+      subtitle: s.theme || `Épisode ${String(s.number).padStart(2, "0")}`,
+      image: s.poster || "/artists/fally-ipupa.jpg",
+    }));
 
-  const showTiles = shows.map((s) => ({
+  const currentShows = shows.filter((s) => s.id !== spotlight?.id);
+  const showTiles = currentShows.map((s) => ({
     href: `/arena-culture/emissions/${s.slug}`,
     title: s.title,
     subtitle: s.theme || `Épisode ${String(s.number).padStart(2, "0")}`,
@@ -119,28 +89,38 @@ export default async function ArenaCulturePage() {
         image: guest.photo || "/artists/gaz-mawete.jpg",
         href: `/arena-culture/invites/${guest.slug}`,
       }))
-    : SCENE;
+    : SCENE_FALLBACK;
 
   return (
     <>
       <ArenaHero
-        description={copy}
-        spotlightTitle={guest?.name || upcoming?.guests[0]?.guest.name || latest?.title}
+        line1={home.hero.line1}
+        line2={home.hero.line2}
+        line3={home.hero.line3}
+        description={home.hero.text}
+        ctaInvites={home.hero.ctaInvites}
+        poster={spotlight?.poster || guest?.photo || home.hero.poster}
+        spotlightTitle={guest?.name || spotlight?.title}
         spotlightHref={
-          guestWeek
-            ? `/arena-culture/emissions/${guestWeek.slug}`
-            : upcoming
-              ? `/arena-culture/emissions/${upcoming.slug}`
-              : latest
-                ? `/arena-culture/emissions/${latest.slug}`
-                : undefined
+          spotlight
+            ? `/arena-culture/emissions/${spotlight.slug}`
+            : latest
+              ? `/arena-culture/emissions/${latest.slug}`
+              : undefined
+        }
+        ctaLabel={
+          mode === "announced"
+            ? `Prochain · ${guest?.name || spotlight?.title}`
+            : mode === "headline"
+              ? `À la une · ${guest?.name || spotlight?.title}`
+              : "Voir les émissions"
         }
       />
 
       <ArenaMediaRow
-        eyebrow="Explorer"
-        title="Univers Arena"
-        items={EXPLORE}
+        eyebrow={home.explore.eyebrow}
+        title={home.explore.title}
+        items={home.explore.items}
         variant="wide"
       />
 
@@ -150,85 +130,87 @@ export default async function ArenaCulturePage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={
-                guestWeek?.poster ||
+                spotlight?.poster ||
                 guest?.photo ||
-                upcoming?.poster ||
+                home.hero.poster ||
                 "/arena/albums/invitee-plateau/01-invitee.jpg"
               }
-              alt={guest?.name || upcoming?.title || "Invité Arena Culture"}
+              alt={guest?.name || spotlight?.title || "Invité Arena Culture"}
               loading="lazy"
               decoding="async"
             />
           </div>
           <div className="ac-spotlight__copy">
             <p className="ac-kicker">À la une</p>
-            {guestWeek && guest ? (
+            {mode === "headline" && spotlight ? (
               <>
-                <p className="ac-spotlight-label">
-                  {guestWeek.airDate && guestWeek.airDate > new Date()
-                    ? "Prochain invité"
-                    : "Invité de la semaine"}
-                </p>
+                <p className="ac-spotlight-label">Invité de la semaine</p>
                 <h2>
-                  <Link href={`/arena-culture/invites/${guest.slug}`}>{guest.name}</Link>
+                  {guest ? (
+                    <Link href={`/arena-culture/invites/${guest.slug}`}>{guest.name}</Link>
+                  ) : (
+                    spotlight.title
+                  )}
                 </h2>
                 <p>
-                  {[guest.profession, guestWeek.theme].filter(Boolean).join(" · ") ||
+                  {[guest?.profession, spotlight.theme].filter(Boolean).join(" · ") ||
                     "Invité Arena Grand Culture."}
-                  {guestWeek.airDate
-                    ? ` — ${formatDate(guestWeek.airDate)}${guestWeek.airTime ? ` · ${guestWeek.airTime}` : ""}`
+                  {spotlight.airDate
+                    ? ` — ${formatDate(spotlight.airDate)}${spotlight.airTime ? ` · ${spotlight.airTime}` : ""}`
                     : ""}
                 </p>
                 <div className="ac-spotlight__actions">
                   <Link
-                    href={`/arena-culture/emissions/${guestWeek.slug}`}
+                    href={`/arena-culture/emissions/${spotlight.slug}`}
                     className="ac-btn ac-btn--primary"
                   >
-                    Voir l&apos;émission
+                    {spotlight.videoUrl ? "Voir la vidéo" : "Voir l'émission"}
                   </Link>
-                  <Link href={`/arena-culture/invites/${guest.slug}`} className="ac-btn ac-btn--ghost">
-                    Fiche invité
+                  <Link href={guest ? `/arena-culture/invites/${guest.slug}` : "/arena-culture/invites"} className="ac-btn ac-btn--ghost">
+                    {guest ? "Fiche invité" : home.hero.ctaInvites}
                   </Link>
                 </div>
               </>
-            ) : upcoming ? (
+            ) : mode === "announced" && spotlight ? (
               <>
-                <p className="ac-spotlight-label">Prochain invité</p>
-                <h2>{upcomingGuest?.name || upcoming.title}</h2>
+                <p className="ac-spotlight-label">{home.spotlight.emptyLabel}</p>
+                <h2>
+                  {guest ? (
+                    <Link href={`/arena-culture/invites/${guest.slug}`}>{guest.name}</Link>
+                  ) : (
+                    spotlight.title
+                  )}
+                </h2>
                 <p>
-                  {[upcoming.theme, upcomingGuest?.profession]
-                    .filter(Boolean)
-                    .join(" · ") || upcoming.title}
-                  {upcoming.airDate
-                    ? ` — ${formatDate(upcoming.airDate)}${upcoming.airTime ? ` · ${upcoming.airTime}` : ""}`
+                  {[spotlight.theme, guest?.profession].filter(Boolean).join(" · ") ||
+                    "Bientôt sur le plateau Arena Grand Culture."}
+                  {spotlight.airDate
+                    ? ` — ${formatDate(spotlight.airDate)}${spotlight.airTime ? ` · ${spotlight.airTime}` : ""}`
                     : ""}
                 </p>
                 <div className="ac-spotlight__actions">
                   <Link
-                    href={`/arena-culture/emissions/${upcoming.slug}`}
+                    href={`/arena-culture/emissions/${spotlight.slug}`}
                     className="ac-btn ac-btn--primary"
                   >
                     Voir l&apos;affiche
                   </Link>
-                  <Link href="/arena-culture/affiches" className="ac-btn ac-btn--ghost">
-                    Affiches
+                  <Link href="/arena-culture/emissions" className="ac-btn ac-btn--ghost">
+                    {home.spotlight.emptySecondary}
                   </Link>
                 </div>
               </>
             ) : (
               <>
-                <p className="ac-spotlight-label">Prochain invité</p>
-                <h2>Bientôt annoncé</h2>
-                <p>
-                  L&apos;invité de la semaine sera annoncé ici. Propose une collaboration ou explore
-                  la scène.
-                </p>
+                <p className="ac-spotlight-label">{home.spotlight.emptyLabel}</p>
+                <h2>{home.spotlight.emptyTitle}</h2>
+                <p>{home.spotlight.emptyBody}</p>
                 <div className="ac-spotlight__actions">
                   <Link href="/contact" className="ac-btn ac-btn--primary">
-                    Proposer un invité
+                    {home.spotlight.emptyCta}
                   </Link>
                   <Link href="/arena-culture/emissions" className="ac-btn ac-btn--ghost">
-                    Émissions
+                    {home.spotlight.emptySecondary}
                   </Link>
                 </div>
               </>
@@ -236,16 +218,16 @@ export default async function ArenaCulturePage() {
 
             <div className="ac-chips">
               <Link href="/arena-culture/emissions" className="ac-chip">
-                Émissions
+                {home.spotlight.chipShows}
               </Link>
               <Link href="/arena-culture/videos" className="ac-chip">
-                Vidéos
+                {home.spotlight.chipVideos}
               </Link>
               <Link href="/arena-culture/archives" className="ac-chip">
-                Archives
+                {home.spotlight.chipArchives}
               </Link>
               <Link href="/contact" className="ac-chip">
-                Collaborer
+                {home.spotlight.chipCollab}
               </Link>
             </div>
           </div>
@@ -253,8 +235,8 @@ export default async function ArenaCulturePage() {
       </section>
 
       <ArenaMediaRow
-        eyebrow="Scène"
-        title="Visages & voix"
+        eyebrow={home.scene.eyebrow}
+        title={home.scene.title}
         href="/arena-culture/invites"
         items={sceneTiles}
         variant="poster"
@@ -262,18 +244,26 @@ export default async function ArenaCulturePage() {
 
       {showTiles.length ? (
         <ArenaMediaRow
-          eyebrow="Émissions"
-          title="À (re)découvrir"
+          eyebrow={home.shows.eyebrow}
+          title={home.shows.title}
           href="/arena-culture/emissions"
           items={showTiles}
+          variant="wide"
+        />
+      ) : replayTiles.length ? (
+        <ArenaMediaRow
+          eyebrow="Rediffusions"
+          title="Dans les archives"
+          href="/arena-culture/archives"
+          items={replayTiles}
           variant="wide"
         />
       ) : null}
 
       {posterTiles.length ? (
         <ArenaMediaRow
-          eyebrow="Affiches"
-          title="Visuels"
+          eyebrow={home.posters.eyebrow}
+          title={home.posters.title}
           href="/arena-culture/affiches"
           items={posterTiles}
           variant="poster"
@@ -286,8 +276,8 @@ export default async function ArenaCulturePage() {
 
       {photoTiles.length ? (
         <ArenaMediaRow
-          eyebrow="Photos"
-          title="Ambiances"
+          eyebrow={home.photos.eyebrow}
+          title={home.photos.title}
           href="/arena-culture/photos"
           items={photoTiles}
           variant="square"
@@ -295,15 +285,15 @@ export default async function ArenaCulturePage() {
       ) : null}
 
       <section className="ac-close">
-        <p className="ac-kicker">Archives</p>
-        <h2>La mémoire de l&apos;Arena</h2>
-        <p>Retrouve les saisons et épisodes déjà diffusés.</p>
+        <p className="ac-kicker">{home.memory.eyebrow}</p>
+        <h2>{home.memory.title}</h2>
+        <p>{home.memory.body}</p>
         <div className="ac-close__actions">
           <Link href="/arena-culture/archives" className="ac-btn ac-btn--primary">
-            Ouvrir les archives
+            {home.memory.cta}
           </Link>
           <Link href="/contact" className="ac-btn ac-btn--ghost">
-            Collaborer
+            {home.memory.secondary}
           </Link>
         </div>
       </section>

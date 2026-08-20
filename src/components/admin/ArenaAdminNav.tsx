@@ -1,11 +1,13 @@
 import Link from "next/link";
 
 export const ARENA_ADMIN_LINKS = [
-  { href: "/admin/arena", label: "Émissions" },
+  { href: "/admin/arena", label: "Tableau de bord" },
+  { href: "/admin/arena/emissions", label: "Émissions" },
   { href: "/admin/arena/guests", label: "Invités" },
   { href: "/admin/arena/videos", label: "Vidéos" },
   { href: "/admin/arena/albums", label: "Albums" },
   { href: "/admin/arena/seasons", label: "Saisons" },
+  { href: "/admin/arena/archives", label: "Archives" },
 ] as const;
 
 export function ArenaAdminNav({ current }: { current?: string }) {

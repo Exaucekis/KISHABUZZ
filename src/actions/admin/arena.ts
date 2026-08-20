@@ -15,6 +15,7 @@ import {
 } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { createSlug } from "@/lib/utils";
+import { applyArenaSpotlight, isArenaLiveStatus } from "@/lib/arena-spotlight";
 import { videoPoster } from "@/lib/media";
 
 const showSchema = z.object({
@@ -64,8 +65,8 @@ export async function saveArenaShow(
     videoUrl: formString(formData, "videoUrl"),
     videoThumbnail: formString(formData, "videoThumbnail"),
     status: formString(formData, "status") || "DRAFT",
-    isFeatured: formBool(formData, "isFeatured"),
-    isGuestOfWeek: formBool(formData, "isGuestOfWeek"),
+    isFeatured: isArenaLiveStatus(formString(formData, "status") || "DRAFT"),
+    isGuestOfWeek: isArenaLiveStatus(formString(formData, "status") || "DRAFT"),
     seasonId: formOptionalId(formData, "seasonId"),
     guestIds,
   });
@@ -80,13 +81,7 @@ export async function saveArenaShow(
 
   const data = parsed.data;
   const slug = await uniqueShowSlug(`${data.title}-${data.number}`, id || undefined);
-
-  if (data.isGuestOfWeek) {
-    await prisma.arenaShow.updateMany({
-      where: { isGuestOfWeek: true, ...(id ? { NOT: { id } } : {}) },
-      data: { isGuestOfWeek: false },
-    });
-  }
+  const live = isArenaLiveStatus(data.status);
 
   const payload = {
     title: data.title,
@@ -100,8 +95,8 @@ export async function saveArenaShow(
     videoUrl: data.videoUrl || "",
     videoThumbnail: data.videoThumbnail || videoPoster(data.videoUrl),
     status: data.status,
-    isFeatured: data.isFeatured,
-    isGuestOfWeek: data.isGuestOfWeek,
+    isFeatured: live,
+    isGuestOfWeek: live,
     seasonId: data.seasonId,
   };
 
@@ -119,10 +114,17 @@ export async function saveArenaShow(
     return saved;
   });
 
+  await applyArenaSpotlight(show.id, data.status);
+
   revalidatePath("/admin/arena");
+  revalidatePath("/admin/arena/emissions");
   revalidatePath("/admin/arena/videos");
+  revalidatePath("/admin/arena/archives");
   revalidatePath("/arena-culture");
+  revalidatePath("/arena-culture/emissions");
   revalidatePath("/arena-culture/videos");
+  revalidatePath("/arena-culture/archives");
+  revalidatePath("/arena-culture/affiches");
   revalidatePath("/arena-culture/invites");
   revalidatePublic();
   redirect(`/admin/arena/${show.id}`);
@@ -134,9 +136,10 @@ export async function deleteArenaShow(formData: FormData) {
   if (!id) return;
   await prisma.arenaShow.delete({ where: { id } });
   revalidatePath("/admin/arena");
+  revalidatePath("/admin/arena/emissions");
   revalidatePath("/arena-culture");
   revalidatePublic();
-  redirect("/admin/arena");
+  redirect("/admin/arena/emissions");
 }
 
 export async function setArenaShowStatus(formData: FormData) {
@@ -144,9 +147,22 @@ export async function setArenaShowStatus(formData: FormData) {
   const id = formString(formData, "id");
   const status = formString(formData, "status");
   if (!id || !status) return;
-  await prisma.arenaShow.update({ where: { id }, data: { status } });
+  await prisma.arenaShow.update({
+    where: { id },
+    data: {
+      status,
+      isFeatured: isArenaLiveStatus(status),
+      isGuestOfWeek: isArenaLiveStatus(status),
+    },
+  });
+  await applyArenaSpotlight(id, status);
   revalidatePath("/admin/arena");
+  revalidatePath("/admin/arena/emissions");
+  revalidatePath("/admin/arena/archives");
   revalidatePath("/arena-culture");
+  revalidatePath("/arena-culture/emissions");
+  revalidatePath("/arena-culture/videos");
+  revalidatePath("/arena-culture/archives");
   revalidatePublic();
 }
 

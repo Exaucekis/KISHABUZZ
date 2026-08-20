@@ -68,13 +68,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       data-theme="dark"
       suppressHydrationWarning
     >
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('kb-theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}var d=document.documentElement;d.dataset.theme=t;d.classList.remove('light','dark');d.classList.add(t);}catch(e){}})();`,
-          }}
-        />
-      </head>
       <body className="flex min-h-full flex-col bg-ink text-paper">{children}</body>
     </html>
   );

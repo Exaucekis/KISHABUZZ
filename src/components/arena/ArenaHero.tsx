@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const BACKGROUNDS = [
   "/arena/albums/invitee-plateau/02-plateau.jpg",
@@ -12,13 +12,30 @@ const BACKGROUNDS = [
 
 type Props = {
   description: string;
+  line1?: string;
+  line2?: string;
+  line3?: string;
+  ctaInvites?: string;
   spotlightTitle?: string;
   spotlightHref?: string;
+  poster?: string;
+  ctaLabel?: string;
 };
 
-export function ArenaHero({ description, spotlightTitle, spotlightHref }: Props) {
+export function ArenaHero({
+  description,
+  line1 = "Culture.",
+  line2 = "Émissions.",
+  line3 = "Live.",
+  ctaInvites = "Invités",
+  spotlightTitle,
+  spotlightHref,
+  poster,
+  ctaLabel,
+}: Props) {
   const lead =
     description.length > 110 ? `${description.slice(0, 107).trim()}…` : description;
+  const slides = useMemo(() => (poster ? [poster] : BACKGROUNDS), [poster]);
   const [active, setActive] = useState(0);
   const [visible, setVisible] = useState(true);
   const rootRef = useRef<HTMLElement>(null);
@@ -38,17 +55,17 @@ export function ArenaHero({ description, spotlightTitle, spotlightHref }: Props)
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce || !visible) return;
     const id = window.setInterval(() => {
-      setActive((i) => (i + 1) % BACKGROUNDS.length);
+      setActive((i) => (i + 1) % slides.length);
     }, 7000);
     return () => window.clearInterval(id);
-  }, [visible]);
+  }, [visible, slides.length]);
 
-  const next = (active + 1) % BACKGROUNDS.length;
+  const next = (active + 1) % slides.length;
 
   return (
     <section ref={rootRef} className="ac-hero">
       <div className="ac-hero__slides" aria-hidden>
-        {BACKGROUNDS.map((src, i) => {
+        {slides.map((src, i) => {
           if (i !== active && i !== next) return null;
           return (
             // eslint-disable-next-line @next/next/no-img-element
@@ -68,25 +85,25 @@ export function ArenaHero({ description, spotlightTitle, spotlightHref }: Props)
 
       <div className="ac-hero__content">
         <h1 className="ac-hero__title">
-          Culture.
+          {line1}
           <br />
-          Émissions.
+          {line2}
           <br />
-          <em>Live.</em>
+          <em>{line3}</em>
         </h1>
         <p className="ac-hero__text">{lead}</p>
         <div className="ac-hero__cta">
           <Link href={spotlightHref || "/arena-culture/emissions"} className="ac-btn ac-btn--primary">
-            {spotlightTitle ? `Prochain · ${spotlightTitle}` : "Voir les émissions"}
+            {ctaLabel || (spotlightTitle ? `Prochain · ${spotlightTitle}` : "Voir les émissions")}
           </Link>
           <Link href="/arena-culture/invites" className="ac-btn ac-btn--ghost">
-            Invités
+            {ctaInvites}
           </Link>
         </div>
       </div>
 
       <div className="ac-hero__dots" aria-hidden>
-        {BACKGROUNDS.map((_, i) => (
+        {slides.map((_, i) => (
           <span key={i} className={i === active ? "is-active" : undefined} />
         ))}
       </div>

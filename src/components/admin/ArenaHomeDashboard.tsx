@@ -1,0 +1,434 @@
+"use client";
+
+import { useActionState, type ReactNode } from "react";
+import Link from "next/link";
+import { saveArenaHomeSection } from "@/actions/admin/arena-home";
+import { AdminHint } from "@/components/admin/AdminHint";
+import { MediaField } from "@/components/admin/MediaField";
+import { StatusBadge } from "@/components/admin/StatusBadge";
+import { SubmitButton } from "@/components/admin/SubmitButton";
+import type { AdminActionState } from "@/lib/admin";
+import type { ArenaHomeConfig, ArenaHomeSection } from "@/lib/arena-home";
+
+export type ArenaHomeLive = {
+  spotlight: {
+    id: string;
+    title: string;
+    status: string;
+    poster: string;
+    guestName: string | null;
+  } | null;
+  guests: { id: string; name: string; photo: string }[];
+  shows: { id: string; title: string; poster: string }[];
+  albums: { slug: string; title: string; cover: string }[];
+  archivedCount: number;
+};
+
+const initial: AdminActionState = { ok: false, message: "" };
+
+function SectionForm({
+  section,
+  title,
+  kicker,
+  hint,
+  children,
+}: {
+  section: ArenaHomeSection;
+  title: string;
+  kicker: string;
+  hint: string;
+  children: ReactNode;
+}) {
+  const [state, action] = useActionState(saveArenaHomeSection, initial);
+  return (
+    <form action={action} id={`rubrique-${section}`} className="admin-card scroll-mt-24 space-y-4">
+      <input type="hidden" name="section" value={section} />
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#9aa3b5]">
+            {kicker}
+          </p>
+          <h2 className="mt-1 font-[family-name:var(--font-syne)] text-xl font-bold">{title}</h2>
+          <p className="admin-page-hint mt-1 max-w-2xl">{hint}</p>
+        </div>
+        <SubmitButton>Enregistrer cette rubrique</SubmitButton>
+      </div>
+      {children}
+      {state.message ? (
+        <p className={`text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>{state.message}</p>
+      ) : null}
+    </form>
+  );
+}
+
+function LiveTiles({
+  items,
+  empty,
+  moreHref,
+  moreLabel,
+}: {
+  items: { href: string; title: string; image?: string; meta?: string }[];
+  empty: string;
+  moreHref: string;
+  moreLabel: string;
+}) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">En ligne maintenant</p>
+        <Link href={moreHref} className="text-xs text-[#9aa3b5] hover:text-white">
+          {moreLabel}
+        </Link>
+      </div>
+      {items.length ? (
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {items.map((item) => (
+            <Link
+              key={`${item.href}-${item.title}`}
+              href={item.href}
+              className="flex items-center gap-2 rounded-lg border border-white/5 bg-white/5 p-2 hover:border-white/20"
+            >
+              {item.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={item.image} alt="" className="h-10 w-10 rounded object-cover" />
+              ) : null}
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-medium">{item.title}</span>
+                {item.meta ? <span className="block truncate text-xs text-[#9aa3b5]">{item.meta}</span> : null}
+              </span>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-[#9aa3b5]">{empty}</p>
+      )}
+    </div>
+  );
+}
+
+export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live: ArenaHomeLive }) {
+  return (
+    <div className="space-y-5">
+      <nav className="flex flex-wrap gap-2">
+        {[
+          ["hero", "Héro"],
+          ["explore", "Univers"],
+          ["spotlight", "À la une"],
+          ["scene", "Scène"],
+          ["shows", "Émissions"],
+          ["posters", "Affiches"],
+          ["photos", "Photos"],
+          ["memory", "Archives"],
+        ].map(([id, label]) => (
+          <a key={id} href={`#rubrique-${id}`} className="admin-btn admin-btn-ghost text-xs">
+            {label}
+          </a>
+        ))}
+      </nav>
+
+      <SectionForm
+        section="hero"
+        kicker="Culture. Émissions. Live."
+        title="Héro"
+        hint="Titres, texte de présentation et visuel d’ouverture. Un nouveau visuel envoie l’ancien aux archives / affiches."
+      >
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="admin-field">
+            <label>Ligne 1</label>
+            <input name="line1" required defaultValue={home.hero.line1} />
+          </div>
+          <div className="admin-field">
+            <label>Ligne 2</label>
+            <input name="line2" required defaultValue={home.hero.line2} />
+          </div>
+          <div className="admin-field">
+            <label>Ligne 3</label>
+            <input name="line3" required defaultValue={home.hero.line3} />
+          </div>
+          <div className="admin-field sm:col-span-3">
+            <label>Présentation</label>
+            <textarea name="text" rows={3} required defaultValue={home.hero.text} />
+            <AdminHint>Phrase sous le titre. Visible aussi comme texte Arena Culture.</AdminHint>
+          </div>
+          <div className="admin-field">
+            <label>Bouton secondaire</label>
+            <input name="ctaInvites" required defaultValue={home.hero.ctaInvites} />
+            <AdminHint>Libellé du bouton vers les invités.</AdminHint>
+          </div>
+        </div>
+        <MediaField
+          name="poster"
+          label="Visuel d’ouverture (test ou définitif)"
+          defaultValue={home.hero.poster}
+          folder="arena"
+          hint="Sans visuel, le héro tourne sur les images de plateau. Remplacer archive l’ancien."
+        />
+      </SectionForm>
+
+      <SectionForm
+        section="explore"
+        kicker="Explorer"
+        title={home.explore.title}
+        hint="Les six portes de l’univers Arena. Titre, sous-titre et image de chaque carte. Les liens restent ceux du site."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="admin-field">
+            <label>Sur-titre</label>
+            <input name="eyebrow" required defaultValue={home.explore.eyebrow} />
+          </div>
+          <div className="admin-field">
+            <label>Titre</label>
+            <input name="title" required defaultValue={home.explore.title} />
+          </div>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {home.explore.items.map((item) => (
+            <div key={item.key} className="rounded-xl border border-white/10 p-3">
+              <p className="mb-3 text-xs uppercase tracking-wide text-[#9aa3b5]">{item.href}</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="admin-field">
+                  <label>Titre</label>
+                  <input name={`item_${item.key}_title`} required defaultValue={item.title} />
+                </div>
+                <div className="admin-field">
+                  <label>Sous-titre</label>
+                  <input name={`item_${item.key}_subtitle`} required defaultValue={item.subtitle} />
+                </div>
+              </div>
+              <MediaField
+                name={`item_${item.key}_image`}
+                label="Image"
+                defaultValue={item.image}
+                folder="arena"
+              />
+            </div>
+          ))}
+        </div>
+      </SectionForm>
+
+      <SectionForm
+        section="spotlight"
+        kicker="À la une"
+        title="Prochain invité / Bientôt annoncé"
+        hint="Textes affichés quand aucun invité n’est annoncé. L’invité réel se gère dans Émissions (Annoncer / Publier)."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="admin-field">
+            <label>Sur-titre (vide)</label>
+            <input name="emptyLabel" required defaultValue={home.spotlight.emptyLabel} />
+          </div>
+          <div className="admin-field">
+            <label>Titre (vide)</label>
+            <input name="emptyTitle" required defaultValue={home.spotlight.emptyTitle} />
+          </div>
+          <div className="admin-field sm:col-span-2">
+            <label>Texte (vide)</label>
+            <textarea name="emptyBody" rows={3} required defaultValue={home.spotlight.emptyBody} />
+          </div>
+          <div className="admin-field">
+            <label>Bouton principal</label>
+            <input name="emptyCta" required defaultValue={home.spotlight.emptyCta} />
+          </div>
+          <div className="admin-field">
+            <label>Bouton secondaire</label>
+            <input name="emptySecondary" required defaultValue={home.spotlight.emptySecondary} />
+          </div>
+          <div className="admin-field">
+            <label>Puce Émissions</label>
+            <input name="chipShows" required defaultValue={home.spotlight.chipShows} />
+          </div>
+          <div className="admin-field">
+            <label>Puce Vidéos</label>
+            <input name="chipVideos" required defaultValue={home.spotlight.chipVideos} />
+          </div>
+          <div className="admin-field">
+            <label>Puce Archives</label>
+            <input name="chipArchives" required defaultValue={home.spotlight.chipArchives} />
+          </div>
+          <div className="admin-field">
+            <label>Puce Collaborer</label>
+            <input name="chipCollab" required defaultValue={home.spotlight.chipCollab} />
+          </div>
+        </div>
+        {live.spotlight ? (
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
+            {live.spotlight.poster ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={live.spotlight.poster} alt="" className="h-16 w-12 rounded object-cover" />
+            ) : null}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">Invité / émission actuelle</p>
+              <p className="font-medium">{live.spotlight.guestName || live.spotlight.title}</p>
+              <p className="text-sm text-[#9aa3b5]">{live.spotlight.title}</p>
+            </div>
+            <StatusBadge status={live.spotlight.status} />
+            <Link href={`/admin/arena/${live.spotlight.id}`} className="admin-btn admin-btn-ghost text-xs">
+              Modifier l’émission
+            </Link>
+          </div>
+        ) : (
+          <p className="text-sm text-[#9aa3b5]">
+            Aucun invité à la une. Annonce-le depuis{" "}
+            <Link href="/admin/arena/emissions" className="underline">
+              Émissions
+            </Link>
+            .
+          </p>
+        )}
+      </SectionForm>
+
+      <SectionForm
+        section="scene"
+        kicker={home.scene.eyebrow}
+        title={home.scene.title}
+        hint="Titres de la rangée Visages & voix. Les portraits viennent des invités publiés."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="admin-field">
+            <label>Sur-titre</label>
+            <input name="eyebrow" required defaultValue={home.scene.eyebrow} />
+          </div>
+          <div className="admin-field">
+            <label>Titre</label>
+            <input name="title" required defaultValue={home.scene.title} />
+          </div>
+        </div>
+        <LiveTiles
+          items={live.guests.map((guest) => ({
+            href: `/admin/arena/guests`,
+            title: guest.name,
+            image: guest.photo,
+          }))}
+          empty="Aucun invité publié. Ajoute-les dans Invités."
+          moreHref="/admin/arena/guests"
+          moreLabel="Gérer les invités"
+        />
+      </SectionForm>
+
+      <SectionForm
+        section="shows"
+        kicker={home.shows.eyebrow}
+        title={home.shows.title}
+        hint="Titres de la rangée À (re)découvrir. Les épisodes se gèrent un par un dans Émissions."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="admin-field">
+            <label>Sur-titre</label>
+            <input name="eyebrow" required defaultValue={home.shows.eyebrow} />
+          </div>
+          <div className="admin-field">
+            <label>Titre</label>
+            <input name="title" required defaultValue={home.shows.title} />
+          </div>
+        </div>
+        <LiveTiles
+          items={live.shows.map((show) => ({
+            href: `/admin/arena/${show.id}`,
+            title: show.title,
+            image: show.poster,
+            meta: "Éditer l’épisode",
+          }))}
+          empty="Aucune émission publiée hors à la une."
+          moreHref="/admin/arena/emissions"
+          moreLabel="Toutes les émissions"
+        />
+      </SectionForm>
+
+      <SectionForm
+        section="posters"
+        kicker={home.posters.eyebrow}
+        title={home.posters.title}
+        hint="Titres de la rangée visuels. Les affiches sont celles des émissions ; les anciens visuels de page y sont archivés."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="admin-field">
+            <label>Sur-titre</label>
+            <input name="eyebrow" required defaultValue={home.posters.eyebrow} />
+          </div>
+          <div className="admin-field">
+            <label>Titre</label>
+            <input name="title" required defaultValue={home.posters.title} />
+          </div>
+        </div>
+        <LiveTiles
+          items={live.shows
+            .filter((show) => show.poster)
+            .map((show) => ({
+              href: `/admin/arena/${show.id}`,
+              title: show.title,
+              image: show.poster,
+            }))}
+          empty="Pas encore d’affiche d’émission. Les visuels archivés restent sur Affiches."
+          moreHref="/admin/arena/emissions"
+          moreLabel="Éditer les affiches"
+        />
+      </SectionForm>
+
+      <SectionForm
+        section="photos"
+        kicker={home.photos.eyebrow}
+        title={home.photos.title}
+        hint="Titres de la rangée Ambiances. Les photos viennent des albums plateaux & coulisses."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="admin-field">
+            <label>Sur-titre</label>
+            <input name="eyebrow" required defaultValue={home.photos.eyebrow} />
+          </div>
+          <div className="admin-field">
+            <label>Titre</label>
+            <input name="title" required defaultValue={home.photos.title} />
+          </div>
+        </div>
+        <LiveTiles
+          items={live.albums.map((album) => ({
+            href: `/admin/arena/albums/${album.slug}`,
+            title: album.title,
+            image: album.cover,
+          }))}
+          empty="Aucun album photo publié."
+          moreHref="/admin/arena/albums"
+          moreLabel="Gérer les albums"
+        />
+      </SectionForm>
+
+      <SectionForm
+        section="memory"
+        kicker={home.memory.eyebrow}
+        title={home.memory.title}
+        hint="Bloc de clôture vers les archives et la collaboration. Les saisons passées restent rejouables."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="admin-field">
+            <label>Sur-titre</label>
+            <input name="eyebrow" required defaultValue={home.memory.eyebrow} />
+          </div>
+          <div className="admin-field">
+            <label>Titre</label>
+            <input name="title" required defaultValue={home.memory.title} />
+          </div>
+          <div className="admin-field sm:col-span-2">
+            <label>Texte</label>
+            <textarea name="body" rows={2} required defaultValue={home.memory.body} />
+          </div>
+          <div className="admin-field">
+            <label>Bouton archives</label>
+            <input name="cta" required defaultValue={home.memory.cta} />
+          </div>
+          <div className="admin-field">
+            <label>Bouton collaborer</label>
+            <input name="secondary" required defaultValue={home.memory.secondary} />
+          </div>
+        </div>
+        <p className="text-sm text-[#9aa3b5]">
+          {live.archivedCount
+            ? `${live.archivedCount} émission${live.archivedCount > 1 ? "s" : ""} en archives / rediffusion.`
+            : "Les archives se remplissent dès qu’une nouvelle émission passe à la une."}{" "}
+          <Link href="/admin/arena/archives" className="underline">
+            Ouvrir les archives
+          </Link>
+        </p>
+      </SectionForm>
+    </div>
+  );
+}

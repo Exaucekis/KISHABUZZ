@@ -24,7 +24,7 @@ export default async function ArenaInvitesPage() {
           <div className="ac-grid-guests">
             {guests.map((guest) => {
               const shows = guest.appearances
-                .filter((item) => item.show.status === "PUBLISHED")
+                .filter((item) => item.show.status !== "DRAFT")
                 .map((item) => item.show);
               return (
                 <article key={guest.id} className="ac-guest-card">

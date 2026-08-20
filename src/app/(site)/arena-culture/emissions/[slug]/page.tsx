@@ -35,7 +35,12 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
     <article>
       <header className="ac-intro" style={{ maxWidth: "48rem" }}>
         <p className="ac-kicker">
-          Épisode {String(show.number).padStart(2, "0")}
+          {show.status === "SCHEDULED"
+            ? "Prochain invité"
+            : show.status === "ARCHIVED"
+              ? "Rediffusion · Archives"
+              : "À la une"}
+          {` · Épisode ${String(show.number).padStart(2, "0")}`}
           {show.season ? ` · Saison ${show.season.number} (${show.season.year})` : ""}
         </p>
         <h1 className="font-display text-4xl uppercase leading-[0.95] md:text-5xl lg:text-6xl">

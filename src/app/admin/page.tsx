@@ -107,7 +107,7 @@ export default async function AdminDashboardPage() {
     { label: "Brouillons", value: draftsCount, href: "/admin/articles?status=DRAFT", hint: "Textes à finir ou relire." },
     { label: "Programmés", value: scheduledCount, href: "/admin/articles?status=SCHEDULED", hint: "Mise en ligne automatique." },
     { label: "Contacts nouveaux", value: contactsNew, href: "/admin/contacts?status=NEW", hint: "Messages à traiter." },
-    { label: "Émissions brouillon", value: arenaDrafts, href: "/admin/arena", hint: "Épisodes Arena non publiés." },
+    { label: "Émissions brouillon", value: arenaDrafts, href: "/admin/arena/emissions", hint: "Épisodes Arena non publiés." },
   ];
 
   const siteCards = [

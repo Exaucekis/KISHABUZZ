@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArenaPageIntro } from "@/components/arena/ArenaPageIntro";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
-import { getFeaturedArenaVideo, getGallery, getPublishedShows } from "@/lib/data";
+import { getArenaSpotlight, getGallery, getPublishedShows } from "@/lib/data";
 import { videoPoster } from "@/lib/media";
 
 export const metadata: Metadata = {
@@ -12,16 +12,27 @@ export const metadata: Metadata = {
 };
 
 export default async function ArenaVideosPage() {
-  const [shows, videos, featuredVideo] = await Promise.all([
+  const [shows, videos, spotlight] = await Promise.all([
     getPublishedShows(),
     getGallery({ kind: "VIDEO", category: "ARENA_CULTURE" }),
-    getFeaturedArenaVideo(),
+    getArenaSpotlight(),
   ]);
 
-  const showVideos = shows.filter((s) => s.videoUrl);
-  const featuredId = featuredVideo?.id;
-  const restVideos = videos.filter((video) => video.id !== featuredId);
-  const featured = featuredVideo || videos[0] || null;
+  const showVideos = shows.filter((s) => s.videoUrl && s.id !== spotlight?.id);
+  const spotlightVideo = String(spotlight?.videoUrl || "").trim();
+  const featured =
+    spotlight && spotlightVideo
+      ? {
+          title: spotlight.title,
+          url: spotlightVideo,
+          thumbnail: spotlight.videoThumbnail || spotlight.poster,
+          description: spotlight.theme || spotlight.description,
+          slug: spotlight.slug,
+        }
+      : null;
+  const restVideos = videos.filter(
+    (video) => !spotlight || video.arenaShow?.id !== spotlight.id
+  );
 
   return (
     <>
@@ -40,10 +51,10 @@ export default async function ArenaVideosPage() {
               {featured.description ? (
                 <p className="mt-4 max-w-2xl text-paper-muted">{featured.description}</p>
               ) : null}
-              {featured.arenaShow ? (
+              {featured.slug ? (
                 <p className="mt-3">
                   <Link
-                    href={`/arena-culture/emissions/${featured.arenaShow.slug}`}
+                    href={`/arena-culture/emissions/${featured.slug}`}
                     className="text-[var(--ac-amber)] hover:underline"
                   >
                     Voir l’émission

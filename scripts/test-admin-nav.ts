@@ -19,6 +19,8 @@ assert.equal(isAdminNavActive("/admin/articles/abc", articles), true);
 assert.equal(isAdminNavActive("/admin/arena", arena), true);
 assert.equal(isAdminNavActive("/admin/arena/new", arena), true);
 assert.equal(isAdminNavActive("/admin/arena/show1", arena), true);
+assert.equal(isAdminNavActive("/admin/arena/emissions", arena), true);
+assert.equal(isAdminNavActive("/admin/arena/archives", arena), true);
 assert.equal(isAdminNavActive("/admin/arena/albums", arena), false);
 assert.equal(isAdminNavActive("/admin/arena/videos", arena), false);
 assert.equal(isAdminNavActive("/admin/arena/guests", arena), false);
