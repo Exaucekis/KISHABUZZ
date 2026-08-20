@@ -11,6 +11,7 @@ import {
   requireAdmin,
   type AdminActionState,
 } from "@/lib/admin";
+import { applyArenaSpotlight } from "@/lib/arena-spotlight";
 import { isPlayableMedia, videoPoster } from "@/lib/media";
 import { prisma } from "@/lib/prisma";
 
@@ -112,13 +113,27 @@ export async function saveMedia(
     });
   }
 
+  if (manageFeatured && parsed.data.featured && kind === "VIDEO" && parsed.data.arenaShowId) {
+    await prisma.arenaShow.update({
+      where: { id: parsed.data.arenaShowId },
+      data: {
+        videoUrl: parsed.data.url,
+        videoThumbnail: thumbnail,
+      },
+    });
+    await applyArenaSpotlight(parsed.data.arenaShowId, "PUBLISHED");
+  }
+
   revalidatePath("/admin/media");
   revalidatePath("/admin/arena");
   revalidatePath("/admin/arena/videos");
   revalidatePath("/admin/arena/albums");
+  revalidatePath("/admin/arena/archives");
   revalidatePath("/arena-culture/photos");
   revalidatePath("/arena-culture/videos");
+  revalidatePath("/arena-culture/archives");
   revalidatePath("/arena-culture");
+  revalidatePath("/");
   applyPublicWrites();
   return { ok: true, message: "Média enregistré." };
 }

@@ -1,7 +1,7 @@
 import { ArenaAdminNav } from "@/components/admin/ArenaAdminNav";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { NextGuestAnnounceForm } from "@/components/admin/NextGuestAnnounceForm";
-import { getArenaSpotlight } from "@/lib/data";
+import { getArenaStage } from "@/lib/data";
 import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { prisma } from "@/lib/prisma";
 
@@ -9,20 +9,21 @@ export const metadata = { title: "Prochain invité" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminNextGuestPage() {
-  const [spotlight, guests] = await Promise.all([
-    getArenaSpotlight(),
+  const [stage, guests] = await Promise.all([
+    getArenaStage(),
     prisma.arenaGuest.findMany({
       orderBy: { name: "asc" },
       select: { id: true, name: true, photo: true, profession: true },
     }),
   ]);
+  const spotlight = stage.announced;
   const guest = arenaSpotlightGuest(spotlight);
 
   return (
     <div>
       <AdminPageIntro
         title="Prochain invité"
-        hint="Annoncez l’invité ici : le nom et l’affiche s’affichent tout de suite sur l’accueil et Arena Culture. Un nouvel invité envoie l’ancien aux archives."
+        hint="L’affiche s’affiche sous la vidéo d’émission. Un nouvel invité envoie l’ancien aux archives, sans retirer la vidéo en première."
         actions={[
           {
             href: "/",

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArenaPageIntro } from "@/components/arena/ArenaPageIntro";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { getArchivedShows, getArenaSpotlight, getPublishedShows } from "@/lib/data";
+import { getArchivedShows, getArenaStage, getPublishedShows } from "@/lib/data";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -56,36 +56,41 @@ function ShowCard({
 }
 
 export default async function ArenaEmissionsPage() {
-  const [shows, spotlight, archived] = await Promise.all([
+  const [shows, stage, archived] = await Promise.all([
     getPublishedShows(),
-    getArenaSpotlight(),
+    getArenaStage(),
     getArchivedShows({ take: 12 }),
   ]);
-  const rest = shows.filter((show) => show.id !== spotlight?.id);
-  const replays = archived.filter((show) => show.id !== spotlight?.id);
+  const headline = stage.headline;
+  const announced = stage.announced;
+  const rest = shows.filter((show) => show.id !== headline?.id && show.id !== announced?.id);
+  const replays = archived.filter((show) => show.id !== headline?.id && show.id !== announced?.id);
 
   return (
     <>
       <ArenaPageIntro
         title="Émissions"
-        description="L’épisode à la une, puis les rediffusions dans les archives."
+        description="L’émission en première, le prochain invité, puis les rediffusions dans les archives."
       />
 
       <section className="ac-page space-y-14">
-        {spotlight ? (
+        {headline ? (
           <div>
-            <p className="ac-kicker mb-4">
-              {spotlight.status === "PUBLISHED" ? "À la une" : "Prochain invité"}
-            </p>
+            <p className="ac-kicker mb-4">En première</p>
             <div className="ac-grid-shows">
               <ShowCard
-                show={spotlight}
-                kicker={
-                  spotlight.status === "SCHEDULED"
-                    ? "Annoncé"
-                    : `Épisode ${String(spotlight.number).padStart(2, "0")}`
-                }
+                show={headline}
+                kicker={`Épisode ${String(headline.number).padStart(2, "0")}`}
               />
+            </div>
+          </div>
+        ) : null}
+
+        {announced ? (
+          <div>
+            <p className="ac-kicker mb-4">Prochain invité</p>
+            <div className="ac-grid-shows">
+              <ShowCard show={announced} kicker="Annoncé" />
             </div>
           </div>
         ) : null}
@@ -114,7 +119,7 @@ export default async function ArenaEmissionsPage() {
           </div>
         ) : null}
 
-        {!spotlight && !rest.length && !replays.length ? (
+        {!headline && !announced && !rest.length && !replays.length ? (
           <EmptyState
             title="Aucune émission publiée"
             description="Les émissions Arena Culture apparaîtront ici dès leur mise en ligne."

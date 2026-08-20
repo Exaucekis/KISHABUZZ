@@ -50,7 +50,7 @@ export const getSettings = cache(async () => {
 
 async function loadHomePageData() {
   await Promise.all([publishDueArticles(), publishDueArenaShows()]);
-  const [settings, feed, spotlightShow, domains, featuredAlbum] = await Promise.all([
+  const [settings, feed, stage, domains, featuredAlbum] = await Promise.all([
     loadSettings(),
     prisma.article.findMany({
       where: {
@@ -73,7 +73,7 @@ async function loadHomePageData() {
       orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
       take: 6,
     }),
-    getArenaSpotlight(),
+    getArenaStage(),
     prisma.domain.findMany({
       where: { visible: true },
       select: { id: true, name: true, icon: true },
@@ -115,23 +115,29 @@ async function loadHomePageData() {
     getArenaHome(),
   ]);
 
-  const showVideo = String(spotlightShow?.videoUrl || "").trim();
+  const headlineShow = stage.headline;
+  const announcedShow = stage.announced;
+  const spotlightShow = announcedShow || headlineShow;
+  const showVideo = String(headlineShow?.videoUrl || "").trim();
   return {
     settings,
     feed,
+    headlineShow,
+    announcedShow,
     spotlightShow,
     domains,
     featuredAlbum,
     featuredVideo: showVideo
       ? {
-          title: spotlightShow?.title || featuredVideo?.title || "Arena Culture",
-          description: spotlightShow?.theme || featuredVideo?.description || "",
+          title: headlineShow?.title || featuredVideo?.title || "Arena Culture",
+          description: headlineShow?.theme || featuredVideo?.description || "",
           url: showVideo,
-          thumbnail: spotlightShow?.videoThumbnail || featuredVideo?.thumbnail || "",
+          thumbnail: headlineShow?.videoThumbnail || headlineShow?.poster || featuredVideo?.thumbnail || "",
+          slug: headlineShow?.slug || "",
         }
-      : spotlightShow
-        ? null
-        : featuredVideo,
+      : featuredVideo
+        ? { ...featuredVideo, slug: "" }
+        : null,
     about,
     portfolio,
     partners,
@@ -228,44 +234,39 @@ export async function getPublishedShows(opts?: { take?: number; featured?: boole
   });
 }
 
-export async function getArenaSpotlight() {
+export async function getArenaStage() {
   noStore();
   await publishDueArenaShows();
   const include = {
     guests: { include: { guest: true } },
     season: true,
   } as const;
-  const featured = await prisma.arenaShow.findFirst({
-    where: { isFeatured: true, status: { in: ["PUBLISHED", "SCHEDULED"] } },
+  const headline =
+    (await prisma.arenaShow.findFirst({
+      where: { isFeatured: true, status: "PUBLISHED" },
+      include,
+      orderBy: [{ updatedAt: "desc" }, { airDate: "desc" }],
+    })) ||
+    (await prisma.arenaShow.findFirst({
+      where: { status: "PUBLISHED", NOT: { videoUrl: "" } },
+      include,
+      orderBy: [{ airDate: "desc" }, { number: "desc" }],
+    }));
+  const announced = await prisma.arenaShow.findFirst({
+    where: {
+      status: "SCHEDULED",
+      ...(headline ? { NOT: { id: headline.id } } : {}),
+      OR: [{ isGuestOfWeek: true }, { isFeatured: true }],
+    },
     include,
-    orderBy: [{ airDate: "desc" }, { updatedAt: "desc" }],
+    orderBy: [{ isGuestOfWeek: "desc" }, { updatedAt: "desc" }],
   });
-  if (featured) return featured;
-  const guestWeek = await prisma.arenaShow.findFirst({
-    where: { isGuestOfWeek: true, status: { in: ["PUBLISHED", "SCHEDULED"] } },
-    include,
-    orderBy: { airDate: "desc" },
-  });
-  if (guestWeek) return guestWeek;
-  const live = await prisma.arenaShow.findFirst({
-    where: { status: { in: ["PUBLISHED", "SCHEDULED"] } },
-    include,
-    orderBy: [{ isFeatured: "desc" }, { isGuestOfWeek: "desc" }, { airDate: "desc" }, { number: "desc" }],
-  });
-  if (live) return live;
+  return { headline, announced };
+}
 
-  const archivedWithPoster = await prisma.arenaShow.findFirst({
-    where: { status: "ARCHIVED", NOT: { poster: "" } },
-    include,
-    orderBy: [{ airDate: "desc" }, { number: "desc" }, { updatedAt: "desc" }],
-  });
-  if (archivedWithPoster) return archivedWithPoster;
-
-  return prisma.arenaShow.findFirst({
-    where: { status: "ARCHIVED" },
-    include,
-    orderBy: [{ airDate: "desc" }, { number: "desc" }, { updatedAt: "desc" }],
-  });
+export async function getArenaSpotlight() {
+  const { headline, announced } = await getArenaStage();
+  return headline || announced;
 }
 
 export async function getGuestOfTheWeek() {
@@ -507,6 +508,35 @@ export async function getArchivedShows(opts?: {
     orderBy: [{ airDate: "desc" }, { number: "desc" }],
     take: opts?.take,
   });
+}
+
+export async function getArenaArchiveBundle(opts?: { year?: number; seasonId?: string }) {
+  const { headline, announced } = await getArenaStage();
+  const liveIds = [headline?.id, announced?.id].filter(Boolean) as string[];
+  const [shows, videos, visuals] = await Promise.all([
+    getArchivedShows(opts),
+    prisma.mediaAsset.findMany({
+      where: {
+        kind: "VIDEO",
+        visible: true,
+        featured: false,
+        OR: [{ category: "ARENA_CULTURE" }, { arenaShowId: { not: null } }],
+        ...(liveIds.length ? { NOT: { arenaShowId: { in: liveIds } } } : {}),
+      },
+      include: { arenaShow: { select: { slug: true, title: true } } },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+    }),
+    prisma.mediaAsset.findMany({
+      where: {
+        kind: "IMAGE",
+        visible: true,
+        category: "ARENA_CULTURE",
+        title: { startsWith: "Archive ·" },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+  return { shows, videos, visuals };
 }
 
 export async function getUpcomingShow() {

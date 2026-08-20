@@ -146,8 +146,8 @@ export function NextGuestAnnounceForm({
           </Link>
         </div>
         <p className="admin-action-hint">
-          « Annoncer un nouvel invité » envoie l’affiche actuelle aux archives et met la nouvelle en
-          première sur l’accueil.
+          « Annoncer un nouvel invité » envoie l’affiche actuelle aux archives. La vidéo d’émission
+          reste en première ; la nouvelle affiche s’affiche juste en dessous.
         </p>
       </form>
     </div>

@@ -37,18 +37,29 @@ export function planArenaSpotlight(
   promotingId: string,
   nextStatus: string
 ): ArenaShowSpotlightRow[] {
-  const live = isArenaLiveStatus(nextStatus);
+  const publishing = nextStatus === "PUBLISHED";
+  const announcing = nextStatus === "SCHEDULED";
   return rows.map((row) => {
     if (row.id === promotingId) {
       return {
         id: row.id,
         status: nextStatus,
-        isFeatured: live,
-        isGuestOfWeek: live,
+        isFeatured: publishing,
+        isGuestOfWeek: announcing,
       };
     }
-    if (!live) return row;
-    if (row.isFeatured || row.isGuestOfWeek) {
+    if (publishing && row.isFeatured) {
+      return {
+        id: row.id,
+        status: "ARCHIVED",
+        isFeatured: false,
+        isGuestOfWeek: false,
+      };
+    }
+    if (announcing && row.isGuestOfWeek) {
+      if (row.isFeatured && row.status === "PUBLISHED") {
+        return { ...row, isGuestOfWeek: false };
+      }
       return {
         id: row.id,
         status: "ARCHIVED",
@@ -100,21 +111,28 @@ export async function applyArenaSpotlight(showId: string, nextStatus: string) {
       });
     }
 
-    if (isArenaLiveStatus(nextStatus)) {
+    if (nextStatus === "ARCHIVED") {
       await tx.mediaAsset.updateMany({
-        where: { featured: true, kind: "VIDEO" },
+        where: { arenaShowId: showId, kind: "VIDEO" },
         data: { featured: false },
       });
-      await tx.mediaAsset.updateMany({
-        where: { arenaShowId: showId, kind: "VIDEO", visible: true },
-        data: { featured: true },
-      });
+    } else if (isArenaLiveStatus(nextStatus)) {
+      if (nextStatus === "PUBLISHED") {
+        await tx.mediaAsset.updateMany({
+          where: { featured: true, kind: "VIDEO" },
+          data: { featured: false },
+        });
+        await tx.mediaAsset.updateMany({
+          where: { arenaShowId: showId, kind: "VIDEO", visible: true },
+          data: { featured: true },
+        });
+      }
       const guests = await tx.arenaShowGuest.findMany({
         where: { showId },
         select: { guestId: true },
       });
-      await tx.arenaGuest.updateMany({ where: { featured: true }, data: { featured: false } });
-      if (guests.length) {
+      if (nextStatus === "SCHEDULED" && guests.length) {
+        await tx.arenaGuest.updateMany({ where: { featured: true }, data: { featured: false } });
         await tx.arenaGuest.updateMany({
           where: { id: { in: guests.map((item) => item.guestId) } },
           data: { featured: true },

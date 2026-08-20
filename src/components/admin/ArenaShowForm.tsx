@@ -136,39 +136,52 @@ export function ArenaShowForm({
           defaultValue={show?.poster || ""}
           kind="image"
           folder="covers"
-          hint="Téléversez l’affiche : elle s’affiche tout de suite sur l’accueil et Arena."
+          hint="Affiche de l’épisode. Pour le prochain invité, c’est ce visuel qui s’affiche sous la vidéo."
           persist={show?.id ? { target: "arenaShow", id: show.id, field: "poster" } : undefined}
         />
-        <MediaField
-          name="videoUrl"
-          label="Vidéo"
-          defaultValue={show?.videoUrl || ""}
-          kind="video"
-          folder="media"
-          hint="Lien YouTube / Instagram / TikTok, ou fichier."
-          persist={show?.id ? { target: "arenaShow", id: show.id, field: "videoUrl" } : undefined}
-        />
-        <MediaField
-          name="videoThumbnail"
-          label="Miniature de la vidéo"
-          defaultValue={show?.videoThumbnail || ""}
-          kind="image"
-          folder="media"
-          hint="Image avant lecture. Si vide, YouTube fournit une miniature."
-          persist={show?.id ? { target: "arenaShow", id: show.id, field: "videoThumbnail" } : undefined}
-        />
+        <div className="admin-card md:col-span-2 space-y-3 border-amber-400/25 bg-amber-400/5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-200">
+              Vidéo de l’émission
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-[#c5ccd8]">
+              Téléversez un fichier (MP4) ou collez un lien YouTube, Facebook, Instagram ou TikTok.
+              Enregistrer avec une vidéo met l’émission en <strong>première</strong> sur l’accueil et
+              Arena. L’annonce du prochain invité reste <strong>juste en dessous</strong>. Une
+              nouvelle vidéo envoie celle-ci dans <strong>Archives · Vidéos</strong>.
+            </p>
+          </div>
+          <MediaField
+            name="videoUrl"
+            label="Fichier ou lien"
+            defaultValue={show?.videoUrl || ""}
+            kind="video"
+            folder="media"
+            hint="MP4 / WebM, ou URL YouTube · Facebook · Instagram · TikTok."
+            persist={show?.id ? { target: "arenaShow", id: show.id, field: "videoUrl" } : undefined}
+          />
+          <MediaField
+            name="videoThumbnail"
+            label="Miniature avant lecture"
+            defaultValue={show?.videoThumbnail || ""}
+            kind="image"
+            folder="media"
+            hint="Image affichée avant le play. Si vide, YouTube fournit souvent une miniature."
+            persist={show?.id ? { target: "arenaShow", id: show.id, field: "videoThumbnail" } : undefined}
+          />
+        </div>
         <div className="admin-field md:col-span-2">
           <label htmlFor="status">Publication</label>
           <select id="status" name="status" defaultValue={show?.status || "SCHEDULED"}>
             <option value="DRAFT">Brouillon</option>
             <option value="SCHEDULED">Annoncer le prochain invité</option>
-            <option value="PUBLISHED">Publier à la une</option>
-            <option value="ARCHIVED">Archives / rediffusion</option>
+            <option value="PUBLISHED">Mettre la vidéo en première</option>
+            <option value="ARCHIVED">Envoyer aux archives</option>
           </select>
           <AdminHint>
-            Une seule affiche à la une, sur l’accueil et Arena. Modifiez l’émission actuelle pour
-            changer l’affiche. « Annoncer » ou « Publier à la une » met celle-ci en première :
-            l’ancienne passe aux archives. Alerte email + WhatsApp aux abonnés.
+            Deux places distinctes : la vidéo publiée en première, l’affiche du prochain invité en
+            dessous. Ajouter une vidéo sur « Annoncer » passe automatiquement en première. Une
+            nouvelle vidéo archive l’ancienne émission, sans toucher au prochain invité.
           </AdminHint>
         </div>
         <div className="admin-field md:col-span-2">

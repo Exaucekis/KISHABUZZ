@@ -22,7 +22,7 @@ export default async function AdminArenaVideosPage() {
     <div>
       <AdminPageIntro
         title="Vidéos Arena"
-        hint="Espace dédié aux replays et extraits. Ajoutez la miniature pour un aperçu propre avant lecture."
+        hint="Téléversez un MP4 ou collez un lien YouTube / Facebook / Instagram / TikTok. « Vidéo à la une » + émission liée = première place ; l’ancienne vidéo part aux archives."
         actions={
           <a href="/arena-culture/videos" className="admin-btn admin-btn-ghost" target="_blank" rel="noreferrer">
             Voir la page

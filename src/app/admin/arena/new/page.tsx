@@ -21,7 +21,7 @@ export default async function NewArenaShowPage() {
     <div>
       <AdminPageIntro
         title="Nouvelle émission Arena"
-        hint="Date, lieu et éventuellement un événement billets. Puis Annoncer ou Publier à la une."
+        hint="Sans vidéo : Annoncer le prochain invité (affiche sous la une). Avec une vidéo (fichier ou lien YouTube / Facebook / Instagram / TikTok) : elle passe en première, l’ancienne va aux archives."
       />
       <ArenaAdminNav current="/admin/arena/emissions" />
       <ArenaShowForm seasons={seasons} guests={guests} events={events} />

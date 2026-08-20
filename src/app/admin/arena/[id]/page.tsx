@@ -34,7 +34,7 @@ export default async function EditArenaShowPage({ params }: Props) {
     <div>
       <AdminPageIntro
         title={`Éditer · ${show.title}`}
-        hint="Annoncer le prochain invité ou publier à la une. Lie un événement pour les billets du calendrier."
+        hint="Vidéo = première place (accueil + Arena). Prochain invité = affiche en dessous. Une nouvelle vidéo archive celle-ci. Liez un événement pour les billets."
       />
       <ArenaAdminNav current="/admin/arena/emissions" />
       <ArenaShowForm show={show} seasons={seasons} guests={guests} events={events} />

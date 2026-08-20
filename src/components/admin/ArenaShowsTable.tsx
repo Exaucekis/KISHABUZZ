@@ -41,7 +41,10 @@ export function ArenaShowsTable({ shows }: { shows: ShowRow[] }) {
                 </Link>
                 {s.isFeatured || s.isGuestOfWeek ? (
                   <p className="text-xs text-[#9aa3b5]">
-                    {[s.isFeatured ? "À la une" : null, s.isGuestOfWeek ? "Invité semaine" : null]
+                    {[
+                      s.isFeatured ? "Vidéo à la une" : null,
+                      s.isGuestOfWeek ? "Prochain invité" : null,
+                    ]
                       .filter(Boolean)
                       .join(" · ")}
                   </p>
@@ -74,7 +77,7 @@ export function ArenaShowsTable({ shows }: { shows: ShowRow[] }) {
                       <input type="hidden" name="id" value={s.id} />
                       <input type="hidden" name="status" value="PUBLISHED" />
                       <button type="submit" className="admin-btn admin-btn-ghost text-xs">
-                        Publier
+                        Mettre en première
                       </button>
                     </form>
                   ) : (

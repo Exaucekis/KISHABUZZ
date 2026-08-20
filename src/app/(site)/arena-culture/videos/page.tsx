@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArenaPageIntro } from "@/components/arena/ArenaPageIntro";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
-import { getArenaSpotlight, getGallery, getPublishedShows } from "@/lib/data";
+import { getArenaStage, getGallery, getPublishedShows } from "@/lib/data";
 import { videoPoster } from "@/lib/media";
 
 export const metadata: Metadata = {
@@ -12,27 +12,26 @@ export const metadata: Metadata = {
 };
 
 export default async function ArenaVideosPage() {
-  const [shows, videos, spotlight] = await Promise.all([
+  const [shows, videos, stage] = await Promise.all([
     getPublishedShows(),
     getGallery({ kind: "VIDEO", category: "ARENA_CULTURE" }),
-    getArenaSpotlight(),
+    getArenaStage(),
   ]);
 
-  const showVideos = shows.filter((s) => s.videoUrl && s.id !== spotlight?.id);
-  const spotlightVideo = String(spotlight?.videoUrl || "").trim();
+  const headline = stage.headline;
+  const showVideos = shows.filter((s) => s.videoUrl && s.id !== headline?.id);
+  const spotlightVideo = String(headline?.videoUrl || "").trim();
   const featured =
-    spotlight && spotlightVideo
+    headline && spotlightVideo
       ? {
-          title: spotlight.title,
+          title: headline.title,
           url: spotlightVideo,
-          thumbnail: spotlight.videoThumbnail || spotlight.poster,
-          description: spotlight.theme || spotlight.description,
-          slug: spotlight.slug,
+          thumbnail: headline.videoThumbnail || headline.poster,
+          description: headline.theme || headline.description,
+          slug: headline.slug,
         }
       : null;
-  const restVideos = videos.filter(
-    (video) => !spotlight || video.arenaShow?.id !== spotlight.id
-  );
+  const restVideos = videos.filter((video) => !headline || video.arenaShow?.id !== headline.id);
 
   return (
     <>

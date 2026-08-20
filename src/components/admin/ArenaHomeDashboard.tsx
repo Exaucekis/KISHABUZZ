@@ -19,7 +19,15 @@ import {
 } from "@/lib/arena-home";
 
 export type ArenaHomeLive = {
-  spotlight: {
+  headline: {
+    id: string;
+    title: string;
+    status: string;
+    poster: string;
+    guestName: string | null;
+    hasVideo: boolean;
+  } | null;
+  announced: {
     id: string;
     title: string;
     status: string;
@@ -272,50 +280,69 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
       <SectionForm
         section="spotlight"
         kicker="À la une"
-        title="Affiche à la une"
-        hint="L’affiche actuelle s’affiche sur l’accueil et Arena. Modifiez-la, ou créez-en une nouvelle : l’ancienne part aux archives et la nouvelle prend la première place."
+        title="Vidéo et prochain invité"
+        hint="Deux places : la vidéo d’émission en première, l’affiche du prochain invité juste en dessous. Une nouvelle vidéo archive l’ancienne, sans toucher à l’annonce."
       >
-        {live.spotlight ? (
-          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3">
-            {live.spotlight.poster ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={live.spotlight.poster} alt="" className="h-16 w-12 rounded object-cover" />
-            ) : null}
-            <div className="min-w-0 flex-1">
-              <p className="text-xs uppercase tracking-wide text-amber-200">Affiche actuelle</p>
-              <p className="font-medium">{live.spotlight.guestName || live.spotlight.title}</p>
-              <p className="text-sm text-[#9aa3b5]">
-                {live.spotlight.status === "ARCHIVED"
-                  ? "Dernière affiche en ligne. Modifiez-la, ou créez la suivante : celle-ci passera aux archives."
-                  : "Visible sur l’accueil et /arena-culture. Une nouvelle émission annoncée ou publiée archive celle-ci."}
-              </p>
+        <div className="grid gap-3 lg:grid-cols-2">
+          {live.headline ? (
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3">
+              {live.headline.poster ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={live.headline.poster} alt="" className="h-16 w-12 rounded object-cover" />
+              ) : null}
+              <div className="min-w-0 flex-1">
+                <p className="text-xs uppercase tracking-wide text-amber-200">Vidéo / émission en première</p>
+                <p className="font-medium">{live.headline.guestName || live.headline.title}</p>
+                <p className="text-sm text-[#9aa3b5]">
+                  {live.headline.hasVideo
+                    ? "Visible en haut de l’accueil et Arena. La prochaine vidéo enverra celle-ci aux archives."
+                    : "En première, sans vidéo pour l’instant. Ajoutez un fichier ou un lien dans l’émission."}
+                </p>
+              </div>
+              <StatusBadge status={live.headline.status} />
+              <Link href={`/admin/arena/${live.headline.id}`} className="admin-btn admin-btn-primary text-xs">
+                Modifier la vidéo
+              </Link>
             </div>
-            <StatusBadge status={live.spotlight.status} />
-            <Link href={`/admin/arena/${live.spotlight.id}`} className="admin-btn admin-btn-primary text-xs">
-              Modifier l’affiche
-            </Link>
-            <Link href="/admin/arena/prochain-invite" className="admin-btn admin-btn-ghost text-xs">
-              Nouvelle (archive l’ancienne)
-            </Link>
-          </div>
-        ) : (
-          <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-            <p className="text-sm text-[#eef1f6]">
-              Aucune affiche pour l’instant : l’accueil affiche « {home.spotlight.emptyTitle} ».
-            </p>
-            <p className="mt-1 text-sm text-[#9aa3b5]">
-              Créez une émission, ajoutez l’affiche, cochez l’invité, puis Annoncer ou Publier.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
+          ) : (
+            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+              <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">Vidéo en première</p>
+              <p className="mt-1 text-sm text-[#eef1f6]">Aucune vidéo d’émission en première.</p>
+              <Link href="/admin/arena/new" className="admin-btn admin-btn-ghost mt-3 text-xs">
+                Ajouter une émission + vidéo
+              </Link>
+            </div>
+          )}
+          {live.announced ? (
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-white/15 bg-black/20 p-3">
+              {live.announced.poster ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={live.announced.poster} alt="" className="h-16 w-12 rounded object-cover" />
+              ) : null}
+              <div className="min-w-0 flex-1">
+                <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">Prochain invité (en dessous)</p>
+                <p className="font-medium">{live.announced.guestName || live.announced.title}</p>
+                <p className="text-sm text-[#9aa3b5]">
+                  Affiche sous la vidéo. Un nouvel invité archive celui-ci, sans toucher à la vidéo.
+                </p>
+              </div>
+              <StatusBadge status={live.announced.status} />
               <Link href="/admin/arena/prochain-invite" className="admin-btn admin-btn-primary text-xs">
+                Modifier l’affiche
+              </Link>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+              <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">Prochain invité</p>
+              <p className="mt-1 text-sm text-[#eef1f6]">
+                Aucune affiche : l’accueil affiche « {home.spotlight.emptyTitle} » sous la vidéo.
+              </p>
+              <Link href="/admin/arena/prochain-invite" className="admin-btn admin-btn-primary mt-3 text-xs">
                 Annoncer le prochain invité
               </Link>
-              <Link href="/admin/arena/emissions" className="admin-btn admin-btn-ghost text-xs">
-                Voir les émissions
-              </Link>
             </div>
-          </div>
-        )}
+          )}
+        </div>
         <p className="text-xs font-semibold uppercase tracking-wide text-[#9aa3b5]">
           Textes d’attente (seulement s’il n’y a aucune affiche)
         </p>

@@ -25,7 +25,7 @@ export default async function AdminArenaShowsPage() {
     <div>
       <AdminPageIntro
         title="Émissions Arena"
-        hint="Une seule émission à la une. Publier remplace l’accueil, Arena et la vidéo. L’ancienne va aux archives."
+        hint="La vidéo d’émission prend la première place. Le prochain invité reste en dessous. Publier une nouvelle vidéo envoie l’ancienne dans Archives."
         actions={
           <Link href="/admin/arena/new" className="admin-btn admin-btn-primary">
             Nouvelle émission

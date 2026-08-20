@@ -52,7 +52,7 @@ function VideoForm({ video, shows }: { video?: Video; shows: ShowOption[] }) {
         kind="video"
         folder="media"
         required
-        hint="Lien YouTube / Instagram / TikTok / Facebook, ou fichier MP4."
+        hint="MP4 ou lien YouTube / Facebook / Instagram / TikTok. Cocher « Vidéo à la une » et lier une émission met cette vidéo en première : l’ancienne part aux archives, le prochain invité reste en dessous."
       />
 
       <MediaField
@@ -74,7 +74,10 @@ function VideoForm({ video, shows }: { video?: Video; shows: ShowOption[] }) {
             </option>
           ))}
         </select>
-        <AdminHint>Optionnel. La vidéo apparaît aussi sur la fiche de l’émission.</AdminHint>
+        <AdminHint>
+          Pour la mettre en première sur l’accueil, choisissez l’émission. Sinon elle reste sur la
+          page Vidéos.
+        </AdminHint>
       </div>
 
       <div className="admin-field">
@@ -96,10 +99,13 @@ function VideoForm({ video, shows }: { video?: Video; shows: ShowOption[] }) {
 
       <div className="admin-field">
         <label className="admin-check">
-          <input type="checkbox" name="featured" defaultChecked={video?.featured || false} />
-          Vidéo à la une
+          <input type="checkbox" name="featured" defaultChecked={video?.featured ?? true} />
+          Vidéo à la une (première place)
         </label>
-        <AdminHint>Une seule vidéo à la une : elle ouvre la page Vidéos Arena.</AdminHint>
+        <AdminHint>
+          Une seule vidéo en première. La précédente va dans Archives · Vidéos. Le prochain invité
+          n’est pas archivé.
+        </AdminHint>
       </div>
 
       {state.message && !state.ok ? (

@@ -202,8 +202,11 @@ const rows = [
   { id: "next", status: "DRAFT", isFeatured: false, isGuestOfWeek: false },
 ];
 const announced = planArenaSpotlight(rows, "next", "SCHEDULED");
-assert.equal(announced.find((row) => row.id === "old")?.status, "ARCHIVED");
-assert.equal(announced.find((row) => row.id === "next")?.isFeatured, true);
+assert.equal(announced.find((row) => row.id === "old")?.status, "PUBLISHED");
+assert.equal(announced.find((row) => row.id === "old")?.isFeatured, true);
+assert.equal(announced.find((row) => row.id === "old")?.isGuestOfWeek, false);
+assert.equal(announced.find((row) => row.id === "next")?.isFeatured, false);
+assert.equal(announced.find((row) => row.id === "next")?.isGuestOfWeek, true);
 assert.equal(arenaSpotlightMode({ status: "SCHEDULED" }), "announced");
 assert.equal(arenaSpotlightMode({ status: "PUBLISHED", videoUrl: "https://youtu.be/x" }), "headline");
 assert.equal(arenaSpotlightMode({ status: "ARCHIVED" }), "announced");
@@ -239,6 +242,8 @@ const publicArena = readFileSync("src/app/(site)/arena-culture/page.tsx", "utf8"
 assert.match(publicArena, /home\.hero\.line1/);
 assert.match(publicArena, /home\.explore\.items/);
 assert.match(publicArena, /await connection\(\)/);
+assert.match(publicArena, /getArenaStage/);
+assert.match(publicArena, /VideoEmbed/);
 const publicHome = readFileSync("src/app/(site)/page.tsx", "utf8");
 assert.match(publicHome, /arenaHome/);
 assert.match(publicHome, /arenaHome\.explore\.items/);

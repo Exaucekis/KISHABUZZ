@@ -1,7 +1,7 @@
 import { ArenaAdminNav } from "@/components/admin/ArenaAdminNav";
 import { ArenaHomeDashboard } from "@/components/admin/ArenaHomeDashboard";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
-import { getArenaHome, getArenaSpotlight } from "@/lib/data";
+import { getArenaHome, getArenaStage } from "@/lib/data";
 import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { prisma } from "@/lib/prisma";
 
@@ -9,9 +9,9 @@ export const metadata = { title: "Arena Culture" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminArenaDashboardPage() {
-  const [home, spotlight, guests, shows, albums, archivedCount] = await Promise.all([
+  const [home, stage, guests, shows, albums, archivedCount] = await Promise.all([
     getArenaHome(),
-    getArenaSpotlight(),
+    getArenaStage(),
     prisma.arenaGuest.findMany({
       where: { visible: true },
       orderBy: [{ featured: "desc" }, { name: "asc" }],
@@ -57,13 +57,23 @@ export default async function AdminArenaDashboardPage() {
       <ArenaHomeDashboard
         home={home}
         live={{
-          spotlight: spotlight
+          headline: stage.headline
             ? {
-                id: spotlight.id,
-                title: spotlight.title,
-                status: spotlight.status,
-                poster: spotlight.poster,
-                guestName: arenaSpotlightGuest(spotlight)?.name || null,
+                id: stage.headline.id,
+                title: stage.headline.title,
+                status: stage.headline.status,
+                poster: stage.headline.poster,
+                guestName: arenaSpotlightGuest(stage.headline)?.name || null,
+                hasVideo: Boolean(String(stage.headline.videoUrl || "").trim()),
+              }
+            : null,
+          announced: stage.announced
+            ? {
+                id: stage.announced.id,
+                title: stage.announced.title,
+                status: stage.announced.status,
+                poster: stage.announced.poster,
+                guestName: arenaSpotlightGuest(stage.announced)?.name || null,
               }
             : null,
           guests,

@@ -86,7 +86,8 @@ export async function saveArenaShow(
 
   const data = parsed.data;
   const slug = await uniqueShowSlug(`${data.title}-${data.number}`, id || undefined);
-  const live = isArenaLiveStatus(data.status);
+  const hasVideo = Boolean(String(data.videoUrl || "").trim());
+  const status = hasVideo && data.status === "SCHEDULED" ? "PUBLISHED" : data.status;
   const previous = id
     ? await prisma.arenaShow.findUnique({ where: { id }, select: { status: true } })
     : null;
@@ -104,9 +105,9 @@ export async function saveArenaShow(
     poster: data.poster || "",
     videoUrl: data.videoUrl || "",
     videoThumbnail: data.videoThumbnail || videoPoster(data.videoUrl),
-    status: data.status,
-    isFeatured: live,
-    isGuestOfWeek: live,
+    status,
+    isFeatured: status === "PUBLISHED",
+    isGuestOfWeek: status === "SCHEDULED",
     seasonId: data.seasonId,
   };
 
@@ -124,8 +125,30 @@ export async function saveArenaShow(
     return saved;
   });
 
-  await applyArenaSpotlight(show.id, data.status);
-  queueArenaAlert(show.id, previous?.status, data.status);
+  if (payload.videoUrl) {
+    const existingVideo = await prisma.mediaAsset.findFirst({
+      where: { arenaShowId: show.id, kind: "VIDEO" },
+      select: { id: true },
+    });
+    const videoData = {
+      title: show.title,
+      description: show.theme || show.description || "",
+      kind: "VIDEO" as const,
+      url: payload.videoUrl,
+      thumbnail: payload.videoThumbnail,
+      category: "ARENA_CULTURE",
+      visible: true,
+      arenaShowId: show.id,
+    };
+    if (existingVideo) {
+      await prisma.mediaAsset.update({ where: { id: existingVideo.id }, data: videoData });
+    } else {
+      await prisma.mediaAsset.create({ data: videoData });
+    }
+  }
+
+  await applyArenaSpotlight(show.id, status);
+  queueArenaAlert(show.id, previous?.status, status);
 
   revalidatePath("/admin/arena");
   revalidatePath("/admin/arena/prochain-invite");
@@ -168,8 +191,8 @@ export async function setArenaShowStatus(formData: FormData) {
     where: { id },
     data: {
       status,
-      isFeatured: isArenaLiveStatus(status),
-      isGuestOfWeek: isArenaLiveStatus(status),
+      isFeatured: status === "PUBLISHED",
+      isGuestOfWeek: status === "SCHEDULED",
     },
   });
   await applyArenaSpotlight(id, status);

@@ -11,7 +11,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PublicImage } from "@/components/media/PublicImage";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getHomePageData } from "@/lib/data";
-import { arenaSpotlightGuest, arenaSpotlightMode } from "@/lib/arena-spotlight";
+import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +22,7 @@ export default async function HomePage() {
   const {
     settings,
     feed,
+    announcedShow,
     spotlightShow,
     domains,
     featuredAlbum,
@@ -33,12 +34,10 @@ export default async function HomePage() {
     arenaHome,
   } = await getHomePageData();
 
-  const guest = arenaSpotlightGuest(spotlightShow);
-  const mode = arenaSpotlightMode(spotlightShow);
-  const announcedOrLive = mode !== "empty" && Boolean(spotlightShow);
+  const guest = arenaSpotlightGuest(announcedShow || spotlightShow);
+  const announced = Boolean(announcedShow);
   const spotlightPoster =
-    (mode === "empty" ? arenaHome.hero.poster : "") ||
-    spotlightShow?.poster ||
+    announcedShow?.poster ||
     guest?.photo ||
     arenaHome.hero.poster ||
     featuredAlbum?.coverImage ||
@@ -64,6 +63,38 @@ export default async function HomePage() {
 
       <ArtistRail artists={artists} />
 
+      {featuredVideo ? (
+        <section className="kb-defer mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
+          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <SectionHeading
+              eyebrow="Arena Culture · Émission"
+              title={featuredVideo.title}
+              description={featuredVideo.description || "La vidéo à la une. L’annonce du prochain invité est juste en dessous."}
+            />
+            <Link href="/arena-culture/videos" className="shrink-0 text-sm font-semibold text-ember-text">
+              Toutes les vidéos →
+            </Link>
+          </div>
+          <div className="home-video">
+            <VideoEmbed
+              url={featuredVideo.url}
+              title={featuredVideo.title}
+              poster={featuredVideo.thumbnail || undefined}
+            />
+          </div>
+          {featuredVideo.slug ? (
+            <p className="mt-4">
+              <Link
+                href={`/arena-culture/emissions/${featuredVideo.slug}`}
+                className="text-sm font-semibold text-ember-text"
+              >
+                Voir l’émission →
+              </Link>
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
       <section className="home-spotlight relative overflow-hidden border-y border-line">
         <div className="home-spotlight__bg" aria-hidden>
           <PublicImage src={spotlightPoster} alt="" fill sizes="100vw" className="object-cover" />
@@ -75,33 +106,29 @@ export default async function HomePage() {
               Arena Culture · {arenaHome.spotlight.emptyLabel}
             </p>
             <h2 className="mt-4 font-display text-4xl uppercase leading-[0.95] text-white md:text-6xl lg:text-7xl">
-              {announcedOrLive
-                ? guest?.name || spotlightShow?.title || arenaHome.spotlight.emptyTitle
+              {announced
+                ? guest?.name || announcedShow?.title || arenaHome.spotlight.emptyTitle
                 : arenaHome.spotlight.emptyTitle}
             </h2>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
-              {announcedOrLive
-                ? [spotlightShow?.theme, guest?.profession].filter(Boolean).join(" · ") ||
+              {announced
+                ? [announcedShow?.theme, guest?.profession].filter(Boolean).join(" · ") ||
                   arenaHome.hero.text
                 : arenaHome.spotlight.emptyBody}
-              {announcedOrLive && spotlightShow?.airDate
-                ? ` · ${formatDate(spotlightShow.airDate)}${spotlightShow.airTime ? ` · ${spotlightShow.airTime}` : ""}`
+              {announced && announcedShow?.airDate
+                ? ` · ${formatDate(announcedShow.airDate)}${announcedShow.airTime ? ` · ${announcedShow.airTime}` : ""}`
                 : ""}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <ButtonLink
                 href={
-                  announcedOrLive && spotlightShow
-                    ? `/arena-culture/emissions/${spotlightShow.slug}`
+                  announced && announcedShow
+                    ? `/arena-culture/emissions/${announcedShow.slug}`
                     : "/contact"
                 }
                 className="!bg-[#ff8c00] !text-black hover:!bg-[#ff9f2e]"
               >
-                {announcedOrLive
-                  ? spotlightShow?.videoUrl
-                    ? "Voir la vidéo"
-                    : "Voir l'affiche"
-                  : arenaHome.spotlight.emptyCta}
+                {announced ? "Voir l'affiche" : arenaHome.spotlight.emptyCta}
               </ButtonLink>
               <ButtonLink
                 href="/arena-culture"
@@ -116,7 +143,7 @@ export default async function HomePage() {
           <div className="home-spotlight__poster">
             <PublicImage
               src={spotlightPoster}
-              alt={guest?.name || spotlightShow?.title || arenaHome.hero.line1}
+              alt={guest?.name || announcedShow?.title || arenaHome.hero.line1}
               fill
               sizes="(max-width: 768px) 90vw, 42vw"
               className="object-cover"
@@ -145,29 +172,6 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
-
-      {featuredVideo ? (
-        <section className="kb-defer mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
-          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <SectionHeading
-              eyebrow="Arena · Vidéo"
-              title={featuredVideo.title}
-              description={featuredVideo.description || "Extrait vidéo Arena Culture."}
-            />
-            <Link href="/arena-culture/videos" className="shrink-0 text-sm font-semibold text-ember-text">
-              Toutes les vidéos →
-            </Link>
-          </div>
-          <div className="home-video">
-            <VideoEmbed
-              url={featuredVideo.url}
-              title={featuredVideo.title}
-              poster={featuredVideo.thumbnail || undefined}
-              lazy
-            />
-          </div>
-        </section>
-      ) : null}
 
       <section id="actualites" className="kb-defer border-y border-line bg-ink-2">
         <div className="mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
