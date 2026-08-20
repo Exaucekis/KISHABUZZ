@@ -5,6 +5,8 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { getPublishedArticles } from "@/lib/data";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Chroniques",
   description: "Analyses, opinions et chroniques publiées par KISHA BUZZ.",

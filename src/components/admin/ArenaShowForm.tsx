@@ -106,7 +106,8 @@ export function ArenaShowForm({
           defaultValue={show?.poster || ""}
           kind="image"
           folder="covers"
-          hint="Visuel de l’émission (affiches, carte, replay). Fichier ou lien."
+          hint="Téléversez l’affiche : visible tout de suite dès que l’émission est publiée."
+          persist={show?.id ? { target: "arenaShow", id: show.id, field: "poster" } : undefined}
         />
         <MediaField
           name="videoUrl"
@@ -114,7 +115,8 @@ export function ArenaShowForm({
           defaultValue={show?.videoUrl || ""}
           kind="video"
           folder="media"
-          hint="Replay : lien YouTube / Instagram / TikTok / Facebook, ou fichier."
+          hint="Lien YouTube / Instagram / TikTok, ou fichier."
+          persist={show?.id ? { target: "arenaShow", id: show.id, field: "videoUrl" } : undefined}
         />
         <MediaField
           name="videoThumbnail"
@@ -122,7 +124,8 @@ export function ArenaShowForm({
           defaultValue={show?.videoThumbnail || ""}
           kind="image"
           folder="media"
-          hint="Image avant lecture. Si vide, YouTube fournit une miniature automatique."
+          hint="Image avant lecture. Si vide, YouTube fournit une miniature."
+          persist={show?.id ? { target: "arenaShow", id: show.id, field: "videoThumbnail" } : undefined}
         />
         <div className="admin-field">
           <label htmlFor="status">Statut</label>

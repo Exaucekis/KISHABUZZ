@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { PublicImage } from "@/components/media/PublicImage";
 import type { SpotlightArtistCard } from "@/lib/spotlight-artists";
 
 export type ArtistCard = SpotlightArtistCard;
@@ -25,7 +25,7 @@ export function ArtistRail({ artists }: { artists: ArtistCard[] }) {
           {loop.map((artist, i) => (
             <article key={`${artist.name}-${i}`} className="artist-card">
               <div className="artist-card-media relative">
-                <Image
+                <PublicImage
                   src={artist.image}
                   alt={artist.name}
                   fill

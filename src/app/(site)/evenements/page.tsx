@@ -6,6 +6,8 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { getPublishedEvents, getVisibleEventCategories } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Événements",
   description: "Billetterie KISHA BUZZ : concerts, soirées, festivals et événements culturels.",

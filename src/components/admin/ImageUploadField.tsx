@@ -1,6 +1,7 @@
 "use client";
 
 import { MediaField } from "@/components/admin/MediaField";
+import type { MediaAttachTarget } from "@/actions/admin/upload";
 
 export function ImageUploadField({
   name,
@@ -11,6 +12,7 @@ export function ImageUploadField({
   defaultAlt,
   focusName,
   defaultFocus,
+  persist,
 }: {
   name: string;
   label: string;
@@ -20,6 +22,7 @@ export function ImageUploadField({
   defaultAlt?: string;
   focusName?: string;
   defaultFocus?: string;
+  persist?: { target: MediaAttachTarget; id?: string; field: string };
 }) {
   return (
     <MediaField
@@ -33,6 +36,7 @@ export function ImageUploadField({
       defaultAlt={defaultAlt}
       focusName={focusName}
       defaultFocus={defaultFocus}
+      persist={persist}
     />
   );
 }

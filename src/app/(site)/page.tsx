@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArticleCard } from "@/components/content/ArticleCard";
 import { DomainMarquee } from "@/components/home/DomainMarquee";
@@ -8,11 +7,12 @@ import { NewsletterForm } from "@/components/newsletter/NewsletterForm";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { PublicImage } from "@/components/media/PublicImage";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getHomePageData } from "@/lib/data";
 import { formatDate } from "@/lib/utils";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const {
@@ -77,7 +77,7 @@ export default async function HomePage() {
 
       <section className="home-spotlight relative overflow-hidden border-y border-line">
         <div className="home-spotlight__bg" aria-hidden>
-          <Image src={spotlightPoster} alt="" fill sizes="100vw" className="object-cover" />
+          <PublicImage src={spotlightPoster} alt="" fill sizes="100vw" className="object-cover" />
         </div>
         <div className="home-spotlight__shade" aria-hidden />
         <div className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-20 md:grid-cols-[1.05fr_0.95fr] md:items-end md:px-6 md:py-28">
@@ -118,7 +118,7 @@ export default async function HomePage() {
           </div>
 
           <div className="home-spotlight__poster">
-            <Image
+            <PublicImage
               src={spotlightPoster}
               alt={guest?.name || spotlightShow?.title || "Arena Culture"}
               fill
@@ -139,7 +139,7 @@ export default async function HomePage() {
           {arenaEntries.map((item) => (
             <Link key={item.href} href={item.href} className="home-door focus-ring group">
               <div className="home-door__media">
-                <Image src={item.image} alt="" fill sizes="(max-width: 640px) 100vw, 25vw" className="object-cover" />
+                <PublicImage src={item.image} alt="" fill sizes="(max-width: 640px) 100vw, 25vw" className="object-cover" />
               </div>
               <div className="home-door__copy">
                 <h3>{item.title}</h3>

@@ -104,13 +104,7 @@ export function laterPaidSessionsRemain(
 }
 
 export function formatSessionLine(session: ScheduleSession) {
-  const start = formatDate(session.startsAt, "EEEE d MMMM yyyy · HH:mm");
-  const end = session.endsAt
-    ? calendarDayKey(session.startsAt) === calendarDayKey(session.endsAt)
-      ? formatDate(session.endsAt, "HH:mm")
-      : formatDate(session.endsAt, "EEEE d MMMM yyyy · HH:mm")
-    : "";
-  const when = end ? `${start} — ${end}` : start;
+  const when = formatDate(session.startsAt, "EEEE d MMMM yyyy · HH:mm");
   const access = isPaidSession(session) ? "Payant" : "Entrée libre";
   return session.label ? `${session.label} · ${when} · ${access}` : `${when} · ${access}`;
 }
@@ -118,15 +112,10 @@ export function formatSessionLine(session: ScheduleSession) {
 export function formatSessionsSummary(
   sessions: ScheduleSession[],
   fallbackStart: Date,
-  fallbackEnd?: Date | null
+  _fallbackEnd?: Date | null
 ) {
   if (!sessions.length) {
-    const start = formatDate(fallbackStart, "EEEE d MMMM yyyy · HH:mm");
-    if (!fallbackEnd) return start;
-    if (calendarDayKey(fallbackStart) === calendarDayKey(fallbackEnd)) {
-      return `${start} — ${formatDate(fallbackEnd, "HH:mm")}`;
-    }
-    return `${start} → ${formatDate(fallbackEnd, "EEEE d MMMM yyyy · HH:mm")}`;
+    return formatDate(fallbackStart, "EEEE d MMMM yyyy · HH:mm");
   }
   if (sessions.length === 1) {
     return formatSessionLine(sessions[0]).replace(/ · (Payant|Entrée libre)$/, "");

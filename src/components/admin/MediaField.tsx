@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { registerLibraryFile } from "@/actions/admin/library";
-import { uploadMedia } from "@/actions/admin/upload";
+import { attachMediaUrl, uploadMedia, type MediaAttachTarget } from "@/actions/admin/upload";
 import { AdminHint } from "@/components/admin/AdminHint";
 import { CoverCropper } from "@/components/admin/CoverCropper";
 import { IconPicker } from "@/components/admin/IconPicker";
@@ -22,11 +22,11 @@ const ACCEPT: Record<MediaFieldKind, string> = {
 };
 
 const HINTS: Record<MediaFieldKind, string> = {
-  image: "Lien, Téléverser, ou Bibliothèque (fichiers déjà envoyés).",
-  logo: "Fichier, lien, ou réemploi depuis la Bibliothèque.",
-  icon: "Cliquez une icône, Bibliothèque, ou petite image.",
-  video: "Lien YouTube / Instagram / Facebook / TikTok, fichier, ou Bibliothèque.",
-  any: "Lien, fichier, ou Bibliothèque.",
+  image: "Téléversez un fichier : il s’affiche tout de suite sur le site.",
+  logo: "Téléversez le logo, ou choisissez-le dans la Bibliothèque.",
+  icon: "Cliquez une icône, ou téléversez une petite image.",
+  video: "Lien YouTube / Instagram / TikTok, ou fichier. Publié tout de suite.",
+  any: "Téléversez un fichier ou collez un lien.",
 };
 
 const PLACEHOLDERS: Record<MediaFieldKind, string> = {
@@ -73,6 +73,7 @@ export function MediaField({
   defaultFocus = "50% 50%",
   className = "admin-field md:col-span-2",
   onUrlChange,
+  persist,
 }: {
   name: string;
   label: string;
@@ -87,6 +88,7 @@ export function MediaField({
   defaultFocus?: string;
   className?: string;
   onUrlChange?: (url: string) => void;
+  persist?: { target: MediaAttachTarget; id?: string; field: string };
 }) {
   const [url, setUrl] = useState(defaultValue);
   const [alt, setAlt] = useState(defaultAlt);
@@ -97,10 +99,28 @@ export function MediaField({
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [cropOpen, setCropOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const uploadFormId = `media-upload-${useId().replace(/:/g, "")}`;
 
   function applyUrl(next: string) {
     setUrl(next);
     onUrlChange?.(next);
+  }
+
+  async function commitUrl(next: string) {
+    applyUrl(next);
+    if (!persist) {
+      setOk(true);
+      setMessage("Fichier prêt. Cliquez Enregistrer en bas du formulaire.");
+      return;
+    }
+    const result = await attachMediaUrl({
+      target: persist.target,
+      id: persist.id,
+      field: persist.field,
+      url: next,
+    });
+    setOk(result.ok);
+    setMessage(result.message);
   }
 
   useEffect(() => {
@@ -127,10 +147,8 @@ export function MediaField({
           folder,
         });
         setBusy(false);
-        setOk(true);
-        setMessage("Fichier envoyé.");
-        applyUrl(blobUrl);
         if (inputRef.current) inputRef.current.value = "";
+        await commitUrl(blobUrl);
         return;
       } catch {
         // Local / sans token Blob : on retombe sur l’action serveur.
@@ -143,9 +161,12 @@ export function MediaField({
     const result = await uploadMedia(fd);
     setBusy(false);
     setOk(result.ok);
-    setMessage(result.message);
-    if (result.ok && result.url) applyUrl(result.url);
     if (inputRef.current) inputRef.current.value = "";
+    if (result.ok && result.url) {
+      await commitUrl(result.url);
+    } else {
+      setMessage(result.message);
+    }
   }
 
   const showVideo = url && (kind === "video" || kind === "any") && isPlayableMedia(url);
@@ -154,13 +175,16 @@ export function MediaField({
   return (
     <div className={className}>
       <label htmlFor={name}>{label}</label>
-      {kind === "icon" ? <IconPicker value={url} onChange={applyUrl} /> : null}
+      {kind === "icon" ? <IconPicker value={url} onChange={(next) => void commitUrl(next)} /> : null}
+      <input type="hidden" name={name} value={url} />
       <input
         id={name}
-        name={name}
         value={url}
         required={required}
         onChange={(e) => applyUrl(e.target.value)}
+        onBlur={() => {
+          if (persist && url !== defaultValue) void commitUrl(url);
+        }}
         placeholder={PLACEHOLDERS[kind]}
       />
       <div className="admin-media-split">
@@ -170,6 +194,7 @@ export function MediaField({
           <input
             ref={inputRef}
             type="file"
+            form={uploadFormId}
             accept={ACCEPT[kind]}
             className="sr-only"
             disabled={busy}
@@ -197,9 +222,7 @@ export function MediaField({
         open={libraryOpen}
         kind={kind === "video" ? "video" : kind === "any" ? "any" : "image"}
         onSelect={(next) => {
-          applyUrl(next);
-          setOk(true);
-          setMessage("Média choisi dans la bibliothèque.");
+          void commitUrl(next);
         }}
         onClose={() => setLibraryOpen(false)}
       />

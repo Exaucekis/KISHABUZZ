@@ -65,6 +65,46 @@ function toInputDate(d: Date | null | undefined) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+function sessionDate(value: string) {
+  return value.slice(0, 10);
+}
+
+function sessionTime(value: string) {
+  return value.length >= 16 ? value.slice(11, 16) : "";
+}
+
+function joinDateTime(date: string, time: string) {
+  if (!date) return "";
+  return `${date}T${time || "18:00"}`;
+}
+
+function weekdayLabel(date: string) {
+  if (!date) return "";
+  const parsed = new Date(`${date}T12:00:00`);
+  if (Number.isNaN(parsed.getTime())) return "";
+  const label = parsed.toLocaleDateString("fr-FR", { weekday: "long" });
+  return label ? label.charAt(0).toUpperCase() + label.slice(1) : "";
+}
+
+function patchSession(
+  rows: SessionDraft[],
+  index: number,
+  patch: { date?: string; time?: string; access?: SessionDraft["access"] }
+) {
+  return rows.map((row, i) => {
+    if (i !== index) return row;
+    const date = patch.date ?? sessionDate(row.startsAt);
+    const time = patch.time ?? sessionTime(row.startsAt);
+    const startsAt = joinDateTime(date, time);
+    return {
+      ...row,
+      startsAt,
+      endsAt: date ? `${date}T23:59` : "",
+      access: patch.access ?? row.access,
+    };
+  });
+}
+
 const initial: AdminActionState = { ok: false, message: "" };
 
 function newSessionKey() {
@@ -133,7 +173,19 @@ export function EventForm({
   const [capacity, setCapacity] = useState(event?.capacity ?? 0);
   const [status, setStatus] = useState(event?.status || "DRAFT");
   const payload = useMemo(() => JSON.stringify(types), [types]);
-  const sessionsPayload = useMemo(() => JSON.stringify(sessions), [sessions]);
+  const sessionsPayload = useMemo(
+    () =>
+      JSON.stringify(
+        sessions.map((session) => {
+          const date = sessionDate(session.startsAt);
+          return {
+            ...session,
+            endsAt: date ? `${date}T23:59` : "",
+          };
+        })
+      ),
+    [sessions]
+  );
   const galleryPayload = useMemo(
     () => JSON.stringify(gallery.filter((item) => item.url.trim())),
     [gallery]
@@ -230,50 +282,53 @@ export function EventForm({
             </button>
           </div>
           <AdminHint>
-            Une ligne = un jour, même s’ils ne se suivent pas (lundi, vendredi, dimanche). Jours
-            d’affilée : une ligne par jour. Cochez Gratuit si ce jour-là on ne vend pas de billet.
+            Une ligne = un jour de l’événement. Date + heure suffisent. Le jour (lundi, samedi…)
+            s’affiche tout seul. Cochez Gratuit si on ne vend pas de billet ce jour-là.
           </AdminHint>
           <div className="mt-3 space-y-3">
             {sessions.map((session, index) => (
               <div key={session.key} className="rounded-md border border-white/10 p-3">
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-3 md:grid-cols-[1.2fr_0.9fr_0.8fr]">
                   <div className="admin-field">
-                    <label htmlFor={`session-start-${session.key}`}>Début</label>
+                    <label htmlFor={`session-date-${session.key}`}>Date</label>
                     <input
-                      id={`session-start-${session.key}`}
-                      type="datetime-local"
+                      id={`session-date-${session.key}`}
+                      type="date"
                       required
-                      value={session.startsAt}
+                      value={sessionDate(session.startsAt)}
                       onChange={(e) =>
-                        setSessions((rows) =>
-                          rows.map((row, i) => (i === index ? { ...row, startsAt: e.target.value } : row))
-                        )
+                        setSessions((rows) => patchSession(rows, index, { date: e.target.value }))
                       }
                     />
                   </div>
                   <div className="admin-field">
-                    <label htmlFor={`session-end-${session.key}`}>Fin</label>
+                    <label htmlFor={`session-day-${session.key}`}>Jour</label>
                     <input
-                      id={`session-end-${session.key}`}
-                      type="datetime-local"
-                      value={session.endsAt}
+                      id={`session-day-${session.key}`}
+                      readOnly
+                      value={weekdayLabel(sessionDate(session.startsAt)) || "—"}
+                    />
+                  </div>
+                  <div className="admin-field">
+                    <label htmlFor={`session-time-${session.key}`}>Heure</label>
+                    <input
+                      id={`session-time-${session.key}`}
+                      type="time"
+                      required
+                      value={sessionTime(session.startsAt)}
                       onChange={(e) =>
-                        setSessions((rows) =>
-                          rows.map((row, i) => (i === index ? { ...row, endsAt: e.target.value } : row))
-                        )
+                        setSessions((rows) => patchSession(rows, index, { time: e.target.value }))
                       }
                     />
                   </div>
-                  <div className="admin-field md:col-span-2 flex flex-wrap items-center justify-between gap-3">
+                  <div className="admin-field md:col-span-3 flex flex-wrap items-center justify-between gap-3">
                     <label className="admin-check">
                       <input
                         type="checkbox"
                         checked={session.access === "FREE"}
                         onChange={(e) =>
                           setSessions((rows) =>
-                            rows.map((row, i) =>
-                              i === index ? { ...row, access: e.target.checked ? "FREE" : "PAID" } : row
-                            )
+                            patchSession(rows, index, { access: e.target.checked ? "FREE" : "PAID" })
                           )
                         }
                       />
@@ -322,7 +377,8 @@ export function EventForm({
           kind="image"
           folder="media"
           className="admin-field md:col-span-2"
-          hint="Visuel principal de la carte événement. Haute qualité, format 16:10 recommandé."
+          hint="Téléversez l’affiche : elle s’affiche tout de suite sur le site public."
+          persist={event?.id ? { target: "event", id: event.id, field: "poster" } : undefined}
         />
         <div className="admin-field md:col-span-2">
           <label htmlFor="summary">Accroche</label>

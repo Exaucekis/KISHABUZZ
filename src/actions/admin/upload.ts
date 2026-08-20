@@ -3,7 +3,9 @@
 import { put } from "@vercel/blob";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/admin";
+import { revalidatePublic } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 
 const IMAGE_MAX = 4 * 1024 * 1024;
@@ -65,11 +67,12 @@ async function storeFile(folder: string, filename: string, file: File): Promise<
           : {}),
       });
       return { ok: true, url: blob.url, message: "Fichier envoyé." };
-    } catch {
+    } catch (error) {
+      console.error("[upload] blob", error instanceof Error ? error.message : error);
       return {
         ok: false,
         message: process.env.VERCEL
-          ? "Échec de l’envoi vers Vercel Blob. Vérifiez le store Blob du projet."
+          ? "Échec de l’envoi vers Vercel Blob. Vérifiez que le store est Public et que BLOB_READ_WRITE_TOKEN est défini."
           : "Échec de l’envoi vers Vercel Blob.",
       };
     }
@@ -132,4 +135,107 @@ export async function uploadImage(formData: FormData): Promise<UploadResult> {
     return { ok: false, message: "Formats acceptés : JPG, PNG, WebP, GIF." };
   }
   return uploadMedia(formData);
+}
+
+export type MediaAttachTarget = "event" | "article" | "settings" | "arenaShow";
+
+const ATTACH_FIELDS: Record<MediaAttachTarget, ReadonlySet<string>> = {
+  event: new Set(["poster"]),
+  article: new Set(["coverImage"]),
+  settings: new Set(["heroImage", "heroVideo"]),
+  arenaShow: new Set(["poster", "videoUrl", "videoThumbnail"]),
+};
+
+export async function attachMediaUrl(input: {
+  target: MediaAttachTarget;
+  id?: string;
+  field: string;
+  url: string;
+}): Promise<UploadResult> {
+  await requireAdmin();
+  const url = String(input.url || "").trim().slice(0, 2000);
+  const field = String(input.field || "").trim();
+  if (!ATTACH_FIELDS[input.target]?.has(field)) {
+    return { ok: false, message: "Ce champ média ne peut pas être enregistré ainsi." };
+  }
+
+  try {
+    if (input.target === "settings") {
+      const data = field === "heroVideo" ? { heroVideo: url } : { heroImage: url };
+      await prisma.siteSetting.upsert({
+        where: { id: "main" },
+        create: { id: "main", ...data },
+        update: data,
+      });
+      revalidatePublicMedia("settings");
+      return { ok: true, url, message: "C’est en ligne." };
+    }
+
+    const id = String(input.id || "").trim();
+    if (!id) {
+      return { ok: true, url, message: "Fichier prêt. Cliquez Enregistrer en bas du formulaire." };
+    }
+
+    if (input.target === "event") {
+      const event = await prisma.event.update({
+        where: { id },
+        data: { poster: url },
+        select: { slug: true },
+      });
+      revalidatePublicMedia("event", event.slug);
+      return { ok: true, url, message: "C’est en ligne." };
+    }
+
+    if (input.target === "article") {
+      const article = await prisma.article.update({
+        where: { id },
+        data: { coverImage: url },
+        select: { slug: true, contentType: true },
+      });
+      revalidatePublicMedia("article", article.slug, article.contentType);
+      return { ok: true, url, message: "C’est en ligne." };
+    }
+
+    const showData =
+      field === "videoUrl"
+        ? { videoUrl: url }
+        : field === "videoThumbnail"
+          ? { videoThumbnail: url }
+          : { poster: url };
+    const show = await prisma.arenaShow.update({
+      where: { id },
+      data: showData,
+      select: { slug: true },
+    });
+    revalidatePublicMedia("arenaShow", show.slug);
+    return { ok: true, url, message: "C’est en ligne." };
+  } catch {
+    return { ok: false, message: "Impossible d’enregistrer ce média sur la fiche." };
+  }
+}
+
+function revalidatePublicMedia(kind: MediaAttachTarget, slug?: string, contentType?: string) {
+  revalidatePublic();
+  revalidatePath("/", "layout");
+  if (kind === "event") {
+    revalidatePath("/evenements");
+    revalidatePath("/admin/evenements");
+    if (slug) revalidatePath(`/evenements/${slug}`);
+  }
+  if (kind === "article") {
+    revalidatePath("/chroniques");
+    revalidatePath("/publications");
+    revalidatePath("/admin/articles");
+    if (slug && contentType === "CHRONIQUE") revalidatePath(`/chroniques/${slug}`);
+    if (slug) revalidatePath(`/publications/${slug}`);
+  }
+  if (kind === "settings") {
+    revalidatePath("/admin/settings");
+  }
+  if (kind === "arenaShow") {
+    revalidatePath("/arena-culture");
+    revalidatePath("/arena-culture/emissions");
+    revalidatePath("/admin/arena");
+    if (slug) revalidatePath(`/arena-culture/emissions/${slug}`);
+  }
 }

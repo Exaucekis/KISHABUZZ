@@ -89,7 +89,8 @@ export function SettingsForm({ settings }: { settings: Settings }) {
           folder="settings"
           altName="heroAlt"
           defaultAlt={settings.heroAlt || ""}
-          hint="Fond de la première page. Fichier ou lien. Ignoré si une vidéo hero est définie."
+          hint="Téléversez le fond de l’accueil : visible tout de suite."
+          persist={{ target: "settings", id: "main", field: "heroImage" }}
         />
         <MediaField
           name="heroVideo"
@@ -97,7 +98,8 @@ export function SettingsForm({ settings }: { settings: Settings }) {
           defaultValue={settings.heroVideo}
           kind="video"
           folder="settings"
-          hint="Fond animé de l’accueil. YouTube / fichier MP4. Se joue en sourdine."
+          hint="YouTube ou fichier MP4. Visible tout de suite sur l’accueil."
+          persist={{ target: "settings", id: "main", field: "heroVideo" }}
         />
         <div className="admin-field">
           <label>Facebook</label>

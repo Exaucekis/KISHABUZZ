@@ -7,6 +7,8 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { getCategories, getPublishedArticles } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Publications",
   description: "Articles, analyses et contenus éditoriaux de KISHA BUZZ.",

@@ -135,7 +135,8 @@ export function ArticleForm({
           defaultAlt={article?.coverAlt || ""}
           focusName="coverFocus"
           defaultFocus={article?.coverFocus || "50% 50%"}
-          hint="Grande image en haut de l’article. Recadrer pour garder le visage visible sur les cartes."
+          hint="Téléversez la photo : elle s’affiche tout de suite sur le site public."
+          persist={article?.id ? { target: "article", id: article.id, field: "coverImage" } : undefined}
         />
         <div className="admin-field md:col-span-2">
           <label htmlFor="excerpt">Extrait</label>

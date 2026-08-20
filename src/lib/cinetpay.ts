@@ -1,10 +1,7 @@
-import dns from "node:dns";
+const DEFAULT_CHECKOUT_BASE = "https://api-checkout.cinetpay.com";
 
-try {
-  dns.setDefaultResultOrder("ipv4first");
-} catch {
-  /* ignore on runtimes without this API */
-}
+export const CINETPAY_INIT_URL = `${DEFAULT_CHECKOUT_BASE}/v2/payment`;
+export const CINETPAY_CHECK_URL = `${DEFAULT_CHECKOUT_BASE}/v2/payment/check`;
 
 export type CinetPayCheckStatus = "ACCEPTED" | "REFUSED" | "CANCELLED" | "EXPIRED" | "PENDING";
 
@@ -22,10 +19,6 @@ export type CinetPayCheckResult = {
   message: string;
 };
 
-type TokenCache = { token: string; expiresAt: number };
-
-let tokenCache: TokenCache | null = null;
-
 function readCinetPaySecret(name: string) {
   return (process.env[name] || "")
     .trim()
@@ -33,16 +26,34 @@ function readCinetPaySecret(name: string) {
     .trim();
 }
 
-export function isCinetPayConfigured() {
-  return Boolean(readCinetPaySecret("CINETPAY_API_KEY") && readCinetPaySecret("CINETPAY_API_PASSWORD"));
+/** Host only — never include /v2/payment here; the client appends it. */
+export function cinetPayCheckoutBaseUrl() {
+  let base = readCinetPaySecret("CINETPAY_BASE_URL") || DEFAULT_CHECKOUT_BASE;
+  base = base.replace(/\/+$/, "").replace(/\/v2\/payment$/i, "");
+  return base || DEFAULT_CHECKOUT_BASE;
 }
 
-export function cinetPayBaseUrl() {
-  const explicit = readCinetPaySecret("CINETPAY_API_BASE_URL").replace(/\/$/, "");
-  if (explicit) return explicit;
-  const key = readCinetPaySecret("CINETPAY_API_KEY");
-  if (key.startsWith("sk_live_")) return "https://api.cinetpay.co";
-  return "https://api.cinetpay.net";
+export function cinetPayInitUrl() {
+  return `${cinetPayCheckoutBaseUrl()}/v2/payment`;
+}
+
+export function cinetPayCheckUrl() {
+  return `${cinetPayCheckoutBaseUrl()}/v2/payment/check`;
+}
+
+function cinetPayApiKey() {
+  return readCinetPaySecret("CINETPAY_API_KEY") || readCinetPaySecret("CINETPAY_APIKEY");
+}
+
+export function isCinetPayConfigured() {
+  return Boolean(cinetPayApiKey() && readCinetPaySecret("CINETPAY_SITE_ID"));
+}
+
+export function cinetPayCredentials() {
+  return {
+    apikey: cinetPayApiKey(),
+    site_id: readCinetPaySecret("CINETPAY_SITE_ID"),
+  };
 }
 
 export function sanitizeCinetPayText(value: string, max = 100) {
@@ -51,11 +62,6 @@ export function sanitizeCinetPayText(value: string, max = 100) {
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, max);
-}
-
-function personName(value: string, fallback: string) {
-  const clean = sanitizeCinetPayText(value, 255);
-  return clean.length >= 2 ? clean : fallback;
 }
 
 export function mapCinetPayStatus(value: string | undefined): CinetPayCheckStatus {
@@ -75,18 +81,6 @@ export function amountsMatch(
   return expected.amount === received.amount && expected.currency.toUpperCase() === received.currency.toUpperCase();
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
-}
-
-function pickString(...values: unknown[]) {
-  for (const value of values) {
-    const next = String(value || "").trim();
-    if (next) return next;
-  }
-  return "";
-}
-
 export function parseCinetPayNotifyBody(contentType: string, raw: string) {
   const payload = String(raw || "").slice(0, 4000);
   let transactionId = "";
@@ -99,16 +93,16 @@ export function parseCinetPayNotifyBody(contentType: string, raw: string) {
   if (contentType.includes("json")) {
     try {
       const json = JSON.parse(raw) as Record<string, unknown>;
-      tryAssign(json.merchant_transaction_id);
-      if (!transactionId) tryAssign(json.cpm_trans_id);
+      tryAssign(json.cpm_trans_id);
+      if (!transactionId) tryAssign(json.merchant_transaction_id);
       if (!transactionId) tryAssign(json.transaction_id);
     } catch {
       /* ignore */
     }
   } else {
     const params = new URLSearchParams(raw.includes("=") ? raw : "");
-    tryAssign(params.get("merchant_transaction_id"));
-    if (!transactionId) tryAssign(params.get("cpm_trans_id"));
+    tryAssign(params.get("cpm_trans_id"));
+    if (!transactionId) tryAssign(params.get("merchant_transaction_id"));
     if (!transactionId) tryAssign(params.get("transaction_id"));
   }
 
@@ -120,7 +114,7 @@ function redactSecrets(value: unknown): unknown {
   if (value && typeof value === "object") {
     const out: Record<string, unknown> = {};
     for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
-      if (/apikey|api_key|api_password|access_token|secret|password/i.test(key)) {
+      if (/apikey|api_key|api_password|access_token|secret|password|site_id/i.test(key)) {
         out[key] = "[redacted]";
       } else {
         out[key] = redactSecrets(nested);
@@ -139,117 +133,24 @@ export function safeJson(value: unknown) {
   }
 }
 
-async function readJson(response: Response) {
+async function postJson(url: string, body: Record<string, unknown>) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "User-Agent": "Mozilla/5.0",
+    },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
   let json: Record<string, unknown> = {};
   try {
     json = (await response.json()) as Record<string, unknown>;
   } catch {
     json = {};
   }
-  return json;
-}
-
-const jsonHeaders = {
-  Accept: "application/json",
-  "Content-Type": "application/json",
-};
-
-async function cinetPayFetch(url: string, init: RequestInit) {
-  const response = await fetch(url, {
-    ...init,
-    headers: { ...jsonHeaders, ...(init.headers || {}) },
-    redirect: "manual",
-    cache: "no-store",
-  });
-  const location = response.headers.get("location");
-  if (response.status >= 300 && response.status < 400 && location) {
-    const next = location.startsWith("http") ? location : new URL(location, url).toString();
-    return fetch(next, {
-      ...init,
-      method: init.method || "POST",
-      headers: { ...jsonHeaders, ...(init.headers || {}) },
-      cache: "no-store",
-    });
-  }
-  return response;
-}
-
-function authFailureMessage(json: Record<string, unknown>, httpStatus: number) {
-  const data = asRecord(json.data);
-  const status = pickString(json.status, json.message, json.error, data.message).toUpperCase();
-  if (status === "NOT_ALLOWED" || json.code === 708) {
-    return "CinetPay refuse cet appel (NOT_ALLOWED). Ce n’est pas la liste blanche IP : l’URL, la méthode ou le droit d’utiliser l’API Sandbox est refusé. Vérifie dans CinetPay → Documentation l’URL de base ({{baseUrl}}) et que le mot de passe API est bien celui du panneau Sandbox.";
-  }
-  const detail = pickString(json.message, json.error, json.status, json.description, data.message);
-  if (detail) return `CinetPay a refusé l’authentification (${detail}, HTTP ${httpStatus}).`;
-  return `CinetPay a refusé l’authentification (HTTP ${httpStatus}).`;
-}
-
-async function loginCinetPay(force = false) {
-  if (!force && tokenCache && tokenCache.expiresAt > Date.now()) {
-    return tokenCache.token;
-  }
-
-  const apiKey = readCinetPaySecret("CINETPAY_API_KEY");
-  const apiPassword = readCinetPaySecret("CINETPAY_API_PASSWORD");
-  const url = `${cinetPayBaseUrl()}/v1/oauth/login`;
-  const response = await cinetPayFetch(url, {
-    method: "POST",
-    body: JSON.stringify({ api_key: apiKey, api_password: apiPassword }),
-  });
-  const json = await readJson(response);
-  const data = asRecord(json.data);
-  const token = pickString(json.access_token, data.access_token);
-  if (!token) {
-    tokenCache = null;
-    console.error("[cinetpay] login", {
-      http: response.status,
-      code: json.code ?? null,
-      status: json.status ?? null,
-      url: response.url || url,
-    });
-    throw new Error(authFailureMessage(json, response.status));
-  }
-
-  const expiresIn = Number(json.expires_in);
-  const ttlMs = (Number.isFinite(expiresIn) && expiresIn > 120 ? expiresIn - 120 : 60 * 50) * 1000;
-  tokenCache = { token, expiresAt: Date.now() + ttlMs };
-  return token;
-}
-
-async function cinetPayRequest(path: string, init: RequestInit = {}, retried = false): Promise<Record<string, unknown>> {
-  const token = await loginCinetPay(retried);
-  const response = await cinetPayFetch(`${cinetPayBaseUrl()}${path}`, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...(init.headers || {}),
-    },
-  });
-  const json = await readJson(response);
-  if (response.status === 401 && !retried) {
-    tokenCache = null;
-    return cinetPayRequest(path, init, true);
-  }
-  return json;
-}
-
-function paymentStatusFromPayload(json: Record<string, unknown>) {
-  const data = asRecord(json.data);
-  const details = asRecord(json.details);
-  const wrapper = String(json.status || "").toUpperCase();
-  const nested = pickString(details.status, data.status, data.payment_status, json.payment_status);
-  if (nested) return mapCinetPayStatus(nested);
-  if (wrapper === "OK") return "PENDING";
-  return mapCinetPayStatus(wrapper);
-}
-
-function amountFromPayload(json: Record<string, unknown>) {
-  const data = asRecord(json.data);
-  const details = asRecord(json.details);
-  const raw = data.amount ?? details.amount ?? json.amount;
-  const amount = typeof raw === "number" ? raw : Number.parseInt(String(raw || ""), 10);
-  return Number.isFinite(amount) ? amount : null;
+  return { ok: response.ok, status: response.status, json };
 }
 
 export async function initCinetPayPayment(input: {
@@ -265,53 +166,48 @@ export async function initCinetPayPayment(input: {
   metadata?: string;
 }): Promise<CinetPayInitResult> {
   if (!isCinetPayConfigured()) {
-    return { ok: false, message: "CinetPay n’est pas configuré (CINETPAY_API_KEY / CINETPAY_API_PASSWORD)." };
+    return { ok: false, message: "CinetPay n’est pas configuré (CINETPAY_API_KEY / CINETPAY_SITE_ID)." };
   }
 
+  const { apikey, site_id } = cinetPayCredentials();
   const parts = String(input.customerName || "Client").trim().split(/\s+/);
-  const firstName = personName(parts[0] || "Client", "Client");
-  const lastName = personName(parts.slice(1).join(" "), firstName);
-  const phone = input.customerPhone.startsWith("+") ? input.customerPhone : `+${input.customerPhone.replace(/^\+/, "")}`;
+  const surname = parts.slice(1).join(" ") || parts[0] || "Client";
 
-  let json: Record<string, unknown>;
-  try {
-    json = await cinetPayRequest("/v1/payment", {
-      method: "POST",
-      body: JSON.stringify({
-        currency: input.currency,
-        merchant_transaction_id: input.transactionId.slice(0, 30),
-        amount: input.amount,
-        lang: "fr",
-        designation: sanitizeCinetPayText(input.description, 80),
-        client_email: input.customerEmail,
-        client_phone_number: phone,
-        client_first_name: firstName,
-        client_last_name: lastName,
-        success_url: input.returnUrl.slice(0, 120),
-        failed_url: input.returnUrl.slice(0, 120),
-        notify_url: input.notifyUrl.slice(0, 120),
-        direct_pay: false,
-      }),
-    });
-  } catch (error) {
-    return { ok: false, message: error instanceof Error ? error.message : "CinetPay indisponible." };
-  }
+  const { json } = await postJson(cinetPayInitUrl(), {
+    apikey,
+    site_id,
+    transaction_id: input.transactionId,
+    amount: input.amount,
+    currency: input.currency,
+    description: sanitizeCinetPayText(input.description, 80),
+    notify_url: input.notifyUrl,
+    return_url: input.returnUrl,
+    channels: "ALL",
+    lang: "fr",
+    metadata: input.metadata || "",
+    customer_name: sanitizeCinetPayText(parts[0] || "Client", 50),
+    customer_surname: sanitizeCinetPayText(surname, 50),
+    customer_email: input.customerEmail,
+    customer_phone_number: input.customerPhone,
+    customer_address: "Lubumbashi",
+    customer_city: "Lubumbashi",
+    customer_country: "CD",
+    customer_state: "CD",
+    customer_zip_code: "00000",
+  });
 
-  const data = asRecord(json.data);
-  const details = asRecord(json.details);
-  const paymentUrl = pickString(json.payment_url, data.payment_url);
-  const paymentToken = pickString(json.payment_token, data.payment_token);
-  const detailStatus = String(details.status || "").toUpperCase();
+  const data = (json.data || {}) as Record<string, unknown>;
+  const paymentUrl = String(data.payment_url || "");
+  const paymentToken = String(data.payment_token || "");
+  const code = String(json.code || "");
 
-  if (paymentUrl && detailStatus !== "FAILED") {
+  if (paymentUrl && (code === "201" || String(json.message || "").toUpperCase() === "CREATED")) {
     return { ok: true, paymentUrl, paymentToken };
   }
 
   return {
     ok: false,
-    message: String(
-      details.message || json.message || json.error || "CinetPay a refusé l’initialisation du paiement."
-    ),
+    message: String(json.description || json.message || "CinetPay a refusé l’initialisation du paiement."),
   };
 }
 
@@ -328,33 +224,26 @@ export async function checkCinetPayPayment(transactionId: string): Promise<Cinet
     };
   }
 
-  let json: Record<string, unknown> = {};
-  try {
-    json = await cinetPayRequest(`/v1/payment/${encodeURIComponent(transactionId)}`, { method: "GET" });
-  } catch (error) {
-    return {
-      ok: false,
-      status: "PENDING",
-      amount: null,
-      currency: "",
-      paymentMethod: "",
-      raw: {},
-      message: error instanceof Error ? error.message : "CinetPay indisponible.",
-    };
-  }
+  const { apikey, site_id } = cinetPayCredentials();
+  const { json } = await postJson(cinetPayCheckUrl(), {
+    apikey,
+    site_id,
+    transaction_id: transactionId,
+  });
 
-  const data = asRecord(json.data);
-  const status = paymentStatusFromPayload(json);
-  const amount = amountFromPayload(json);
+  const data = (json.data || {}) as Record<string, unknown>;
+  const amountRaw = data.amount;
+  const amount = typeof amountRaw === "number" ? amountRaw : Number.parseInt(String(amountRaw || ""), 10);
+  const status = mapCinetPayStatus(String(data.status || ""));
 
   return {
-    ok: status === "ACCEPTED",
+    ok: String(json.code || "") === "00",
     status,
-    amount,
-    currency: pickString(data.currency, json.currency),
-    paymentMethod: pickString(data.payment_method, json.payment_method),
+    amount: Number.isFinite(amount) ? amount : null,
+    currency: String(data.currency || ""),
+    paymentMethod: String(data.payment_method || ""),
     raw: json,
-    message: pickString(json.message, asRecord(json.details).message, data.message),
+    message: String(json.message || ""),
   };
 }
 

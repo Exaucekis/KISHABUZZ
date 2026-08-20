@@ -153,6 +153,7 @@ export function ArticleEditor({
         <input
           ref={fileRef}
           type="file"
+          form="article-editor-upload"
           accept="image/jpeg,image/png,image/webp,image/gif"
           className="sr-only"
           onChange={(e) => void onImage(e.target.files?.[0])}
@@ -160,6 +161,7 @@ export function ArticleEditor({
         <input
           ref={videoRef}
           type="file"
+          form="article-editor-upload"
           accept="video/mp4,video/webm,video/ogg"
           className="sr-only"
           onChange={(e) => void onVideoFile(e.target.files?.[0])}

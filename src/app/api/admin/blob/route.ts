@@ -19,6 +19,7 @@ export async function POST(request: Request) {
       body,
       request,
       onBeforeGenerateToken: async () => ({
+        access: "public",
         allowedContentTypes: [
           "image/jpeg",
           "image/png",
