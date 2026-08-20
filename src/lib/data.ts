@@ -606,6 +606,7 @@ export async function searchAll(q: string) {
       articles: [],
       shows: [],
       guests: [],
+      albums: [],
       portfolio: [],
       partners: [],
       media: [],
@@ -613,7 +614,7 @@ export async function searchAll(q: string) {
     };
   }
 
-  const [articles, shows, guests, portfolio, partners, media, events] = await Promise.all([
+  const [articles, shows, guests, albums, portfolio, partners, media, events] = await Promise.all([
     prisma.article.findMany({
       where: {
         status: "PUBLISHED",
@@ -644,6 +645,19 @@ export async function searchAll(q: string) {
         OR: [{ name: { contains: query } }, { profession: { contains: query } }],
       },
       take: 12,
+    }),
+    prisma.photoAlbum.findMany({
+      where: {
+        visible: true,
+        OR: [
+          { title: { contains: query } },
+          { guestName: { contains: query } },
+          { description: { contains: query } },
+        ],
+      },
+      take: 12,
+      orderBy: [{ order: "asc" }, { date: "desc" }],
+      select: { id: true, slug: true, title: true, guestName: true },
     }),
     prisma.portfolioItem.findMany({
       where: {
@@ -683,7 +697,7 @@ export async function searchAll(q: string) {
     }),
   ]);
 
-  return { articles, shows, guests, portfolio, partners, media, events };
+  return { articles, shows, guests, albums, portfolio, partners, media, events };
 }
 
 export async function getArenaPhotoAlbums() {

@@ -18,6 +18,7 @@ import {
   getUpcomingArenaDates,
 } from "@/lib/data";
 import { arenaShowCover, arenaSpotlightGuest } from "@/lib/arena-spotlight";
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholders";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -53,7 +54,7 @@ export default async function ArenaCulturePage() {
       href: `/arena-culture/emissions/${s.slug}`,
       title: arenaSpotlightGuest(s)?.name || s.title,
       subtitle: s.theme || `Épisode ${String(s.number).padStart(2, "0")}`,
-      image: arenaShowCover(s) || "/artists/fally-ipupa.jpg",
+      image: arenaShowCover(s) || PLACEHOLDER_IMAGE,
     }));
 
   const currentShows = shows.filter((s) => s.id !== headline?.id && s.id !== spotlight?.id);
@@ -61,7 +62,7 @@ export default async function ArenaCulturePage() {
     href: `/arena-culture/emissions/${s.slug}`,
     title: arenaSpotlightGuest(s)?.name || s.title,
     subtitle: s.theme || arenaSpotlightGuest(s)?.profession || `Épisode ${String(s.number).padStart(2, "0")}`,
-    image: arenaShowCover(s) || "/artists/fally-ipupa.jpg",
+    image: arenaShowCover(s) || PLACEHOLDER_IMAGE,
   }));
 
   const posterTiles =
@@ -80,13 +81,13 @@ export default async function ArenaCulturePage() {
 
   const photoTiles = albums.slice(0, 6).map((album) => ({
     title: album.guestName || album.title,
-    image: album.coverImage || album.photos[0]?.url || "/arena/albums/invitee-plateau/01-invitee.jpg",
+    image: album.coverImage || album.photos[0]?.url || PLACEHOLDER_IMAGE,
     href: `/arena-culture/albums/${album.slug}`,
   }));
 
   const sceneTiles = featuredGuests.map((guest) => ({
     title: guest.name,
-    image: guest.photo || home.hero.poster || "/artists/gaz-mawete.jpg",
+    image: guest.photo || home.hero.poster || PLACEHOLDER_IMAGE,
     href: `/arena-culture/invites/${guest.slug}`,
   }));
   const heroPoster =
@@ -123,7 +124,7 @@ export default async function ArenaCulturePage() {
         }
       />
 
-      {headlineVideo ? (
+      {headline && headlineVideo ? (
         <section className="ac-page">
           <p className="ac-kicker">Nouvelle émission</p>
           <h2 className="font-display text-3xl md:text-4xl">{headlineGuest?.name || headline.title}</h2>
@@ -157,7 +158,7 @@ export default async function ArenaCulturePage() {
               src={
                 spotlight?.poster ||
                 guest?.photo ||
-                "/arena/albums/invitee-plateau/01-invitee.jpg"
+                PLACEHOLDER_IMAGE
               }
               alt={guest?.name || spotlight?.title || "Invité Arena Culture"}
               loading="lazy"

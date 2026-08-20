@@ -47,6 +47,8 @@ const desktopLinks = [
   { href: "/chroniques", label: "Chroniques" },
   { href: "/publications", label: "Publications" },
   { href: "/portfolio", label: "Portfolio" },
+  { href: "/arena-culture", label: "Arena Culture" },
+  { href: "/collaborations", label: "Partenaires" },
   { href: "/contact", label: "Contact" },
 ];
 

@@ -35,7 +35,7 @@ export const revalidate = 0;
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.kisha-buzz.com"),
     title: {
       default: settings.metaTitle || settings.siteTitle,
       template: `%s · ${settings.siteTitle}`,

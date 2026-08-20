@@ -22,6 +22,7 @@ export default async function RecherchePage({ searchParams }: Props) {
     results.articles.length +
     results.shows.length +
     results.guests.length +
+    results.albums.length +
     results.portfolio.length +
     results.partners.length +
     results.media.length +
@@ -34,7 +35,7 @@ export default async function RecherchePage({ searchParams }: Props) {
           <SectionHeading
             eyebrow="Explorer"
             title="Recherche"
-            description="Cherchez parmi les chroniques, publications, émissions, invités et projets."
+            description="Cherchez parmi les chroniques, publications, émissions, invités, albums et projets."
           />
           <form action="/recherche" className="mt-8 flex gap-2">
             <input
@@ -126,6 +127,19 @@ export default async function RecherchePage({ searchParams }: Props) {
                     href={`/arena-culture/invites/${g.slug}`}
                     title={g.name}
                     meta={g.profession || undefined}
+                  />
+                ))}
+              </ResultBlock>
+            ) : null}
+
+            {results.albums.length ? (
+              <ResultBlock title="Albums photos">
+                {results.albums.map((album) => (
+                  <ResultLink
+                    key={album.id}
+                    href={`/arena-culture/albums/${album.slug}`}
+                    title={album.title}
+                    meta={album.guestName || undefined}
                   />
                 ))}
               </ResultBlock>

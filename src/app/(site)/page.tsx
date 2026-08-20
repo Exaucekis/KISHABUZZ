@@ -12,6 +12,7 @@ import { PublicImage } from "@/components/media/PublicImage";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { getHomePageData } from "@/lib/data";
 import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholders";
 import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -41,7 +42,7 @@ export default async function HomePage() {
     guest?.photo ||
     arenaHome.hero.poster ||
     featuredAlbum?.coverImage ||
-    "/arena/albums/invitee-plateau/01-invitee.jpg";
+    PLACEHOLDER_IMAGE;
 
   const arenaEntries = arenaHome.explore.items.map((item) => ({
     href: item.href,

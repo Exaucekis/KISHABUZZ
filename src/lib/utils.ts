@@ -19,7 +19,11 @@ export function formatDate(date: Date | string | null | undefined, pattern = "d 
 }
 
 export function absoluteUrl(path = "") {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  const base =
+    fromEnv ||
+    (vercel ? `https://${vercel}` : process.env.NODE_ENV === "production" ? "https://www.kisha-buzz.com" : "http://localhost:3000");
   return `${base.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
 }
 

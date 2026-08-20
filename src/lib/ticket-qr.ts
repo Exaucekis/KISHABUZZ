@@ -4,7 +4,12 @@ import { isPublicCode } from "@/lib/ticket-codes";
 import { absoluteUrl } from "@/lib/utils";
 
 export function ticketQrSecret() {
-  return process.env.TICKET_QR_SECRET?.trim() || process.env.AUTH_SECRET?.trim() || "kishabuzz-ticket-qr";
+  const secret = process.env.TICKET_QR_SECRET?.trim() || process.env.AUTH_SECRET?.trim() || "";
+  if (secret) return secret;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("TICKET_QR_SECRET ou AUTH_SECRET est requis.");
+  }
+  return "dev-ticket-qr";
 }
 
 export function signTicketCode(publicCode: string, secret = ticketQrSecret()) {
