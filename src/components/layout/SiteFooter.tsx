@@ -2,18 +2,9 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { NewsletterForm } from "@/components/newsletter/NewsletterForm";
 import { getSettings } from "@/lib/data";
+import { SITE_NAV_WITH_ARENA } from "@/lib/site-structure";
 
-const nav = [
-  { href: "/", label: "Accueil" },
-  { href: "/evenements", label: "Événements" },
-  { href: "/a-propos", label: "À propos" },
-  { href: "/chroniques", label: "Chroniques" },
-  { href: "/publications", label: "Publications" },
-  { href: "/portfolio", label: "Portfolio" },
-  { href: "/arena-culture", label: "Arena Culture" },
-  { href: "/collaborations", label: "Partenaires" },
-  { href: "/contact", label: "Contact" },
-];
+const nav = SITE_NAV_WITH_ARENA;
 
 export async function SiteFooter() {
   const settings = await getSettings();

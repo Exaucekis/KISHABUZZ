@@ -43,13 +43,6 @@ export default async function HomePage() {
     featuredAlbum?.coverImage ||
     "/arena/albums/invitee-plateau/01-invitee.jpg";
 
-  const arenaEntries = arenaHome.explore.items.map((item) => ({
-    href: item.href,
-    title: item.title,
-    text: item.subtitle,
-    image: item.image,
-  }));
-
   return (
     <>
       <HomeHero
@@ -75,8 +68,15 @@ export default async function HomePage() {
                   : featuredVideo.description || undefined
               }
             />
-            <Link href="/arena-culture/videos" className="shrink-0 text-sm font-semibold text-ember-text">
-              Toutes les vidéos →
+            <Link
+              href={
+                featuredVideo.slug
+                  ? `/arena-culture/emissions/${featuredVideo.slug}`
+                  : "/arena-culture/emissions"
+              }
+              className="shrink-0 text-sm font-semibold text-ember-text"
+            >
+              Voir l’émission →
             </Link>
           </div>
           <div className="home-video">
@@ -86,16 +86,6 @@ export default async function HomePage() {
               poster={featuredVideo.thumbnail || undefined}
             />
           </div>
-          {featuredVideo.slug ? (
-            <p className="mt-4">
-              <Link
-                href={`/arena-culture/emissions/${featuredVideo.slug}`}
-                className="text-sm font-semibold text-ember-text"
-              >
-                Voir l’émission →
-              </Link>
-            </p>
-          ) : null}
         </section>
       ) : null}
 
@@ -153,27 +143,6 @@ export default async function HomePage() {
               className="object-cover"
             />
           </div>
-        </div>
-      </section>
-
-      <section className="kb-defer mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
-        <SectionHeading
-          eyebrow={arenaHome.explore.eyebrow}
-          title={arenaHome.explore.title}
-          description={arenaHome.hero.text}
-        />
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {arenaEntries.map((item) => (
-            <Link key={item.href} href={item.href} className="home-door focus-ring group">
-              <div className="home-door__media">
-                <PublicImage src={item.image} alt="" fill sizes="(max-width: 640px) 100vw, 25vw" className="object-cover" />
-              </div>
-              <div className="home-door__copy">
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </div>
-            </Link>
-          ))}
         </div>
       </section>
 

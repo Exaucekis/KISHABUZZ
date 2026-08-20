@@ -106,7 +106,6 @@ async function main() {
     check(publicPage.status === 200, `GET /arena-culture → ${publicPage.status} (${publicPage.base})`);
     if (publicPage.html) {
       check(publicPage.html.includes(home.hero.line1), "page publique affiche la ligne 1 du héro");
-      check(publicPage.html.includes(home.explore.title), "page publique affiche Univers Arena");
       check(publicPage.html.includes(home.memory.cta), "page publique affiche le bouton archives");
       for (const href of ARENA_EXPLORE_DEFAULTS.map((item) => item.href)) {
         check(publicPage.html.includes(`href="${href}"`), `lien ${href} présent`);

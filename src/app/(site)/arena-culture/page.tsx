@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArenaCalendarCard } from "@/components/arena/ArenaCalendarCard";
 import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaMediaRow } from "@/components/arena/ArenaMediaRow";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
@@ -11,7 +10,6 @@ import {
   getArenaPhotoAlbums,
   getArenaStage,
   getFeaturedArenaGuests,
-  getUpcomingArenaDates,
 } from "@/lib/data";
 import { arenaShowCover, arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
@@ -27,12 +25,11 @@ export const revalidate = 0;
 
 export default async function ArenaCulturePage() {
   await connection();
-  const [home, stage, featuredGuests, albums, upcoming] = await Promise.all([
+  const [home, stage, featuredGuests, albums] = await Promise.all([
     getArenaHome(),
     getArenaStage(),
     getFeaturedArenaGuests(8),
     getArenaPhotoAlbums(),
-    getUpcomingArenaDates(),
   ]);
 
   const headline = stage.headline;
@@ -174,25 +171,6 @@ export default async function ArenaCulturePage() {
           </div>
         </div>
       </section>
-
-      {upcoming.length ? (
-        <section className="ac-cal-home">
-          <div className="ac-row__head">
-            <div>
-              <p className="ac-kicker">Agenda</p>
-              <h2 className="ac-row__title">Prochaines dates</h2>
-            </div>
-            <Link href="/arena-culture/calendrier" className="ac-row__more">
-              Tout voir
-            </Link>
-          </div>
-          <div className="ac-cal-list">
-            {upcoming.slice(0, 3).map((show) => (
-              <ArenaCalendarCard key={show.id} show={show} />
-            ))}
-          </div>
-        </section>
-      ) : null}
 
       <ArenaMediaRow
         eyebrow={home.scene.eyebrow}

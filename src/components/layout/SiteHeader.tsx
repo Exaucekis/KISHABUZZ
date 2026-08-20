@@ -5,49 +5,27 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  CalendarDays,
   Menu,
   Search,
   X,
   Mic2,
-  Home,
-  User,
-  Newspaper,
-  BookOpen,
-  Briefcase,
-  Handshake,
-  Mail,
   LogIn,
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserAccountMenu } from "@/components/layout/UserAccountMenu";
 import { useIsClient } from "@/lib/use-is-client";
+import { SITE_ARENA, SITE_NAV_DESKTOP, SITE_NAV_WITH_ARENA, SITE_SEARCH } from "@/lib/site-structure";
 import { cn } from "@/lib/utils";
 
 type HeaderUser = { name: string | null; role: string } | null;
 
-const links = [
-  { href: "/", label: "Accueil", icon: Home },
-  { href: "/evenements", label: "Événements", icon: CalendarDays },
-  { href: "/a-propos", label: "À propos", icon: User },
-  { href: "/chroniques", label: "Chroniques", icon: BookOpen },
-  { href: "/publications", label: "Publications", icon: Newspaper },
-  { href: "/portfolio", label: "Portfolio", icon: Briefcase },
-  { href: "/arena-culture", label: "Arena Culture", icon: Mic2, highlight: true },
-  { href: "/collaborations", label: "Partenaires", icon: Handshake },
-  { href: "/contact", label: "Contact", icon: Mail },
-  { href: "/recherche", label: "Recherche", icon: Search },
-];
-
-const desktopLinks = [
-  { href: "/", label: "Accueil" },
-  { href: "/evenements", label: "Événements" },
-  { href: "/a-propos", label: "À propos" },
-  { href: "/chroniques", label: "Chroniques" },
-  { href: "/publications", label: "Publications" },
-  { href: "/portfolio", label: "Portfolio" },
-  { href: "/contact", label: "Contact" },
+const mobileLinks = [
+  ...SITE_NAV_WITH_ARENA.map((item) => ({
+    ...item,
+    highlight: item.href === SITE_ARENA.href,
+  })),
+  { ...SITE_SEARCH, highlight: false },
 ];
 
 export function SiteHeader({
@@ -139,7 +117,7 @@ export function SiteHeader({
 
           <nav className="flex-1 overflow-y-auto overscroll-contain px-3 py-4" aria-label="Menu mobile">
             <ul className="space-y-1.5">
-              {links.map((link) => {
+              {mobileLinks.map((link) => {
                 const Icon = link.icon;
                 const active =
                   link.href === "/"
@@ -230,7 +208,7 @@ export function SiteHeader({
               </Link>
             ) : (
               <>
-                {desktopLinks.map((link) => (
+                {SITE_NAV_DESKTOP.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
@@ -243,7 +221,7 @@ export function SiteHeader({
                   </Link>
                 ))}
                 <Link
-                  href="/arena-culture"
+                  href={SITE_ARENA.href}
                   className="ml-1 inline-flex items-center gap-1.5 rounded-md bg-ember px-3 py-2 text-[0.8rem] font-bold text-on-ember transition hover:bg-ember-hot xl:text-sm"
                 >
                   <Mic2 className="h-3.5 w-3.5" aria-hidden />

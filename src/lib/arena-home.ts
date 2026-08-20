@@ -130,6 +130,7 @@ export const ARENA_HOME_DEFAULTS: ArenaHomeConfig = {
   },
 };
 
+/** Toutes les clés enregistrées en CMS (y compris anciennes). */
 export const ARENA_HOME_SECTIONS = [
   "hero",
   "explore",
@@ -140,6 +141,9 @@ export const ARENA_HOME_SECTIONS = [
   "photos",
   "memory",
 ] as const;
+
+/** Onglets « Page Arena » : textes d’accueil seulement, sans doubler Émissions ni le menu. */
+export const PAGE_ARENA_SECTIONS = ["hero", "spotlight", "scene", "posters", "photos", "memory"] as const;
 
 export type ArenaHomeSection = (typeof ARENA_HOME_SECTIONS)[number];
 
@@ -153,7 +157,7 @@ export const ARENA_HOME_SECTION_META: Record<
   },
   explore: {
     label: "Univers",
-    where: "les six cartes Explorer, sur /arena-culture et l’accueil",
+    where: "données conservées en CMS, plus affichées comme cartes de menu",
   },
   spotlight: {
     label: "À la une",

@@ -3,20 +3,16 @@
 import { useActionState, useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { archiveArenaShow } from "@/actions/admin/arena";
 import { saveArenaHomeSection } from "@/actions/admin/arena-home";
-import { AdminConfirmForm } from "@/components/admin/AdminConfirmForm";
-import { ArenaShowForm } from "@/components/admin/ArenaShowForm";
 import { AdminHint } from "@/components/admin/AdminHint";
 import { AdminTabs } from "@/components/admin/AdminTabs";
 import { MediaField } from "@/components/admin/MediaField";
 import { SaveResultDialog } from "@/components/admin/SaveResultDialog";
-import { StatusBadge } from "@/components/admin/StatusBadge";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 import {
-  ARENA_HOME_SECTIONS,
   ARENA_HOME_SECTION_META,
+  PAGE_ARENA_SECTIONS,
   type ArenaHomeConfig,
   type ArenaHomeSection,
 } from "@/lib/arena-home";
@@ -60,8 +56,8 @@ function SectionForm({
 }) {
   const router = useRouter();
   const meta = ARENA_HOME_SECTION_META[section];
-  const index = ARENA_HOME_SECTIONS.indexOf(section) + 1;
-  const total = ARENA_HOME_SECTIONS.length;
+  const index = (PAGE_ARENA_SECTIONS as readonly string[]).indexOf(section) + 1;
+  const total = PAGE_ARENA_SECTIONS.length;
   const [state, action] = useActionState(saveArenaHomeSection, initial);
   const [popup, setPopup] = useState(false);
   const closePopup = useCallback(() => setPopup(false), []);
@@ -165,20 +161,16 @@ function LiveTiles({
 export function ArenaHomeDashboard({
   home,
   live,
-  showGuests = [],
-  showDomains = [],
 }: {
   home: ArenaHomeConfig;
   live: ArenaHomeLive;
-  showGuests?: { id: string; name: string; profession: string }[];
-  showDomains?: { id: string; name: string }[];
 }) {
   const [active, setActive] = useState<ArenaHomeSection>("hero");
 
   useEffect(() => {
     const fromHash = () => {
       const raw = window.location.hash.replace("#rubrique-", "");
-      if ((ARENA_HOME_SECTIONS as readonly string[]).includes(raw)) {
+      if ((PAGE_ARENA_SECTIONS as readonly string[]).includes(raw)) {
         setActive(raw as ArenaHomeSection);
       }
     };
@@ -196,7 +188,7 @@ export function ArenaHomeDashboard({
     <div className="space-y-5">
       <AdminTabs
         label="Rubriques de la page Arena"
-        items={ARENA_HOME_SECTIONS.map((id) => ({
+        items={PAGE_ARENA_SECTIONS.map((id) => ({
           id,
           label: ARENA_HOME_SECTION_META[id].label,
           hint: ARENA_HOME_SECTION_META[id].where,
@@ -246,150 +238,28 @@ export function ArenaHomeDashboard({
       </SectionForm>
       </div>
 
-      <div hidden={active !== "explore"}>
-      <SectionForm
-        section="explore"
-        kicker="Explorer"
-        title={home.explore.title}
-        hint="Les six portes de l’univers Arena. Titre, sous-titre et image de chaque carte. Les liens restent ceux du site."
-      >
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="admin-field">
-            <label>Sur-titre</label>
-            <input name="eyebrow" required defaultValue={home.explore.eyebrow} />
-          </div>
-          <div className="admin-field">
-            <label>Titre</label>
-            <input name="title" required defaultValue={home.explore.title} />
-          </div>
-        </div>
-        <div className="grid gap-4 lg:grid-cols-2">
-          {home.explore.items.map((item) => (
-            <div key={item.key} className="rounded-xl border border-white/10 p-3">
-              <p className="mb-3 text-xs uppercase tracking-wide text-[#9aa3b5]">{item.href}</p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="admin-field">
-                  <label>Titre</label>
-                  <input name={`item_${item.key}_title`} required defaultValue={item.title} />
-                </div>
-                <div className="admin-field">
-                  <label>Sous-titre</label>
-                  <input name={`item_${item.key}_subtitle`} required defaultValue={item.subtitle} />
-                </div>
-              </div>
-              <MediaField
-                name={`item_${item.key}_image`}
-                label="Image"
-                defaultValue={item.image}
-                folder="arena"
-              />
-            </div>
-          ))}
-        </div>
-      </SectionForm>
-      </div>
-
-      <div hidden={active !== "spotlight"} className="space-y-5">
-      <div className="admin-card space-y-4">
-        <div>
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#9aa3b5]">
-            En ligne maintenant
-          </p>
-          <h2 className="mt-1 font-[family-name:var(--font-syne)] text-xl font-bold">
-            Vidéo et prochain invité
-          </h2>
-          <p className="admin-page-hint mt-2 max-w-2xl">
-            Modifier change le contenu en place : l’ancienne pièce part aux archives. Supprimer
-            retire de l’accueil et envoie aussi aux archives. Le public ne peut rien effacer.
-          </p>
-        </div>
-        <div className="grid gap-3 lg:grid-cols-2">
-          {live.headline ? (
-            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3">
-              {live.headline.poster ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={live.headline.poster} alt="" className="h-16 w-12 rounded object-cover" />
-              ) : null}
-              <div className="min-w-0 flex-1">
-                <p className="text-xs uppercase tracking-wide text-amber-200">Vidéo / émission en première</p>
-                <p className="font-medium">{live.headline.guestName || live.headline.title}</p>
-                <p className="text-sm text-[#9aa3b5]">
-                  {live.headline.hasVideo
-                    ? "Visible en haut de l’accueil et Arena. Modifier ou supprimer envoie l’ancienne aux archives."
-                    : "En première, sans vidéo pour l’instant. Ajoutez un fichier ou un lien dans l’émission."}
-                </p>
-              </div>
-              <StatusBadge status={live.headline.status} />
-              <Link href={`/admin/arena/${live.headline.id}`} className="admin-btn admin-btn-primary text-xs">
-                Modifier
-              </Link>
-              <AdminConfirmForm
-                action={archiveArenaShow}
-                label="Supprimer"
-                title="Envoyer cette émission aux archives ?"
-                description="Elle quitte la première place. Le public la retrouvera dans Archives, jusqu’à ce que vous la retiriez définitivement."
-                confirmLabel="Oui, archiver"
-              >
-                <input type="hidden" name="id" value={live.headline.id} />
-                <input type="hidden" name="next" value="/admin/arena/archives" />
-              </AdminConfirmForm>
-            </div>
-          ) : (
-            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-              <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">Vidéo en première</p>
-              <p className="mt-1 text-sm text-[#eef1f6]">Aucune vidéo d’émission en première.</p>
-              <Link href="/admin/arena/new" className="admin-btn admin-btn-ghost mt-3 text-xs">
-                Ajouter une émission + vidéo
-              </Link>
-            </div>
-          )}
-          {live.announced ? (
-            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-white/15 bg-black/20 p-3">
-              {live.announced.poster ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={live.announced.poster} alt="" className="h-16 w-12 rounded object-cover" />
-              ) : null}
-              <div className="min-w-0 flex-1">
-                <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">Prochain invité (en dessous)</p>
-                <p className="font-medium">{live.announced.guestName || live.announced.title}</p>
-                <p className="text-sm text-[#9aa3b5]">
-                  Affiche sous la vidéo. Modifier ou supprimer envoie l’ancienne affiche aux archives.
-                </p>
-              </div>
-              <StatusBadge status={live.announced.status} />
-              <Link href="/admin/arena/prochain-invite" className="admin-btn admin-btn-primary text-xs">
-                Modifier
-              </Link>
-              <AdminConfirmForm
-                action={archiveArenaShow}
-                label="Supprimer"
-                title="Envoyer cette affiche aux archives ?"
-                description="Le prochain invité quitte l’accueil. L’affiche reste dans Archives jusqu’à suppression définitive."
-                confirmLabel="Oui, archiver"
-              >
-                <input type="hidden" name="id" value={live.announced.id} />
-                <input type="hidden" name="next" value="/admin/arena/archives" />
-              </AdminConfirmForm>
-            </div>
-          ) : (
-            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-              <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">Prochain invité</p>
-              <p className="mt-1 text-sm text-[#eef1f6]">
-                Aucune affiche : l’accueil affiche « {home.spotlight.emptyTitle} » sous la vidéo.
-              </p>
-              <Link href="/admin/arena/prochain-invite" className="admin-btn admin-btn-primary mt-3 text-xs">
-                Annoncer le prochain invité
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
+      <div hidden={active !== "spotlight"}>
       <SectionForm
         section="spotlight"
         kicker="À la une"
         title="Textes d’attente"
-        hint="Ces textes s’affichent seulement s’il n’y a aucune affiche de prochain invité. La vidéo et l’affiche se gèrent avec Modifier / Supprimer au-dessus."
+        hint="Ces textes s’affichent s’il n’y a pas encore d’affiche de prochain invité. La vidéo se gère dans Émissions, l’affiche dans Prochain invité."
       >
+        <input type="hidden" name="chipShows" value={home.spotlight.chipShows} />
+        <input type="hidden" name="chipVideos" value={home.spotlight.chipVideos} />
+        <input type="hidden" name="chipArchives" value={home.spotlight.chipArchives} />
+        <input type="hidden" name="chipCollab" value={home.spotlight.chipCollab} />
+        <p className="text-sm text-[#9aa3b5]">
+          Vidéo en cours : {live.headline?.guestName || live.headline?.title || "aucune"} ·{" "}
+          <Link href="/admin/arena/emissions" className="underline">
+            Émissions
+          </Link>
+          {" · "}
+          Prochain invité : {live.announced?.guestName || live.announced?.title || "non annoncé"} ·{" "}
+          <Link href="/admin/arena/prochain-invite" className="underline">
+            Prochain invité
+          </Link>
+        </p>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="admin-field">
             <label>Sur-titre (vide)</label>
@@ -410,22 +280,6 @@ export function ArenaHomeDashboard({
           <div className="admin-field">
             <label>Bouton secondaire</label>
             <input name="emptySecondary" required defaultValue={home.spotlight.emptySecondary} />
-          </div>
-          <div className="admin-field">
-            <label>Puce Émissions</label>
-            <input name="chipShows" required defaultValue={home.spotlight.chipShows} />
-          </div>
-          <div className="admin-field">
-            <label>Puce Vidéos</label>
-            <input name="chipVideos" required defaultValue={home.spotlight.chipVideos} />
-          </div>
-          <div className="admin-field">
-            <label>Puce Archives</label>
-            <input name="chipArchives" required defaultValue={home.spotlight.chipArchives} />
-          </div>
-          <div className="admin-field">
-            <label>Puce Collaborer</label>
-            <input name="chipCollab" required defaultValue={home.spotlight.chipCollab} />
           </div>
         </div>
       </SectionForm>
@@ -459,35 +313,6 @@ export function ArenaHomeDashboard({
           moreLabel="Gérer les invités"
         />
       </SectionForm>
-      </div>
-
-      <div hidden={active !== "shows"} className="space-y-5">
-      <ArenaShowForm guests={showGuests} domains={showDomains} />
-      <div className="admin-card space-y-4">
-        <div>
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#9aa3b5]">
-            En ligne maintenant
-          </p>
-          <h2 className="mt-1 font-[family-name:var(--font-syne)] text-xl font-bold">
-            Émissions publiées
-          </h2>
-          <p className="admin-page-hint mt-2 max-w-2xl">
-            Le formulaire ci-dessus publie tout de suite : nom de l’invité, domaine, vidéo et
-            miniature. Pas d’affiche, ni date, ni heure.
-          </p>
-        </div>
-        <LiveTiles
-          items={live.shows.map((show) => ({
-            href: `/admin/arena/${show.id}`,
-            title: show.title,
-            image: show.videoThumbnail || show.poster,
-            meta: "Ouvrir pour modifier",
-          }))}
-          empty="Aucune émission publiée. Créez-la avec le formulaire ci-dessus."
-          moreHref="/admin/arena/emissions"
-          moreLabel="Toutes les émissions"
-        />
-      </div>
       </div>
 
       <div hidden={active !== "posters"}>

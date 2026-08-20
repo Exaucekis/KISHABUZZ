@@ -5,6 +5,7 @@ import {
   ARENA_HOME_DEFAULTS,
   ARENA_HOME_SECTION_META,
   ARENA_HOME_SECTIONS,
+  PAGE_ARENA_SECTIONS,
   applyArenaHomeSection,
   collectReplacedImages,
   parseArenaHome,
@@ -50,6 +51,7 @@ assert.deepEqual([...ARENA_HOME_SECTIONS], [
   "memory",
 ]);
 assert.deepEqual([...ARENA_HOME_SECTIONS], Object.keys(ARENA_HOME_SECTION_META));
+assert.deepEqual([...PAGE_ARENA_SECTIONS], ["hero", "spotlight", "scene", "posters", "photos", "memory"]);
 assert.equal(ARENA_HOME_SECTION_META.hero.label, "Héro");
 assert.equal(ARENA_HOME_SECTION_META.memory.label, "Archives");
 
@@ -229,9 +231,9 @@ assert.equal(isAdminNavActive("/admin/arena/emissions", arenaNav), true);
 assert.equal(isAdminNavActive("/admin/arena/archives", arenaNav), true);
 assert.equal(isAdminNavActive("/admin/arena/new", arenaNav), true);
 assert.equal(isAdminNavActive("/admin/arena/show1", arenaNav), true);
-assert.equal(isAdminNavActive("/admin/arena/prochain-invite", arenaNav), false);
-assert.equal(isAdminNavActive("/admin/arena/guests", arenaNav), false);
-assert.equal(isAdminNavActive("/admin/arena/albums", arenaNav), false);
+assert.equal(isAdminNavActive("/admin/arena/prochain-invite", arenaNav), true);
+assert.equal(isAdminNavActive("/admin/arena/guests", arenaNav), true);
+assert.equal(isAdminNavActive("/admin/arena/albums", arenaNav), true);
 
 assert.equal(
   ARENA_EXPLORE_DEFAULTS.every((item) => item.href.startsWith("/arena-culture/")),
@@ -240,13 +242,15 @@ assert.equal(
 
 const publicArena = readFileSync("src/app/(site)/arena-culture/page.tsx", "utf8");
 assert.match(publicArena, /home\.hero\.line1/);
-assert.match(publicArena, /home\.explore\.items/);
+assert.doesNotMatch(publicArena, /home\.explore\.items/);
+assert.doesNotMatch(publicArena, /ArenaCalendarCard/);
 assert.match(publicArena, /await connection\(\)/);
 assert.match(publicArena, /getArenaStage/);
 assert.match(publicArena, /VideoEmbed/);
 const publicHome = readFileSync("src/app/(site)/page.tsx", "utf8");
 assert.match(publicHome, /arenaHome/);
-assert.match(publicHome, /arenaHome\.explore\.items/);
+assert.doesNotMatch(publicHome, /arenaHome\.explore\.items/);
 assert.match(publicHome, /arenaHome\.spotlight\.emptyLabel/);
+assert.match(publicHome, /\/arena-culture\/emissions/);
 
 console.log("arena home tests: ok");

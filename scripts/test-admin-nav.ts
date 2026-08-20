@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { ADMIN_NAV, adminNavTitle, isAdminNavActive } from "../src/lib/admin-nav";
+import { ADMIN_NAV, ARENA_ADMIN_LINKS, adminNavTitle, isAdminNavActive } from "../src/lib/admin-nav";
+import { ARENA_NAV, SITE_NAV, SITE_NAV_DESKTOP, SITE_NAV_WITH_ARENA } from "../src/lib/site-structure";
 import {
   matchesEventListView,
   parseEventEditTab,
@@ -47,5 +48,36 @@ assert.equal(matchesEventListView("DRAFT", "en-cours"), false);
 assert.equal(matchesEventListView("ENDED", "passes"), true);
 assert.equal(parseEventEditTab(undefined, "PUBLISHED"), "en-cours");
 assert.equal(parseEventEditTab(undefined, "DRAFT"), "fiche");
+
+assert.deepEqual(
+  SITE_NAV.map((item) => item.href),
+  ["/", "/evenements", "/a-propos", "/chroniques", "/publications", "/portfolio", "/collaborations", "/contact"]
+);
+assert.equal(
+  SITE_NAV_DESKTOP.some((item) => item.href === "/collaborations"),
+  false
+);
+assert.equal(
+  SITE_NAV_WITH_ARENA.map((item) => item.href).indexOf("/arena-culture"),
+  6
+);
+assert.deepEqual(
+  ARENA_NAV.map((item) => item.label),
+  ["Accueil", "Émissions", "Invités", "Affiches", "Photos", "Vidéos", "Archives"]
+);
+assert.deepEqual(
+  ARENA_ADMIN_LINKS.map((item) => item.label),
+  [
+    "Page Arena",
+    "Prochain invité",
+    "Émissions",
+    "Invités",
+    "Photos",
+    "Vidéos",
+    "Archives",
+    "Saisons",
+    "Alertes",
+  ]
+);
 
 console.log("admin nav tests: ok");

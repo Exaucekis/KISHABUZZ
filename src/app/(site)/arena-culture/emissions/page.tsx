@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ArenaPageIntro } from "@/components/arena/ArenaPageIntro";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
-import { getArenaStage, getPublishedShows } from "@/lib/data";
+import { getArenaStage } from "@/lib/data";
 import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { arenaShowVideo, videoPoster } from "@/lib/media";
 
@@ -14,11 +14,8 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ArenaEmissionsPage() {
-  const [shows, stage] = await Promise.all([getPublishedShows(), getArenaStage()]);
-  const featured =
-    (stage.headline && arenaShowVideo(stage.headline) ? stage.headline : null) ||
-    shows.find((show) => arenaShowVideo(show) && show.id !== stage.headline?.id) ||
-    null;
+  const stage = await getArenaStage();
+  const featured = stage.headline && arenaShowVideo(stage.headline) ? stage.headline : null;
   const guest = featured ? arenaSpotlightGuest(featured) : null;
   const video = featured ? arenaShowVideo(featured) : "";
   const domain = featured?.theme || guest?.profession || "";
