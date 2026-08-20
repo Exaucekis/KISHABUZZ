@@ -18,7 +18,6 @@ import {
   getUpcomingArenaDates,
 } from "@/lib/data";
 import { arenaShowCover, arenaSpotlightGuest } from "@/lib/arena-spotlight";
-import { PLACEHOLDER_IMAGE } from "@/lib/placeholders";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -54,7 +53,7 @@ export default async function ArenaCulturePage() {
       href: `/arena-culture/emissions/${s.slug}`,
       title: arenaSpotlightGuest(s)?.name || s.title,
       subtitle: s.theme || `Épisode ${String(s.number).padStart(2, "0")}`,
-      image: arenaShowCover(s) || PLACEHOLDER_IMAGE,
+      image: arenaShowCover(s) || "/artists/fally-ipupa.jpg",
     }));
 
   const currentShows = shows.filter((s) => s.id !== headline?.id && s.id !== spotlight?.id);
@@ -62,7 +61,7 @@ export default async function ArenaCulturePage() {
     href: `/arena-culture/emissions/${s.slug}`,
     title: arenaSpotlightGuest(s)?.name || s.title,
     subtitle: s.theme || arenaSpotlightGuest(s)?.profession || `Épisode ${String(s.number).padStart(2, "0")}`,
-    image: arenaShowCover(s) || PLACEHOLDER_IMAGE,
+    image: arenaShowCover(s) || "/artists/fally-ipupa.jpg",
   }));
 
   const posterTiles =
@@ -81,13 +80,13 @@ export default async function ArenaCulturePage() {
 
   const photoTiles = albums.slice(0, 6).map((album) => ({
     title: album.guestName || album.title,
-    image: album.coverImage || album.photos[0]?.url || PLACEHOLDER_IMAGE,
+    image: album.coverImage || album.photos[0]?.url || "/arena/albums/invitee-plateau/01-invitee.jpg",
     href: `/arena-culture/albums/${album.slug}`,
   }));
 
   const sceneTiles = featuredGuests.map((guest) => ({
     title: guest.name,
-    image: guest.photo || home.hero.poster || PLACEHOLDER_IMAGE,
+    image: guest.photo || home.hero.poster || "/artists/gaz-mawete.jpg",
     href: `/arena-culture/invites/${guest.slug}`,
   }));
   const heroPoster =
@@ -158,7 +157,7 @@ export default async function ArenaCulturePage() {
               src={
                 spotlight?.poster ||
                 guest?.photo ||
-                PLACEHOLDER_IMAGE
+                "/arena/albums/invitee-plateau/01-invitee.jpg"
               }
               alt={guest?.name || spotlight?.title || "Invité Arena Culture"}
               loading="lazy"

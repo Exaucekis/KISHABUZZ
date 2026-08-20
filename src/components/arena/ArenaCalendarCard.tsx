@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { arenaShowPlace, arenaTicketCta, type ArenaCalendarEvent } from "@/lib/arena-calendar";
-import { PLACEHOLDER_IMAGE } from "@/lib/placeholders";
 import { formatDate } from "@/lib/utils";
 
 type Show = {
@@ -45,7 +44,7 @@ export function ArenaCalendarCard({ show }: { show: Show }) {
       </div>
       <div className="ac-cal-card__media">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={show.poster || PLACEHOLDER_IMAGE} alt="" loading="lazy" />
+        <img src={show.poster || "/artists/fally-ipupa.jpg"} alt="" loading="lazy" />
       </div>
       <div className="ac-cal-card__body">
         <p className="ac-kicker">

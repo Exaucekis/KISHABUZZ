@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { PLACEHOLDER_IMAGE } from "@/lib/placeholders";
-
-const BACKGROUNDS = [PLACEHOLDER_IMAGE];
+const BACKGROUNDS = [
+  "/arena/albums/invitee-plateau/02-plateau.jpg",
+  "/arena/albums/invitee-plateau/01-invitee.jpg",
+  "/arena/albums/invitee-plateau/03-plateau-wide.jpg",
+  "/arena/albums/invitee-plateau/04-animateur.jpg",
+];
 
 type Props = {
   description: string;

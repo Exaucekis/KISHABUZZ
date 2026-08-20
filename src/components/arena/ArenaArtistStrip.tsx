@@ -1,17 +1,16 @@
 "use client";
 
 import { useMemo } from "react";
-import { PLACEHOLDER_IMAGE } from "@/lib/placeholders";
 
 const ARTISTS = [
-  { name: "Gaz Mawete", image: PLACEHOLDER_IMAGE },
-  { name: "Fally Ipupa", image: PLACEHOLDER_IMAGE },
-  { name: "Innoss'B", image: PLACEHOLDER_IMAGE },
-  { name: "Koffi Olomidé", image: PLACEHOLDER_IMAGE },
-  { name: "Ferré Gola", image: PLACEHOLDER_IMAGE },
-  { name: "Dadju", image: PLACEHOLDER_IMAGE },
-  { name: "Damso", image: PLACEHOLDER_IMAGE },
-  { name: "Werrason", image: PLACEHOLDER_IMAGE },
+  { name: "Gaz Mawete", image: "/artists/gaz-mawete.jpg" },
+  { name: "Fally Ipupa", image: "/artists/fally-ipupa.jpg" },
+  { name: "Innoss'B", image: "/artists/innoss-b.png" },
+  { name: "Koffi Olomidé", image: "/artists/koffi-olomide.jpg" },
+  { name: "Ferré Gola", image: "/artists/ferre-gola.jpg" },
+  { name: "Dadju", image: "/artists/dadju.jpg" },
+  { name: "Damso", image: "/artists/damso.jpg" },
+  { name: "Werrason", image: "/artists/werrason.jpg" },
 ];
 
 export function ArenaArtistStrip() {

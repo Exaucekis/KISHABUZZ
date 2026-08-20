@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ArenaPageIntro } from "@/components/arena/ArenaPageIntro";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getArenaPhotoAlbums } from "@/lib/data";
-import { PLACEHOLDER_IMAGE } from "@/lib/placeholders";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -36,7 +35,9 @@ export default async function ArenaPhotosPage() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={
-                      album.coverImage || album.photos[0]?.url || PLACEHOLDER_IMAGE
+                      album.coverImage ||
+                      album.photos[0]?.url ||
+                      "/arena/albums/invitee-plateau/01-invitee.jpg"
                     }
                     alt=""
                     loading="lazy"

@@ -1,5 +1,3 @@
-import { PLACEHOLDER_IMAGE, publicImageSrc } from "@/lib/placeholders";
-
 export const ARENA_HOME_KEY = "arena.home";
 
 export type ArenaExploreItem = {
@@ -54,42 +52,42 @@ export const ARENA_EXPLORE_DEFAULTS: ArenaExploreItem[] = [
     href: "/arena-culture/emissions",
     title: "Émissions",
     subtitle: "Épisodes & replays",
-    image: PLACEHOLDER_IMAGE,
+    image: "/artists/fally-ipupa.jpg",
   },
   {
     key: "invites",
     href: "/arena-culture/invites",
     title: "Invités",
     subtitle: "Talents & voix",
-    image: PLACEHOLDER_IMAGE,
+    image: "/artists/gaz-mawete.jpg",
   },
   {
     key: "affiches",
     href: "/arena-culture/affiches",
     title: "Affiches",
     subtitle: "Visuels officiels",
-    image: PLACEHOLDER_IMAGE,
+    image: "/artists/koffi-olomide.jpg",
   },
   {
     key: "photos",
     href: "/arena-culture/photos",
     title: "Photos",
     subtitle: "Plateaux & coulisses",
-    image: PLACEHOLDER_IMAGE,
+    image: "/artists/ferre-gola.jpg",
   },
   {
     key: "videos",
     href: "/arena-culture/videos",
     title: "Vidéos",
     subtitle: "Extraits",
-    image: PLACEHOLDER_IMAGE,
+    image: "/artists/innoss-b.png",
   },
   {
     key: "archives",
     href: "/arena-culture/archives",
     title: "Archives",
     subtitle: "Saisons passées",
-    image: PLACEHOLDER_IMAGE,
+    image: "/artists/damso.jpg",
   },
 ];
 
@@ -197,7 +195,7 @@ function mergeExplore(raw: unknown): ArenaExploreItem[] {
       href: item.href,
       title: text(row.title, item.title),
       subtitle: text(row.subtitle, item.subtitle),
-      image: publicImageSrc(row.image, item.image),
+      image: text(row.image, item.image),
     };
   });
 }

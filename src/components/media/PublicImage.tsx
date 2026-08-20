@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { publicImageSrc } from "@/lib/placeholders";
 
 type Props = {
   src: string;
@@ -11,7 +10,6 @@ type Props = {
 };
 
 export function PublicImage({ src, alt, className, fill, sizes, priority }: Props) {
-  src = publicImageSrc(src);
   const remote = /^https?:\/\//i.test(src);
   if (remote) {
     return (

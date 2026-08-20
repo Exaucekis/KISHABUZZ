@@ -1,5 +1,3 @@
-import { publicImageSrc } from "@/lib/placeholders";
-
 export type SpotlightArtistCard = {
   id?: string;
   name: string;
@@ -15,7 +13,7 @@ export function toSpotlightArtistCards(
       id: row.id,
       name: row.name.trim(),
       role: (row.role || "").trim() || "Artiste",
-      image: publicImageSrc(row.image),
+      image: (row.image || "").trim(),
     }))
-    .filter((row) => row.name);
+    .filter((row) => row.name && row.image);
 }
