@@ -6,6 +6,7 @@ import Link from "next/link";
 import { saveEvent } from "@/actions/admin/events";
 import { MediaField } from "@/components/admin/MediaField";
 import { AdminHint } from "@/components/admin/AdminHint";
+import { SaveResultDialog, SaveResultFromState } from "@/components/admin/SaveResultDialog";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 import { eventCapacityError, sumTicketQuantities } from "@/lib/event-capacity";
@@ -167,14 +168,17 @@ export function EventForm({
   organizers = [],
   currentUserId,
   notice,
+  saved = false,
 }: {
   event?: EventValue;
   categories: Category[];
   organizers?: Organizer[];
   currentUserId?: string;
   notice?: string;
+  saved?: boolean;
 }) {
   const [state, action] = useActionState(saveEvent, initial);
+  const [savedOpen, setSavedOpen] = useState(saved);
   const [types, setTypes] = useState<TicketType[]>(
     event?.ticketTypes.length ? event.ticketTypes : [emptyType()]
   );
@@ -722,11 +726,17 @@ export function EventForm({
       {notice && !state.message ? (
         <p className="mt-4 text-sm text-red-300">{notice}</p>
       ) : null}
-      {state.message ? (
-        <p className={`mt-4 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>
-          {state.message}
-        </p>
+      {state.message && !state.ok ? (
+        <p className="mt-4 text-sm text-red-300">{state.message}</p>
       ) : null}
+      <SaveResultFromState state={state} titleOk="Événement enregistré" />
+      <SaveResultDialog
+        open={savedOpen}
+        ok
+        title="Événement enregistré"
+        description="L’événement est à jour sur le site."
+        onClose={() => setSavedOpen(false)}
+      />
       {publishError && !state.message ? (
         <p className="mt-4 text-sm text-red-300">{publishError}</p>
       ) : null}

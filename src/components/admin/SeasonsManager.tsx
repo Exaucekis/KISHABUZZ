@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { deleteArenaSeason, saveArenaSeason } from "@/actions/admin/arena";
 import { AdminHint } from "@/components/admin/AdminHint";
+import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -48,11 +49,10 @@ function SeasonForm({ season }: { season?: Season }) {
           <AdminHint>Présentation courte de la saison (optionnel).</AdminHint>
         </div>
       </div>
-      {state.message ? (
-        <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>
-          {state.message}
-        </p>
+      {state.message && !state.ok ? (
+        <p className="mb-2 text-sm text-red-300">{state.message}</p>
       ) : null}
+      <SaveResultFromState state={state} titleOk="Saison enregistrée" />
       <SubmitButton>{season ? "Mettre à jour" : "Créer"}</SubmitButton>
     </form>
   );

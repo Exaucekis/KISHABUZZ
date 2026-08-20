@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { deleteDomain, reorderDomains, saveDomain } from "@/actions/admin/domains";
 import { MediaField } from "@/components/admin/MediaField";
 import { AdminHint } from "@/components/admin/AdminHint";
+import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
 import { SortableOrderList } from "@/components/admin/SortableOrderList";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
@@ -53,11 +54,10 @@ function DomainForm({ domain }: { domain?: Domain }) {
           <AdminHint>Décochez pour retirer le domaine du site, sans le supprimer.</AdminHint>
         </div>
       </div>
-      {state.message ? (
-        <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>
-          {state.message}
-        </p>
+      {state.message && !state.ok ? (
+        <p className="mb-2 text-sm text-red-300">{state.message}</p>
       ) : null}
+      <SaveResultFromState state={state} titleOk="Domaine enregistré" />
       <SubmitButton>{domain ? "Mettre à jour" : "Créer"}</SubmitButton>
     </form>
   );

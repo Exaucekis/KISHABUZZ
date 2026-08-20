@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { deleteMedia, saveMedia } from "@/actions/admin/media";
 import { MediaField } from "@/components/admin/MediaField";
 import { AdminHint } from "@/components/admin/AdminHint";
+import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 import { galleryCategoryLabel } from "@/lib/utils";
@@ -98,11 +99,10 @@ function MediaForm({ media }: { media?: Media }) {
           <AdminHint>Décochez pour garder le fichier sans l’afficher au public.</AdminHint>
         </div>
       </div>
-      {state.message ? (
-        <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>
-          {state.message}
-        </p>
+      {state.message && !state.ok ? (
+        <p className="mb-2 text-sm text-red-300">{state.message}</p>
       ) : null}
+      <SaveResultFromState state={state} titleOk="Média enregistré" />
       <SubmitButton>{media ? "Mettre à jour" : "Ajouter"}</SubmitButton>
     </form>
   );

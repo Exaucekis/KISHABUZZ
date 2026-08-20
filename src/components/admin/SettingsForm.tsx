@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { saveSettings } from "@/actions/admin/settings";
 import { AdminHint } from "@/components/admin/AdminHint";
 import { MediaField } from "@/components/admin/MediaField";
+import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -137,11 +138,10 @@ export function SettingsForm({ settings }: { settings: Settings }) {
           <AdminHint>Affiche un bouton WhatsApp (utilise le téléphone ci-dessus).</AdminHint>
         </div>
       </div>
-      {state.message ? (
-        <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>
-          {state.message}
-        </p>
+      {state.message && !state.ok ? (
+        <p className="mb-2 text-sm text-red-300">{state.message}</p>
       ) : null}
+      <SaveResultFromState state={state} titleOk="Paramètres en ligne" />
       <SubmitButton>Enregistrer les paramètres</SubmitButton>
     </form>
   );

@@ -78,6 +78,7 @@ export default async function EditEventPage({ params, searchParams }: Props) {
   const form = (
     <EventForm
       notice={notice}
+      saved={saved === "1"}
       event={{
         id: event.id,
         title: event.title,

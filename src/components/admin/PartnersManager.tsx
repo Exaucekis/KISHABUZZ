@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { deletePartner, savePartner } from "@/actions/admin/partners";
 import { MediaField } from "@/components/admin/MediaField";
 import { AdminHint } from "@/components/admin/AdminHint";
+import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -68,11 +69,10 @@ function PartnerForm({ partner }: { partner?: Partner }) {
           <AdminHint>Décochez pour retirer le partenaire de la page publique.</AdminHint>
         </div>
       </div>
-      {state.message ? (
-        <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>
-          {state.message}
-        </p>
+      {state.message && !state.ok ? (
+        <p className="mb-2 text-sm text-red-300">{state.message}</p>
       ) : null}
+      <SaveResultFromState state={state} titleOk="Partenaire enregistré" />
       <SubmitButton>{partner ? "Mettre à jour" : "Créer"}</SubmitButton>
     </form>
   );

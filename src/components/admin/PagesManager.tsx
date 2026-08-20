@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { deletePageContent, savePageContent } from "@/actions/admin/pages";
 import { AdminHint } from "@/components/admin/AdminHint";
+import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -35,11 +36,10 @@ function PageForm({ page }: { page?: Page }) {
         <textarea name="body" className="min-h-[12rem]" defaultValue={page?.body || ""} />
         <AdminHint>Texte de la section. Remplace le texte par défaut du site.</AdminHint>
       </div>
-      {state.message ? (
-        <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>
-          {state.message}
-        </p>
+      {state.message && !state.ok ? (
+        <p className="mb-2 text-sm text-red-300">{state.message}</p>
       ) : null}
+      <SaveResultFromState state={state} titleOk="Page enregistrée" />
       <SubmitButton>{page ? "Mettre à jour" : "Créer"}</SubmitButton>
     </form>
   );

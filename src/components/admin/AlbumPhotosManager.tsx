@@ -9,6 +9,7 @@ import {
 } from "@/actions/admin/albums";
 import { MediaField } from "@/components/admin/MediaField";
 import { AdminHint } from "@/components/admin/AdminHint";
+import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -73,11 +74,10 @@ export function AlbumPhotosManager({ album }: { album: Album }) {
             <AdminHint>Détail optionnel (lieu, moment, personnes).</AdminHint>
           </div>
         </div>
-        {state.message ? (
-          <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>
-            {state.message}
-          </p>
+        {state.message && !state.ok ? (
+          <p className="mb-2 text-sm text-red-300">{state.message}</p>
         ) : null}
+        <SaveResultFromState state={state} titleOk="Photo ajoutée" />
         <SubmitButton>Ajouter la photo</SubmitButton>
       </form>
 

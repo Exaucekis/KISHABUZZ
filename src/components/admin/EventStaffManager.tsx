@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { addEventStaff, removeEventStaff } from "@/actions/admin/event-staff";
 import { SubmitButton } from "@/components/admin/SubmitButton";
+import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
 import type { AdminActionState } from "@/lib/admin";
 
 type StaffRow = {
@@ -46,9 +47,10 @@ export function EventStaffManager({ eventId, staff }: { eventId: string; staff: 
           <SubmitButton>Ajouter</SubmitButton>
         </div>
       </form>
-      {state.message ? (
-        <p className={`mt-3 text-sm ${state.ok ? "text-emerald-300" : "text-red-400"}`}>{state.message}</p>
+      {state.message && !state.ok ? (
+        <p className="mt-3 text-sm text-red-400">{state.message}</p>
       ) : null}
+      <SaveResultFromState state={state} titleOk="Contrôleur ajouté" />
 
       {staff.length ? (
         <ul className="mt-5 divide-y divide-white/10">

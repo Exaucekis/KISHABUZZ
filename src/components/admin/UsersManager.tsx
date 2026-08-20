@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { deleteUser, saveUser } from "@/actions/admin/users";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import { AdminHint } from "@/components/admin/AdminHint";
+import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
 import { EmailInput } from "@/components/auth/EmailInput";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { ROLE_LABELS, ROLES, type Role } from "@/lib/roles";
@@ -60,9 +61,10 @@ export function UsersManager({
             <AdminHint>USER = compte simple. AUTHOR/EDITOR/ADMIN = accès CMS. SUPERADMIN = tout.</AdminHint>
           </div>
         </div>
-        {state.message ? (
-          <p className={`text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>{state.message}</p>
+        {state.message && !state.ok ? (
+          <p className="text-sm text-red-300">{state.message}</p>
         ) : null}
+        <SaveResultFromState state={state} titleOk="Utilisateur enregistré" />
         <SubmitButton>Créer l&apos;utilisateur</SubmitButton>
       </form>
 

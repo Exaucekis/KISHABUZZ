@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { sendNewsletterCampaign } from "@/actions/admin/newsletter";
 import { AdminHint } from "@/components/admin/AdminHint";
+import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -111,11 +112,10 @@ export function NewsletterCompose({
         </label>
       </div>
 
-      {state.message ? (
-        <p className={`mb-3 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>
-          {state.message}
-        </p>
+      {state.message && !state.ok ? (
+        <p className="mb-3 text-sm text-red-300">{state.message}</p>
       ) : null}
+      <SaveResultFromState state={state} titleOk="Campagne envoyée" titleErr="Envoi impossible" />
 
       <SubmitButton pendingLabel="Envoi…" disabled={!mailerReady}>
         Envoyer

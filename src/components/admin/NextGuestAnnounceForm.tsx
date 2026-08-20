@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { announceNextGuest } from "@/actions/admin/arena";
 import { AdminHint } from "@/components/admin/AdminHint";
 import { MediaField } from "@/components/admin/MediaField";
+import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
@@ -38,10 +39,6 @@ export function NextGuestAnnounceForm({
 }) {
   const router = useRouter();
   const [state, action] = useActionState(announceNextGuest, initial);
-
-  useEffect(() => {
-    if (state.ok) router.refresh();
-  }, [state, router]);
 
   const selectedGuestId = current?.guestId || guests[0]?.id || "";
 
@@ -126,9 +123,15 @@ export function NextGuestAnnounceForm({
             />
           </div>
         </div>
-        {state.message ? (
-          <p className={`text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>{state.message}</p>
+        {state.message && !state.ok ? (
+          <p className="text-sm text-red-300">{state.message}</p>
         ) : null}
+        <SaveResultFromState
+          state={state}
+          titleOk="Prochain invité en ligne"
+          titleErr="Annonce impossible"
+          onOk={() => router.refresh()}
+        />
         <div className="flex flex-wrap gap-2">
           {current ? (
             <SubmitButton name="mode" value="update">

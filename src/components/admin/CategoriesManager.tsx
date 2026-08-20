@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { deleteCategory, saveCategory } from "@/actions/admin/categories";
 import { AdminHint } from "@/components/admin/AdminHint";
+import { SaveResultFromState } from "@/components/admin/SaveResultDialog";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -40,11 +41,10 @@ function CategoryForm({ category }: { category?: Category }) {
         <textarea name="description" defaultValue={category?.description || ""} />
         <AdminHint>Optionnel. Aide en interne, rarement affiché.</AdminHint>
       </div>
-      {state.message ? (
-        <p className={`mb-2 text-sm ${state.ok ? "text-emerald-300" : "text-red-300"}`}>
-          {state.message}
-        </p>
+      {state.message && !state.ok ? (
+        <p className="mb-2 text-sm text-red-300">{state.message}</p>
       ) : null}
+      <SaveResultFromState state={state} titleOk="Catégorie enregistrée" />
       <SubmitButton>{category ? "Mettre à jour" : "Créer"}</SubmitButton>
     </form>
   );

@@ -2460,7 +2460,7 @@ html[data-theme="light"] .auth-feature-item {
 
 .confirm-dialog-panel {
   position: relative;
-  z-index: 1;
+  z-index: 3;
   width: min(100%, 22rem);
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--line) 90%, transparent);
@@ -2601,9 +2601,124 @@ html[data-theme="light"] .auth-feature-item {
   }
 }
 
+.confirm-dialog-panel--party {
+  animation: confirm-dialog-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+    confirm-dialog-pop 0.7s 0.12s ease-out;
+  border-color: color-mix(in srgb, #f59e0b 45%, var(--line));
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.45),
+    0 0 40px rgba(245, 158, 11, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+@keyframes confirm-dialog-pop {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.035);
+  }
+}
+
+.confirm-party {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confirm-party__piece {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: var(--s);
+  height: var(--s);
+  background: var(--c);
+  animation-delay: var(--d);
+  animation-fill-mode: forwards;
+  animation-timing-function: cubic-bezier(0.12, 0.7, 0.2, 1);
+}
+
+.confirm-party__piece--burst {
+  animation-name: confirm-party-burst;
+  animation-duration: 1.55s;
+}
+
+.confirm-party__piece--fall {
+  top: -8%;
+  animation-name: confirm-party-fall;
+  animation-duration: 2.4s;
+}
+
+.confirm-party__piece--star {
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--c) 70%, transparent);
+}
+
+.confirm-party__piece--spark {
+  border-radius: 1px;
+  transform-origin: center;
+}
+
+.confirm-party__piece--balloon {
+  width: calc(var(--s) * 1.15);
+  height: calc(var(--s) * 1.45);
+  border-radius: 50% 50% 50% 50% / 42% 42% 58% 58%;
+  box-shadow: inset -3px -4px 0 rgba(0, 0, 0, 0.12), 0 0 10px color-mix(in srgb, var(--c) 40%, transparent);
+}
+
+.confirm-party__piece--balloon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 1px;
+  height: 14px;
+  background: color-mix(in srgb, var(--c) 55%, #fff);
+  transform: translateX(-50%);
+}
+
+@keyframes confirm-party-burst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.15) rotate(0deg);
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1) rotate(var(--r));
+  }
+}
+
+@keyframes confirm-party-fall {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(0.4) rotate(0deg);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--x)), var(--y)) scale(1) rotate(var(--r));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .confirm-dialog-panel {
     animation: none;
+  }
+
+  .confirm-dialog-panel--party {
+    animation: none;
+  }
+
+  .confirm-party {
+    display: none;
   }
 
   .confirm-dialog-btn--primary:hover:not(:disabled),
