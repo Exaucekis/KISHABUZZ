@@ -35,6 +35,10 @@ assert.equal(adminNavTitle("/admin/arena/videos"), "Vidéos Arena");
 assert.equal(adminNavTitle("/admin/evenements"), "Événements");
 assert.equal(adminNavTitle("/admin/evenements/new"), "Événements");
 assert.equal(adminNavTitle("/admin/newsletter"), "Newsletter");
+assert.equal(
+  ADMIN_NAV.every((item) => Boolean(item.group)),
+  true
+);
 
 assert.equal(parseEventListView(undefined), "en-cours");
 assert.equal(parseEventListView("brouillons"), "brouillons");

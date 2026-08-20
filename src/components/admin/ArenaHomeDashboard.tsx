@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { saveArenaHomeSection } from "@/actions/admin/arena-home";
 import { AdminHint } from "@/components/admin/AdminHint";
+import { AdminTabs } from "@/components/admin/AdminTabs";
 import { MediaField } from "@/components/admin/MediaField";
 import { SaveResultDialog } from "@/components/admin/SaveResultDialog";
 import { StatusBadge } from "@/components/admin/StatusBadge";
@@ -63,22 +64,16 @@ function SectionForm({
   return (
     <form action={action} id={`rubrique-${section}`} className="admin-card scroll-mt-24 space-y-4">
       <input type="hidden" name="section" value={section} />
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="admin-rubric-head">
         <div>
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#9aa3b5]">
             Rubrique {String(index).padStart(2, "0")} / {String(total).padStart(2, "0")} · {kicker}
           </p>
           <h2 className="mt-1 font-[family-name:var(--font-syne)] text-xl font-bold">{title}</h2>
-          <p className="mt-2 inline-flex rounded-full border border-amber-400/35 bg-amber-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-200">
-            Tu enregistres la rubrique {meta.label}
-          </p>
           <p className="admin-page-hint mt-2 max-w-2xl">
-            {hint} Seule cette rubrique est enregistrée — les autres ne bougent pas.
+            {hint} Le bouton ci-dessous n’enregistre que « {meta.label} ».
           </p>
         </div>
-        <SubmitButton pendingLabel={`Enregistrement de ${meta.label}…`}>
-          Enregistrer · {meta.label}
-        </SubmitButton>
       </div>
       {children}
       {state.message ? (
@@ -92,6 +87,14 @@ function SectionForm({
           {state.ok ? `Rubrique « ${meta.label} » enregistrée.` : state.message}
         </p>
       ) : null}
+      <div className="admin-rubric-foot">
+        <SubmitButton pendingLabel={`Enregistrement de ${meta.label}…`}>
+          Enregistrer « {meta.label} »
+        </SubmitButton>
+        <p className="admin-action-hint">
+          Visible sur {meta.where}. Les autres rubriques ne changent pas.
+        </p>
+      </div>
       <SaveResultDialog
         open={popup && Boolean(state.message)}
         ok={state.ok}
@@ -149,25 +152,39 @@ function LiveTiles({
 }
 
 export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live: ArenaHomeLive }) {
+  const [active, setActive] = useState<ArenaHomeSection>("hero");
+
+  useEffect(() => {
+    const fromHash = () => {
+      const raw = window.location.hash.replace("#rubrique-", "");
+      if ((ARENA_HOME_SECTIONS as readonly string[]).includes(raw)) {
+        setActive(raw as ArenaHomeSection);
+      }
+    };
+    fromHash();
+    window.addEventListener("hashchange", fromHash);
+    return () => window.removeEventListener("hashchange", fromHash);
+  }, []);
+
+  function openSection(section: ArenaHomeSection) {
+    setActive(section);
+    window.history.replaceState(null, "", `#rubrique-${section}`);
+  }
+
   return (
     <div className="space-y-5">
-      <nav className="flex flex-wrap gap-2">
-        {[
-          ["hero", "Héro"],
-          ["explore", "Univers"],
-          ["spotlight", "À la une"],
-          ["scene", "Scène"],
-          ["shows", "Émissions"],
-          ["posters", "Affiches"],
-          ["photos", "Photos"],
-          ["memory", "Archives"],
-        ].map(([id, label]) => (
-          <a key={id} href={`#rubrique-${id}`} className="admin-btn admin-btn-ghost text-xs">
-            {label}
-          </a>
-        ))}
-      </nav>
+      <AdminTabs
+        label="Rubriques de la page Arena"
+        items={ARENA_HOME_SECTIONS.map((id) => ({
+          id,
+          label: ARENA_HOME_SECTION_META[id].label,
+          hint: ARENA_HOME_SECTION_META[id].where,
+          active: active === id,
+          onSelect: () => openSection(id),
+        }))}
+      />
 
+      <div hidden={active !== "hero"}>
       <SectionForm
         section="hero"
         kicker="Culture. Émissions. Live."
@@ -206,7 +223,9 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
           hint="Sans visuel, le héro tourne sur les images de plateau. Remplacer archive l’ancien."
         />
       </SectionForm>
+      </div>
 
+      <div hidden={active !== "explore"}>
       <SectionForm
         section="explore"
         kicker="Explorer"
@@ -247,7 +266,9 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
           ))}
         </div>
       </SectionForm>
+      </div>
 
+      <div hidden={active !== "spotlight"}>
       <SectionForm
         section="spotlight"
         kicker="À la une"
@@ -318,7 +339,9 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
           </p>
         )}
       </SectionForm>
+      </div>
 
+      <div hidden={active !== "scene"}>
       <SectionForm
         section="scene"
         kicker={home.scene.eyebrow}
@@ -346,7 +369,9 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
           moreLabel="Gérer les invités"
         />
       </SectionForm>
+      </div>
 
+      <div hidden={active !== "shows"}>
       <SectionForm
         section="shows"
         kicker={home.shows.eyebrow}
@@ -375,7 +400,9 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
           moreLabel="Toutes les émissions"
         />
       </SectionForm>
+      </div>
 
+      <div hidden={active !== "posters"}>
       <SectionForm
         section="posters"
         kicker={home.posters.eyebrow}
@@ -405,7 +432,9 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
           moreLabel="Éditer les affiches"
         />
       </SectionForm>
+      </div>
 
+      <div hidden={active !== "photos"}>
       <SectionForm
         section="photos"
         kicker={home.photos.eyebrow}
@@ -433,7 +462,9 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
           moreLabel="Gérer les albums"
         />
       </SectionForm>
+      </div>
 
+      <div hidden={active !== "memory"}>
       <SectionForm
         section="memory"
         kicker={home.memory.eyebrow}
@@ -471,6 +502,7 @@ export function ArenaHomeDashboard({ home, live }: { home: ArenaHomeConfig; live
           </Link>
         </p>
       </SectionForm>
+      </div>
     </div>
   );
 }

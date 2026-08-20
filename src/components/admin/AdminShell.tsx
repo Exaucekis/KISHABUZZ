@@ -7,7 +7,7 @@ import { signOut } from "next-auth/react";
 import { Menu, X } from "lucide-react";
 import { AdminNoticeMenu, type AdminNoticeDto } from "@/components/admin/AdminNoticeMenu";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { ADMIN_NAV, adminNavTitle, isAdminNavActive } from "@/lib/admin-nav";
+import { ADMIN_NAV, ADMIN_NAV_GROUPS, adminNavTitle, isAdminNavActive } from "@/lib/admin-nav";
 import { canManageUsers, roleLabel } from "@/lib/roles";
 
 export function AdminShell({
@@ -125,20 +125,31 @@ function AdminSidebar({
         </div>
         <AdminNoticeMenu notices={notices} />
       </div>
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3" aria-label="Navigation admin">
-        {ADMIN_NAV.filter((item) => !item.superadmin || canManageUsers(role)).map((item) => {
-          const active = isAdminNavActive(pathname, item);
+      <nav className="flex-1 space-y-3 overflow-y-auto px-2 py-3" aria-label="Navigation admin">
+        {ADMIN_NAV_GROUPS.map((group) => {
+          const items = ADMIN_NAV.filter(
+            (item) => item.group === group.id && (!item.superadmin || canManageUsers(role))
+          );
+          if (!items.length) return null;
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={`block rounded-md px-3 py-2.5 text-sm transition ${
-                active ? "bg-white/10 text-white" : "text-[#aeb6c5] hover:bg-white/5 hover:text-white"
-              }`}
-            >
-              {item.label}
-            </Link>
+            <div key={group.id} className="admin-nav-group">
+              <p className="admin-nav-group-label">{group.label}</p>
+              {items.map((item) => {
+                const active = isAdminNavActive(pathname, item);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onNavigate}
+                    className={`block rounded-md px-3 py-2 text-sm transition ${
+                      active ? "bg-white/10 text-white" : "text-[#aeb6c5] hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
           );
         })}
       </nav>

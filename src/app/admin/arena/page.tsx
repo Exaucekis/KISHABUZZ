@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArenaAdminNav } from "@/components/admin/ArenaAdminNav";
 import { ArenaHomeDashboard } from "@/components/admin/ArenaHomeDashboard";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
@@ -36,18 +35,22 @@ export default async function AdminArenaDashboardPage() {
   return (
     <div>
       <AdminPageIntro
-        title="Tableau de bord Arena Culture"
-        hint="Chaque rubrique s’affiche sur /arena-culture et sur le bloc Arena de l’accueil. Un visuel remplacé part aux archives. Après Enregistrer, recharge la page publique."
-        actions={
-          <>
-            <Link href="/arena-culture" className="admin-btn admin-btn-ghost" target="_blank" rel="noreferrer">
-              Voir la page
-            </Link>
-            <Link href="/admin/arena/new" className="admin-btn admin-btn-primary">
-              Nouvelle émission
-            </Link>
-          </>
-        }
+        title="Page Arena Culture"
+        hint="Un onglet = une rubrique de /arena-culture. Enregistrez avant de changer d’onglet. Un visuel remplacé part aux archives."
+        actions={[
+          {
+            href: "/arena-culture",
+            label: "Voir la page",
+            hint: "Ouvre /arena-culture",
+            target: "_blank",
+          },
+          {
+            href: "/admin/arena/new",
+            label: "Nouvelle émission",
+            hint: "Créer un épisode (pas une rubrique)",
+            variant: "primary",
+          },
+        ]}
       />
       <ArenaAdminNav current="/admin/arena" />
       <ArenaHomeDashboard

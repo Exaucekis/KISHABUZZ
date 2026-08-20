@@ -55,7 +55,7 @@ export function EditorialDashboard({
   contacts: Contact[];
 }) {
   return (
-    <div className="mt-6 grid gap-4 lg:grid-cols-3">
+    <div className="mt-4 grid gap-4 lg:grid-cols-3">
       <QueueCard title="Brouillons" href="/admin/articles?status=DRAFT" empty="Aucun brouillon.">
         {drafts.length ? (
           <ul className="space-y-3">

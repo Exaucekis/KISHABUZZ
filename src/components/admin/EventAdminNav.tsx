@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AdminTabs } from "@/components/admin/AdminTabs";
 import {
   type EventEditTab,
   type EventListView,
@@ -12,12 +12,17 @@ export {
   type EventListView,
 } from "@/lib/event-admin-views";
 
-const LIST_LINKS: { id: EventListView | "categories"; href: string; label: string }[] = [
-  { id: "en-cours", href: "/admin/evenements?vue=en-cours", label: "En cours" },
-  { id: "brouillons", href: "/admin/evenements?vue=brouillons", label: "Brouillons" },
-  { id: "passes", href: "/admin/evenements?vue=passes", label: "Passés" },
-  { id: "tous", href: "/admin/evenements?vue=tous", label: "Tous" },
-  { id: "categories", href: "/admin/evenements/categories", label: "Catégories" },
+const LIST_LINKS: {
+  id: EventListView | "categories";
+  href: string;
+  label: string;
+  hint: string;
+}[] = [
+  { id: "en-cours", href: "/admin/evenements?vue=en-cours", label: "En cours", hint: "Publiés, vente ouverte" },
+  { id: "brouillons", href: "/admin/evenements?vue=brouillons", label: "Brouillons", hint: "Pas encore en ligne" },
+  { id: "passes", href: "/admin/evenements?vue=passes", label: "Passés", hint: "Terminés ou annulés" },
+  { id: "tous", href: "/admin/evenements?vue=tous", label: "Tous", hint: "Liste complète" },
+  { id: "categories", href: "/admin/evenements/categories", label: "Catégories", hint: "Rubriques billetterie" },
 ];
 
 export function EventAdminNav({
@@ -28,23 +33,19 @@ export function EventAdminNav({
   counts?: Partial<Record<EventListView, number>>;
 }) {
   return (
-    <div className="mb-5 flex flex-wrap gap-2">
-      {LIST_LINKS.map((item) => {
+    <AdminTabs
+      label="Listes événements"
+      items={LIST_LINKS.map((item) => {
         const count = item.id !== "categories" ? counts?.[item.id] : undefined;
-        return (
-          <Link
-            key={item.id}
-            href={item.href}
-            className={`admin-btn text-xs ${
-              current === item.id ? "admin-btn-primary" : "admin-btn-ghost"
-            }`}
-          >
-            {item.label}
-            {typeof count === "number" ? ` (${count})` : ""}
-          </Link>
-        );
+        return {
+          id: item.id,
+          href: item.href,
+          label: typeof count === "number" ? `${item.label} (${count})` : item.label,
+          hint: item.hint,
+          active: current === item.id,
+        };
       })}
-    </div>
+    />
   );
 }
 
@@ -55,24 +56,21 @@ export function EventEditNav({
   eventId: string;
   current: EventEditTab;
 }) {
-  const tabs: { id: EventEditTab; label: string }[] = [
-    { id: "en-cours", label: "Événement en cours" },
-    { id: "fiche", label: "Fiche" },
-    { id: "journal", label: "Journal" },
+  const tabs: { id: EventEditTab; label: string; hint: string }[] = [
+    { id: "en-cours", label: "Événement en cours", hint: "Vente et contrôle" },
+    { id: "fiche", label: "Fiche", hint: "Titre, date, visuel" },
+    { id: "journal", label: "Journal", hint: "Historique des actions" },
   ];
   return (
-    <div className="mb-5 flex flex-wrap gap-2">
-      {tabs.map((tab) => (
-        <Link
-          key={tab.id}
-          href={`/admin/evenements/${eventId}?onglet=${tab.id}`}
-          className={`admin-btn text-xs ${
-            current === tab.id ? "admin-btn-primary" : "admin-btn-ghost"
-          }`}
-        >
-          {tab.label}
-        </Link>
-      ))}
-    </div>
+    <AdminTabs
+      label="Fiche événement"
+      items={tabs.map((tab) => ({
+        id: tab.id,
+        href: `/admin/evenements/${eventId}?onglet=${tab.id}`,
+        label: tab.label,
+        hint: tab.hint,
+        active: current === tab.id,
+      }))}
+    />
   );
 }

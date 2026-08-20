@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ArenaCulturePanel } from "@/components/admin/ArenaCulturePanel";
 import { EditorialDashboard } from "@/components/admin/EditorialDashboard";
-import { AdminPageIntro } from "@/components/admin/AdminHint";
+import { AdminAction, AdminActionRow, AdminPageIntro } from "@/components/admin/AdminHint";
+import { AdminHomeTabs } from "@/components/admin/AdminHomeTabs";
 import { auth } from "@/lib/auth";
 import { editorialHeadline } from "@/lib/editorial-dashboard";
 import { videoPoster } from "@/lib/media";
@@ -131,63 +132,121 @@ export default async function AdminDashboardPage() {
     <div>
       <AdminPageIntro
         title="Tableau de bord"
-        hint={`${headline} Connecté en tant que ${session?.user?.name || session?.user?.email} · ${roleLabel(session?.user?.role)}.`}
-        actions={
-          <>
-            <Link href="/admin/articles/new" className="admin-btn admin-btn-primary">
-              Nouvel article
-            </Link>
-            <Link href="/admin/arena/new" className="admin-btn admin-btn-ghost">
-              Nouvelle émission
-            </Link>
-            <Link href="/admin/evenements/new" className="admin-btn admin-btn-ghost">
-              Nouvel événement
-            </Link>
-            <Link href="/admin/arena/videos" className="admin-btn admin-btn-ghost">
-              Vidéo Arena
-            </Link>
-          </>
+        hint={`${headline} Choisissez un onglet : chaque rubrique a uniquement ses boutons. Connecté en tant que ${session?.user?.name || session?.user?.email} · ${roleLabel(session?.user?.role)}.`}
+      />
+
+      <AdminHomeTabs
+        editorial={
+          <section className="admin-dash-panel">
+            <div className="admin-dash-panel__head">
+              <div>
+                <h2 className="admin-dash-panel__title">À traiter</h2>
+                <p className="admin-dash-panel__hint">
+                  File éditoriale : brouillons, publications programmées et messages reçus.
+                </p>
+              </div>
+              <AdminActionRow>
+                <AdminAction
+                  href="/admin/articles/new"
+                  label="Nouvel article"
+                  hint="Chronique ou publication"
+                  variant="primary"
+                />
+                <AdminAction
+                  href="/admin/contacts?status=NEW"
+                  label="Ouvrir les contacts"
+                  hint="Répondre aux messages"
+                />
+              </AdminActionRow>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {workCards.map((card) => (
+                <Link key={card.label} href={card.href} className="admin-card block hover:border-white/20">
+                  <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">{card.label}</p>
+                  <p className="mt-2 text-3xl font-bold tabular-nums">{card.value}</p>
+                  <p className="admin-card-hint">{card.hint}</p>
+                </Link>
+              ))}
+            </div>
+            <EditorialDashboard drafts={drafts} scheduled={scheduled} contacts={contacts} />
+          </section>
+        }
+        arena={
+          <section className="admin-dash-panel">
+            <AdminActionRow>
+              <AdminAction
+                href="/admin/arena/new"
+                label="Nouvelle émission"
+                hint="Créer un épisode Arena"
+                variant="primary"
+              />
+              <AdminAction
+                href="/admin/arena/guests"
+                label="Publier un invité"
+                hint="Portrait visible sur le site"
+              />
+              <AdminAction
+                href="/admin/arena/videos"
+                label="Ajouter une vidéo"
+                hint="Replay ou extrait"
+              />
+              <AdminAction
+                href="/admin/arena"
+                label="Page Arena"
+                hint="Textes et visuels d’accueil"
+              />
+            </AdminActionRow>
+            <ArenaCulturePanel
+              publishedShows={publishedShows}
+              draftShows={arenaDrafts}
+              publishedGuests={publishedGuests}
+              videos={arenaVideos}
+              albums={arenaAlbums}
+              videosWithoutPoster={arenaVideoRows.filter((row) => !videoPoster(row.url, row.thumbnail)).length}
+              latestShow={latestShow}
+            />
+          </section>
+        }
+        site={
+          <section className="admin-dash-panel">
+            <div className="admin-dash-panel__head">
+              <div>
+                <h2 className="admin-dash-panel__title">Accueil & site</h2>
+                <p className="admin-dash-panel__hint">
+                  Ce qui s’affiche sur la page principale : hero, artistes, partenaires, événements.
+                </p>
+              </div>
+              <AdminActionRow>
+                <AdminAction
+                  href="/admin/settings"
+                  label="Paramètres"
+                  hint="Nom, accroche, visuel d’accueil"
+                  variant="primary"
+                />
+                <AdminAction
+                  href="/admin/artists"
+                  label="Artistes à la une"
+                  hint="Bandeau Spotlight de l’accueil"
+                />
+                <AdminAction
+                  href="/admin/evenements/new"
+                  label="Nouvel événement"
+                  hint="Billetterie en ligne"
+                />
+              </AdminActionRow>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {siteCards.map((card) => (
+                <Link key={card.label} href={card.href} className="admin-card block hover:border-white/20">
+                  <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">{card.label}</p>
+                  <p className="mt-2 text-2xl font-bold tabular-nums">{card.value}</p>
+                  <p className="admin-card-hint">{card.hint}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
         }
       />
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {workCards.map((card) => (
-          <Link key={card.label} href={card.href} className="admin-card block hover:border-white/20">
-            <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">{card.label}</p>
-            <p className="mt-2 text-3xl font-bold tabular-nums">{card.value}</p>
-            <p className="admin-card-hint">{card.hint}</p>
-          </Link>
-        ))}
-      </div>
-
-      <EditorialDashboard
-        drafts={drafts}
-        scheduled={scheduled}
-        contacts={contacts}
-      />
-
-      <ArenaCulturePanel
-        publishedShows={publishedShows}
-        draftShows={arenaDrafts}
-        publishedGuests={publishedGuests}
-        videos={arenaVideos}
-        albums={arenaAlbums}
-        videosWithoutPoster={arenaVideoRows.filter((row) => !videoPoster(row.url, row.thumbnail)).length}
-        latestShow={latestShow}
-      />
-
-      <h2 className="mt-8 mb-3 text-sm font-semibold uppercase tracking-wide text-[#9aa3b5]">
-        Le site
-      </h2>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {siteCards.map((card) => (
-          <Link key={card.label} href={card.href} className="admin-card block hover:border-white/20">
-            <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">{card.label}</p>
-            <p className="mt-2 text-2xl font-bold tabular-nums">{card.value}</p>
-            <p className="admin-card-hint">{card.hint}</p>
-          </Link>
-        ))}
-      </div>
     </div>
   );
 }

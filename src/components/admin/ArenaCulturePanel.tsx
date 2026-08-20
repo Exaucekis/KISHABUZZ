@@ -36,29 +36,16 @@ export function ArenaCulturePanel({
   ];
 
   return (
-    <section className="mt-8">
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+    <section className="admin-dash-panel">
+      <div className="admin-dash-panel__head">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[#9aa3b5]">
-            Arena Culture
-          </h2>
-          <p className="mt-1 text-sm text-[#9aa3b5]">
-            Espace dédié à l’émission : invités, replays, miniatures et albums.
+          <h2 className="admin-dash-panel__title">Arena Culture</h2>
+          <p className="admin-dash-panel__hint">
+            Un onglet, une tâche. Les boutons ci-dessous ne concernent que l’émission.
             {videosWithoutPoster
               ? ` ${videosWithoutPoster} vidéo${videosWithoutPoster > 1 ? "s" : ""} sans miniature.`
               : ""}
           </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/admin/arena/new" className="admin-btn admin-btn-primary text-xs">
-            Nouvelle émission
-          </Link>
-          <Link href="/admin/arena/guests" className="admin-btn admin-btn-ghost text-xs">
-            Publier un invité
-          </Link>
-          <Link href="/admin/arena/videos" className="admin-btn admin-btn-ghost text-xs">
-            Ajouter une vidéo
-          </Link>
         </div>
       </div>
 

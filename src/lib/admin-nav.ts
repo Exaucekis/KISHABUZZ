@@ -1,30 +1,50 @@
+export type AdminNavGroupId =
+  | "overview"
+  | "editorial"
+  | "arena"
+  | "events"
+  | "site"
+  | "audience"
+  | "account";
+
 export type AdminNavItem = {
   href: string;
   label: string;
   exact?: boolean;
   superadmin?: boolean;
+  group: AdminNavGroupId;
 };
 
+export const ADMIN_NAV_GROUPS: { id: AdminNavGroupId; label: string }[] = [
+  { id: "overview", label: "Vue" },
+  { id: "editorial", label: "Éditorial" },
+  { id: "arena", label: "Arena Culture" },
+  { id: "events", label: "Événements" },
+  { id: "site", label: "Accueil & site" },
+  { id: "audience", label: "Audience" },
+  { id: "account", label: "Compte" },
+];
+
 export const ADMIN_NAV: AdminNavItem[] = [
-  { href: "/admin", label: "Tableau de bord", exact: true },
-  { href: "/admin/articles", label: "Articles & chroniques" },
-  { href: "/admin/arena", label: "Arena Culture" },
-  { href: "/admin/arena/guests", label: "Invités" },
-  { href: "/admin/arena/videos", label: "Vidéos Arena" },
-  { href: "/admin/arena/seasons", label: "Saisons" },
-  { href: "/admin/arena/albums", label: "Albums photos" },
-  { href: "/admin/evenements", label: "Événements" },
-  { href: "/admin/media", label: "Médias" },
-  { href: "/admin/portfolio", label: "Portfolio" },
-  { href: "/admin/partners", label: "Partenaires" },
-  { href: "/admin/artists", label: "Artistes à la une" },
-  { href: "/admin/contacts", label: "Contacts" },
-  { href: "/admin/newsletter", label: "Newsletter" },
-  { href: "/admin/categories", label: "Catégories" },
-  { href: "/admin/domains", label: "Domaines" },
-  { href: "/admin/pages", label: "Pages" },
-  { href: "/admin/users", label: "Utilisateurs", superadmin: true },
-  { href: "/admin/settings", label: "Paramètres" },
+  { href: "/admin", label: "Tableau de bord", exact: true, group: "overview" },
+  { href: "/admin/articles", label: "Articles & chroniques", group: "editorial" },
+  { href: "/admin/categories", label: "Catégories", group: "editorial" },
+  { href: "/admin/pages", label: "Pages", group: "editorial" },
+  { href: "/admin/arena", label: "Arena Culture", group: "arena" },
+  { href: "/admin/arena/guests", label: "Invités", group: "arena" },
+  { href: "/admin/arena/videos", label: "Vidéos Arena", group: "arena" },
+  { href: "/admin/arena/seasons", label: "Saisons", group: "arena" },
+  { href: "/admin/arena/albums", label: "Albums photos", group: "arena" },
+  { href: "/admin/evenements", label: "Événements", group: "events" },
+  { href: "/admin/media", label: "Médias", group: "site" },
+  { href: "/admin/portfolio", label: "Portfolio", group: "site" },
+  { href: "/admin/partners", label: "Partenaires", group: "site" },
+  { href: "/admin/artists", label: "Artistes à la une", group: "site" },
+  { href: "/admin/domains", label: "Domaines", group: "site" },
+  { href: "/admin/contacts", label: "Contacts", group: "audience" },
+  { href: "/admin/newsletter", label: "Newsletter", group: "audience" },
+  { href: "/admin/users", label: "Utilisateurs", superadmin: true, group: "account" },
+  { href: "/admin/settings", label: "Paramètres", group: "account" },
 ];
 
 export function isAdminNavActive(pathname: string, item: Pick<AdminNavItem, "href" | "exact">) {
