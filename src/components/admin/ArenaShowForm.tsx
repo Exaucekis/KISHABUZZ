@@ -136,7 +136,7 @@ export function ArenaShowForm({
           defaultValue={show?.poster || ""}
           kind="image"
           folder="covers"
-          hint="Téléversez l’affiche : visible tout de suite dès que l’émission est publiée."
+          hint="Téléversez l’affiche : elle s’affiche tout de suite sur l’accueil et Arena."
           persist={show?.id ? { target: "arenaShow", id: show.id, field: "poster" } : undefined}
         />
         <MediaField
@@ -159,16 +159,16 @@ export function ArenaShowForm({
         />
         <div className="admin-field md:col-span-2">
           <label htmlFor="status">Publication</label>
-          <select id="status" name="status" defaultValue={show?.status || "DRAFT"}>
+          <select id="status" name="status" defaultValue={show?.status || "SCHEDULED"}>
             <option value="DRAFT">Brouillon</option>
             <option value="SCHEDULED">Annoncer le prochain invité</option>
             <option value="PUBLISHED">Publier à la une</option>
             <option value="ARCHIVED">Archives / rediffusion</option>
           </select>
           <AdminHint>
-            Une seule émission à la une. « Annoncer » remplace le bloc « Bientôt annoncé » et envoie
-            l’alerte (email + WhatsApp) aux abonnés. « Publier à la une » prend l’accueil, Arena et
-            la vidéo, puis envoie une seconde alerte. L’émission précédente passe aux archives.
+            Une seule affiche à la une, sur l’accueil et Arena. Modifiez l’émission actuelle pour
+            changer l’affiche. « Annoncer » ou « Publier à la une » met celle-ci en première :
+            l’ancienne passe aux archives. Alerte email + WhatsApp aux abonnés.
           </AdminHint>
         </div>
         <div className="admin-field md:col-span-2">

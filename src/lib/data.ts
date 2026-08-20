@@ -247,10 +247,24 @@ export async function getArenaSpotlight() {
     orderBy: { airDate: "desc" },
   });
   if (guestWeek) return guestWeek;
-  return prisma.arenaShow.findFirst({
+  const live = await prisma.arenaShow.findFirst({
     where: { status: { in: ["PUBLISHED", "SCHEDULED"] } },
     include,
     orderBy: [{ isFeatured: "desc" }, { isGuestOfWeek: "desc" }, { airDate: "desc" }, { number: "desc" }],
+  });
+  if (live) return live;
+
+  const archivedWithPoster = await prisma.arenaShow.findFirst({
+    where: { status: "ARCHIVED", NOT: { poster: "" } },
+    include,
+    orderBy: [{ airDate: "desc" }, { number: "desc" }, { updatedAt: "desc" }],
+  });
+  if (archivedWithPoster) return archivedWithPoster;
+
+  return prisma.arenaShow.findFirst({
+    where: { status: "ARCHIVED" },
+    include,
+    orderBy: [{ airDate: "desc" }, { number: "desc" }, { updatedAt: "desc" }],
   });
 }
 

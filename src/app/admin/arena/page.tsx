@@ -2,6 +2,7 @@ import { ArenaAdminNav } from "@/components/admin/ArenaAdminNav";
 import { ArenaHomeDashboard } from "@/components/admin/ArenaHomeDashboard";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { getArenaHome, getArenaSpotlight } from "@/lib/data";
+import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Arena Culture" };
@@ -62,7 +63,7 @@ export default async function AdminArenaDashboardPage() {
                 title: spotlight.title,
                 status: spotlight.status,
                 poster: spotlight.poster,
-                guestName: spotlight.guests[0]?.guest.name || null,
+                guestName: arenaSpotlightGuest(spotlight)?.name || null,
               }
             : null,
           guests,

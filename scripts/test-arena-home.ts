@@ -206,6 +206,8 @@ assert.equal(announced.find((row) => row.id === "old")?.status, "ARCHIVED");
 assert.equal(announced.find((row) => row.id === "next")?.isFeatured, true);
 assert.equal(arenaSpotlightMode({ status: "SCHEDULED" }), "announced");
 assert.equal(arenaSpotlightMode({ status: "PUBLISHED", videoUrl: "https://youtu.be/x" }), "headline");
+assert.equal(arenaSpotlightMode({ status: "ARCHIVED" }), "headline");
+assert.equal(arenaSpotlightMode({ status: "DRAFT" }), "empty");
 assert.equal(arenaSpotlightMode(null), "empty");
 assert.equal(
   arenaSpotlightGuest({
