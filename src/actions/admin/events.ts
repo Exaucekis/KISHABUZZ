@@ -492,6 +492,17 @@ export async function setEventStatus(formData: FormData) {
   });
   if (!event) return;
 
+  if (status === "DRAFT" && event.status !== "DRAFT") {
+    const orders = await prisma.ticketOrder.count({ where: { eventId: id } });
+    if (orders) {
+      redirect(
+        `/admin/evenements/${id}?onglet=en-cours&notice=${encodeURIComponent(
+          "Impossible de dépublier : il y a des commandes. Annulez l’événement depuis l’onglet En cours."
+        )}`
+      );
+    }
+  }
+
   if (status === "CANCELLED") {
     await prisma.$transaction(async (tx) => {
       await applyEventCancellation(tx, id, session.user.id);

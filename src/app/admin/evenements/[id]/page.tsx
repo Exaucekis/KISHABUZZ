@@ -230,6 +230,9 @@ export default async function EditEventPage({ params, searchParams }: Props) {
           </>
         }
       />
+      {notice ? (
+        <p className="mb-4 text-sm text-amber-200">{notice}</p>
+      ) : null}
       {saved ? (
         <p className="mb-4 text-sm text-emerald-300">
           Enregistré

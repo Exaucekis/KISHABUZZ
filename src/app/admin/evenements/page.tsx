@@ -135,7 +135,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
                       >
                         Fiche
                       </Link>
-                      {event.status !== "PUBLISHED" ? (
+                      {event.status === "DRAFT" ? (
                         <form action={setEventStatus}>
                           <input type="hidden" name="id" value={event.id} />
                           <input type="hidden" name="status" value="PUBLISHED" />
@@ -143,7 +143,8 @@ export default async function AdminEventsPage({ searchParams }: Props) {
                             Publier
                           </button>
                         </form>
-                      ) : (
+                      ) : null}
+                      {event.status === "PUBLISHED" && !event._count.orders ? (
                         <form action={setEventStatus}>
                           <input type="hidden" name="id" value={event.id} />
                           <input type="hidden" name="status" value="DRAFT" />
@@ -151,7 +152,16 @@ export default async function AdminEventsPage({ searchParams }: Props) {
                             Dépublier
                           </button>
                         </form>
-                      )}
+                      ) : null}
+                      {event._count.orders &&
+                      (event.status === "PUBLISHED" || event.status === "SOLD_OUT") ? (
+                        <Link
+                          href={`/admin/evenements/${event.id}?onglet=en-cours`}
+                          className="admin-btn admin-btn-danger text-xs"
+                        >
+                          Annuler
+                        </Link>
+                      ) : null}
                       {!event._count.orders ? (
                         <form action={deleteEvent}>
                           <input type="hidden" name="id" value={event.id} />
