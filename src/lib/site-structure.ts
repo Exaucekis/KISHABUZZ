@@ -48,8 +48,7 @@ export const ARENA_NAV = [
   { href: "/arena-culture/emissions", label: "Émissions" },
   { href: "/arena-culture/invites", label: "Invités" },
   { href: "/arena-culture/affiches", label: "Affiches" },
-  { href: "/arena-culture/photos", label: "Photos" },
-  { href: "/arena-culture/videos", label: "Vidéos" },
+  { href: "/arena-culture/photos", label: "Galerie" },
   { href: "/arena-culture/archives", label: "Archives" },
 ] as const;
 
@@ -62,8 +61,7 @@ export const ARENA_ADMIN_LINKS = [
   { href: "/admin/arena/prochain-invite", label: "Prochain invité", hint: "Affiche annoncée" },
   { href: "/admin/arena/emissions", label: "Émissions", hint: "Invité, domaine, vidéo, miniature" },
   { href: "/admin/arena/guests", label: "Invités", hint: "Portraits et fiches" },
-  { href: "/admin/arena/albums", label: "Photos", hint: "Un album par invité" },
-  { href: "/admin/arena/videos", label: "Vidéos", hint: "Extraits, hors l’émission en cours" },
+  { href: "/admin/arena/albums", label: "Galerie", hint: "Albums photos, un par invité" },
   { href: "/admin/arena/archives", label: "Archives", hint: "Anciennes émissions" },
   { href: "/admin/arena/seasons", label: "Saisons", hint: "Découpage de l’année" },
   { href: "/admin/arena/alertes", label: "Alertes", hint: "Email et WhatsApp" },

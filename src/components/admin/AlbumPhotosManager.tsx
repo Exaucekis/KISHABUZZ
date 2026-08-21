@@ -38,7 +38,7 @@ export function AlbumPhotosManager({ album }: { album: Album }) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm text-[#9aa3b5]">Album invité — ajoutez les photos une par une</p>
+          <p className="text-sm text-[#9aa3b5]">Ajoutez d’autres photos dans cet album</p>
           <h1 className="font-[family-name:var(--font-syne)] text-2xl font-bold">
             {album.guestName}
           </h1>
@@ -55,9 +55,9 @@ export function AlbumPhotosManager({ album }: { album: Album }) {
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="admin-field sm:col-span-2">
-            <label>Titre</label>
-            <input name="title" required placeholder="Ex. Plateau avec Maman Sharonne" />
-            <AdminHint>Légende courte de la photo.</AdminHint>
+            <label>Titre (optionnel)</label>
+            <input name="title" placeholder="Laissez vide : le nom de l’invité sera utilisé" />
+            <AdminHint>Optionnel. Sinon on utilise le nom de l’invité.</AdminHint>
           </div>
           <MediaField
             name="url"
@@ -65,7 +65,8 @@ export function AlbumPhotosManager({ album }: { album: Album }) {
             kind="image"
             folder="albums"
             required
-            hint="Fichier ou lien. S’ajoute à l’album de cet invité."
+            dropzone
+            hint="Déposez le fichier. Il s’ajoute tout de suite à cet album."
             altName="alt"
           />
           <div className="admin-field sm:col-span-2">

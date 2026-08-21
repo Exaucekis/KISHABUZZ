@@ -1,4 +1,5 @@
 import { MediaManager } from "@/components/admin/MediaManager";
+import { QuickPhotoForm } from "@/components/admin/QuickPhotoForm";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { prisma } from "@/lib/prisma";
 
@@ -8,18 +9,32 @@ type Props = { searchParams: Promise<{ kind?: string }> };
 
 export default async function AdminMediaPage({ searchParams }: Props) {
   const { kind } = await searchParams;
-  const items = await prisma.mediaAsset.findMany({
-    where: kind ? { kind } : undefined,
-    orderBy: [{ date: "desc" }, { createdAt: "desc" }],
-  });
+  const [items, albums, guests] = await Promise.all([
+    prisma.mediaAsset.findMany({
+      where: kind ? { kind } : undefined,
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+    }),
+    prisma.photoAlbum.findMany({ select: { guestName: true } }),
+    prisma.arenaGuest.findMany({
+      where: { visible: true },
+      select: { name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   return (
-    <div>
+    <div className="space-y-8">
       <AdminPageIntro
-        title="Médias / Galerie"
-        hint="Ajoutez une photo ou une vidéo : fichier, ou lien YouTube / Instagram / Facebook / TikTok. Catégorie « Arena Culture » pour les pages Arena."
+        title="Médias"
+        hint="Pour une photo Arena : invité + fichier, c’est en ligne. Pour une vidéo Arena, ouvrez Arena → Émissions et publiez une nouvelle émission."
       />
-      <MediaManager items={items} />
+      <QuickPhotoForm guests={[...albums.map((album) => album.guestName), ...guests.map((guest) => guest.name)]} />
+      <div>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#9aa3b5]">
+          Bibliothèque (vidéos et autres fichiers)
+        </h2>
+        <MediaManager items={items} />
+      </div>
     </div>
   );
 }

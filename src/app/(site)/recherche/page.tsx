@@ -176,7 +176,7 @@ export default async function RecherchePage({ searchParams }: Props) {
                 {results.media.map((m) => (
                   <ResultLink
                     key={m.id}
-                    href={m.kind === "VIDEO" ? "/arena-culture/videos" : "/arena-culture/photos"}
+                    href={m.kind === "VIDEO" ? "/arena-culture/emissions" : "/arena-culture/photos"}
                     title={m.title}
                     meta={m.kind === "VIDEO" ? "Vidéo Arena" : "Photo Arena"}
                   />

@@ -34,7 +34,7 @@ export default async function AdminArenaShowsPage() {
     <div>
       <AdminPageIntro
         title="Émissions"
-        hint="Cet onglet a son propre formulaire : nom de l’invité, domaine, vidéo et miniature. À la une et Prochain invité se gèrent ailleurs."
+        hint="Nom de l’invité, domaine, vidéo et miniature. Publier ici met la vidéo en ligne tout de suite sur Émissions."
         actions={
           <Link href="/arena-culture/emissions" className="admin-btn admin-btn-ghost" target="_blank" rel="noreferrer">
             Voir la page

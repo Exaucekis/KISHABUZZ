@@ -43,7 +43,7 @@ export default async function ArenaAlbumPage({ params }: Props) {
       <section className="ac-page">
         <div className="mb-6">
           <Link href="/arena-culture/photos" className="text-sm font-semibold text-[var(--ac-amber)]">
-            ← Tous les albums
+            ← Galerie
           </Link>
         </div>
 

@@ -21,12 +21,11 @@ assert.equal(isAdminNavActive("/admin/arena/emissions", arena), true);
 assert.equal(isAdminNavActive("/admin/arena/archives", arena), true);
 assert.equal(isAdminNavActive("/admin/arena/alertes", arena), true);
 assert.equal(isAdminNavActive("/admin/arena/albums", arena), true);
-assert.equal(isAdminNavActive("/admin/arena/videos", arena), true);
 assert.equal(isAdminNavActive("/admin/arena/guests", arena), true);
 assert.equal(isAdminNavActive("/admin/arena/prochain-invite", arena), true);
 assert.equal(adminNavTitle("/admin/arena/prochain-invite"), "Prochain invité");
-assert.equal(adminNavTitle("/admin/arena/albums/x"), "Photos");
-assert.equal(adminNavTitle("/admin/arena/videos"), "Vidéos");
+assert.equal(adminNavTitle("/admin/arena/albums/x"), "Galerie");
+assert.equal(adminNavTitle("/admin/arena/emissions"), "Émissions");
 assert.equal(adminNavTitle("/admin"), "Tableau de bord");
 assert.equal(adminNavTitle("/admin/articles/abc"), "Articles & chroniques");
 assert.equal(adminNavTitle("/admin/evenements"), "Événements");
@@ -63,7 +62,7 @@ assert.equal(
 );
 assert.deepEqual(
   ARENA_NAV.map((item) => item.label),
-  ["Accueil", "Émissions", "Invités", "Affiches", "Photos", "Vidéos", "Archives"]
+  ["Accueil", "Émissions", "Invités", "Affiches", "Galerie", "Archives"]
 );
 assert.deepEqual(
   ARENA_ADMIN_LINKS.map((item) => item.label),
@@ -72,8 +71,7 @@ assert.deepEqual(
     "Prochain invité",
     "Émissions",
     "Invités",
-    "Photos",
-    "Vidéos",
+    "Galerie",
     "Archives",
     "Saisons",
     "Alertes",

@@ -140,11 +140,11 @@ export async function saveMedia(
 
   revalidatePath("/admin/media");
   revalidatePath("/admin/arena");
-  revalidatePath("/admin/arena/videos");
+  revalidatePath("/admin/arena/emissions");
   revalidatePath("/admin/arena/albums");
   revalidatePath("/admin/arena/archives");
   revalidatePath("/arena-culture/photos");
-  revalidatePath("/arena-culture/videos");
+  revalidatePath("/arena-culture/emissions");
   revalidatePath("/arena-culture/archives");
   revalidatePath("/arena-culture");
   revalidatePath("/");
@@ -176,9 +176,9 @@ export async function archiveMedia(formData: FormData) {
   }
   revalidatePath("/admin/media");
   revalidatePath("/admin/arena");
-  revalidatePath("/admin/arena/videos");
+  revalidatePath("/admin/arena/emissions");
   revalidatePath("/admin/arena/archives");
-  revalidatePath("/arena-culture/videos");
+  revalidatePath("/arena-culture/emissions");
   revalidatePath("/arena-culture/archives");
   revalidatePath("/arena-culture");
   revalidatePath("/");
@@ -194,10 +194,10 @@ export async function deleteMedia(formData: FormData) {
   await prisma.mediaAsset.delete({ where: { id } });
   revalidatePath("/admin/media");
   revalidatePath("/admin/arena");
-  revalidatePath("/admin/arena/videos");
+  revalidatePath("/admin/arena/emissions");
   revalidatePath("/admin/arena/archives");
   revalidatePath("/arena-culture/photos");
-  revalidatePath("/arena-culture/videos");
+  revalidatePath("/arena-culture/emissions");
   revalidatePath("/arena-culture/archives");
   revalidatePath("/arena-culture/affiches");
   revalidatePath("/arena-culture");

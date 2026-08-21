@@ -241,12 +241,10 @@ export async function saveArenaShow(
   revalidatePath("/admin/arena/prochain-invite");
   revalidatePath("/admin/arena/emissions");
   revalidatePath("/admin/arena/guests");
-  revalidatePath("/admin/arena/videos");
   revalidatePath("/admin/arena/archives");
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/calendrier");
   revalidatePath("/arena-culture/emissions");
-  revalidatePath("/arena-culture/videos");
   revalidatePath("/arena-culture/archives");
   revalidatePath("/arena-culture/affiches");
   revalidatePath("/arena-culture/invites");
@@ -276,7 +274,6 @@ export async function archiveArenaShow(formData: FormData) {
   revalidatePath("/admin/arena/prochain-invite");
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/emissions");
-  revalidatePath("/arena-culture/videos");
   revalidatePath("/arena-culture/archives");
   revalidatePath("/arena-culture/affiches");
   revalidatePath("/");
@@ -322,7 +319,6 @@ export async function setArenaShowStatus(formData: FormData) {
   revalidatePath("/arena-culture");
   revalidatePath("/arena-culture/calendrier");
   revalidatePath("/arena-culture/emissions");
-  revalidatePath("/arena-culture/videos");
   revalidatePath("/arena-culture/archives");
   revalidatePath("/");
   applyPublicWrites();

@@ -3,22 +3,29 @@ import { ArenaAdminNav } from "@/components/admin/ArenaAdminNav";
 import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { prisma } from "@/lib/prisma";
 
-export const metadata = { title: "Albums photos Arena" };
+export const metadata = { title: "Galerie Arena" };
 
 export default async function AdminArenaAlbumsPage() {
-  const albums = await prisma.photoAlbum.findMany({
-    include: { _count: { select: { photos: true } } },
-    orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-  });
+  const [albums, guests] = await Promise.all([
+    prisma.photoAlbum.findMany({
+      include: { _count: { select: { photos: true } } },
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+    }),
+    prisma.arenaGuest.findMany({
+      where: { visible: true },
+      select: { name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   return (
     <div>
       <AdminPageIntro
-        title="Albums photos Arena"
-        hint="Un album = un invité. Glissez pour changer l’ordre, puis Photos pour ajouter les images."
+        title="Galerie Arena"
+        hint="Invité + photo. L’album se crée tout seul et la photo est en ligne sur Arena → Galerie, et sur l’accueil KISHA."
       />
       <ArenaAdminNav current="/admin/arena/albums" />
-      <AlbumsManager albums={albums} />
+      <AlbumsManager albums={albums} guestNames={guests.map((guest) => guest.name)} />
     </div>
   );
 }

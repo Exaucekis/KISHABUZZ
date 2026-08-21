@@ -132,8 +132,8 @@ export async function addPhotoToAlbum(
   const description = formString(formData, "description");
   const alt = formString(formData, "alt");
 
-  if (!albumId || !url || title.length < 2) {
-    return { ok: false, message: "Titre et URL requis." };
+  if (!albumId || !url) {
+    return { ok: false, message: "Ajoutez une photo." };
   }
 
   const album = await prisma.photoAlbum.findUnique({ where: { id: albumId } });
@@ -141,7 +141,7 @@ export async function addPhotoToAlbum(
 
   await prisma.mediaAsset.create({
     data: {
-      title,
+      title: title || album.guestName,
       description,
       alt,
       kind: "IMAGE",
@@ -167,6 +167,74 @@ export async function addPhotoToAlbum(
   revalidatePath("/arena-culture");
   applyPublicWrites();
   return { ok: true, message: "Photo ajoutée à l'album." };
+}
+
+export async function publishGuestPhoto(
+  _prev: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const guestName = formString(formData, "guestName");
+  const url = formString(formData, "url");
+  const title = formString(formData, "title");
+  const alt = formString(formData, "alt");
+
+  if (!url) return { ok: false, message: "Ajoutez une photo." };
+  if (guestName.length < 2) return { ok: false, message: "Indiquez le nom de l’invité." };
+
+  let album = await prisma.photoAlbum.findFirst({
+    where: { guestName: { equals: guestName, mode: "insensitive" } },
+  });
+
+  if (!album) {
+    const baseSlug = createSlug(guestName) || "invite";
+    let slug = baseSlug;
+    if (await prisma.photoAlbum.findUnique({ where: { slug } })) {
+      slug = `${baseSlug}-${Date.now().toString(36)}`;
+    }
+    const max = await prisma.photoAlbum.aggregate({ _max: { order: true } });
+    album = await prisma.photoAlbum.create({
+      data: {
+        guestName,
+        title: `${guestName} · Arena Grand Culture`,
+        emissionLabel: "Arena Grand Culture",
+        coverImage: url,
+        visible: true,
+        slug,
+        order: nextOrder(max._max.order),
+      },
+    });
+  }
+
+  await prisma.mediaAsset.create({
+    data: {
+      title: title || album.guestName,
+      description: "",
+      alt,
+      kind: "IMAGE",
+      url,
+      thumbnail: url,
+      category: "ARENA_CULTURE",
+      visible: true,
+      albumId: album.id,
+    },
+  });
+
+  if (!album.coverImage) {
+    await prisma.photoAlbum.update({
+      where: { id: album.id },
+      data: { coverImage: url },
+    });
+  }
+
+  revalidatePath("/admin/arena/albums");
+  revalidatePath(`/admin/arena/albums/${album.slug}`);
+  revalidatePath("/admin/media");
+  revalidatePath("/arena-culture/photos");
+  revalidatePath(`/arena-culture/albums/${album.slug}`);
+  revalidatePath("/arena-culture");
+  applyPublicWrites();
+  return { ok: true, message: `Photo publiée dans l’album « ${album.guestName} ».` };
 }
 
 export async function removePhotoFromAlbum(formData: FormData) {

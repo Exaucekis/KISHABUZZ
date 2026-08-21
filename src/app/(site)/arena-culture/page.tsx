@@ -181,8 +181,8 @@ export default async function ArenaCulturePage() {
       />
 
       <ArenaMediaRow
-        eyebrow={home.photos.eyebrow}
-        title="Albums photos"
+        eyebrow="Galerie"
+        title={home.photos.title}
         href="/arena-culture/photos"
         items={photoTiles}
         variant="square"

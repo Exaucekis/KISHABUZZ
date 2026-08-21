@@ -33,12 +33,12 @@ function save(section: (typeof ARENA_HOME_SECTIONS)[number], current: typeof ARE
 const empty = parseArenaHome(null, "");
 assert.equal(empty.hero.line1, "Culture.");
 assert.equal(empty.hero.line3, "Live.");
-assert.equal(empty.explore.items.length, 6);
+assert.equal(empty.explore.items.length, 5);
 assert.equal(empty.explore.items[0].href, "/arena-culture/emissions");
 assert.equal(empty.spotlight.emptyTitle, "Bientôt annoncé");
 assert.deepEqual(
   empty.explore.items.map((item) => item.key),
-  ["emissions", "invites", "affiches", "photos", "videos", "archives"]
+  ["emissions", "invites", "affiches", "photos", "archives"]
 );
 assert.deepEqual([...ARENA_HOME_SECTIONS], [
   "hero",
@@ -81,7 +81,7 @@ assert.equal(merged.hero.text, "Présentation seed");
 assert.equal(merged.explore.title, "L’univers");
 assert.equal(merged.explore.items.find((item) => item.key === "photos")?.title, "Coulisses");
 assert.equal(merged.explore.items.find((item) => item.key === "photos")?.href, "/arena-culture/photos");
-assert.equal(merged.explore.items.find((item) => item.key === "videos")?.title, "Vidéos");
+assert.equal(merged.explore.items.some((item) => item.key === "videos"), false);
 assert.equal(merged.explore.items.some((item) => item.key === "inconnu"), false);
 
 const withStoredText = parseArenaHome(
@@ -250,7 +250,10 @@ assert.match(publicArena, /VideoEmbed/);
 const publicHome = readFileSync("src/app/(site)/page.tsx", "utf8");
 assert.match(publicHome, /arenaHome/);
 assert.doesNotMatch(publicHome, /arenaHome\.explore\.items/);
+assert.match(publicHome, /arenaHome\.explore\.eyebrow/);
+assert.match(publicHome, /arenaHome\.explore\.title/);
 assert.match(publicHome, /arenaHome\.spotlight\.emptyLabel/);
 assert.match(publicHome, /\/arena-culture\/emissions/);
+assert.match(publicHome, /\/arena-culture\/photos/);
 
 console.log("arena home tests: ok");

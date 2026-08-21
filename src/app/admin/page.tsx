@@ -133,7 +133,7 @@ export default async function AdminDashboardPage() {
               label="Prochain invité"
               hint="Changer l’affiche"
             />
-            <AdminAction href="/admin/arena/albums" label="Photos" hint="Album de l’invité" />
+            <AdminAction href="/admin/arena/albums" label="Galerie" hint="Album de l’invité" />
           </AdminActionRow>
         </div>
         <ArenaCulturePanel

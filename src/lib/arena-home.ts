@@ -71,16 +71,9 @@ export const ARENA_EXPLORE_DEFAULTS: ArenaExploreItem[] = [
   {
     key: "photos",
     href: "/arena-culture/photos",
-    title: "Photos",
-    subtitle: "Plateaux & coulisses",
+    title: "Galerie",
+    subtitle: "Albums par invité",
     image: "/artists/ferre-gola.jpg",
-  },
-  {
-    key: "videos",
-    href: "/arena-culture/videos",
-    title: "Vidéos",
-    subtitle: "Extraits",
-    image: "/artists/innoss-b.png",
   },
   {
     key: "archives",
@@ -120,7 +113,7 @@ export const ARENA_HOME_DEFAULTS: ArenaHomeConfig = {
   scene: { eyebrow: "Scène", title: "Visages & voix" },
   shows: { eyebrow: "Émissions", title: "À (re)découvrir" },
   posters: { eyebrow: "Affiches", title: "Visuels" },
-  photos: { eyebrow: "Photos", title: "Ambiances" },
+  photos: { eyebrow: "Galerie", title: "Albums" },
   memory: {
     eyebrow: "Archives",
     title: "La mémoire de l'Arena",
@@ -176,8 +169,8 @@ export const ARENA_HOME_SECTION_META: Record<
     where: "la rangée des visuels / affiches",
   },
   photos: {
-    label: "Photos",
-    where: "la rangée Ambiances / photos",
+    label: "Galerie",
+    where: "la rangée Galerie / albums, sur /arena-culture et l’accueil",
   },
   memory: {
     label: "Archives",

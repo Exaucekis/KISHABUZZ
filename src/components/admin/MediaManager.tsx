@@ -61,7 +61,10 @@ function MediaForm({ media }: { media?: Media }) {
               )
             )}
           </select>
-          <AdminHint>« Arena Culture » envoie le média dans les pages Arena (photos / vidéos).</AdminHint>
+          <AdminHint>
+            Une vidéo Arena se publie dans Arena → Émissions (Nouvelle émission). Une photo d’invité ne
+            s’affiche pas ici : ouvrez Arena → Galerie et ajoutez-la dans l’album.
+          </AdminHint>
         </div>
         <MediaField
           name="url"

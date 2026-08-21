@@ -145,8 +145,8 @@ export default async function AdminArenaArchivesPage() {
             <h2>Vidéos archivées</h2>
             <p>Anciennes émissions et extraits. Les supprimer ici les fait disparaître du site public.</p>
           </div>
-          <Link href="/admin/arena/videos" className="admin-btn admin-btn-ghost text-xs">
-            Gérer les vidéos
+          <Link href="/admin/arena/emissions" className="admin-btn admin-btn-ghost text-xs">
+            Émissions
           </Link>
         </div>
         {videos.length ? (
@@ -172,7 +172,7 @@ export default async function AdminArenaArchivesPage() {
                     <h3>{archiveLabel(video.title)}</h3>
                     <div className="admin-archive-actions">
                       <Link
-                        href={video.arenaShow ? `/admin/arena/${video.arenaShow.id}` : "/admin/arena/videos"}
+                        href={video.arenaShow ? `/admin/arena/${video.arenaShow.id}` : "/admin/arena/emissions"}
                         className="admin-btn admin-btn-ghost text-xs"
                       >
                         Modifier

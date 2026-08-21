@@ -26,6 +26,7 @@ export default async function HomePage() {
     spotlightShow,
     domains,
     featuredAlbum,
+    galleryAlbums,
     featuredVideo,
     about,
     portfolio,
@@ -144,6 +145,56 @@ export default async function HomePage() {
             />
           </div>
         </div>
+      </section>
+
+      <section id="univers-arena" className="kb-defer mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
+        <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <SectionHeading
+            eyebrow={arenaHome.explore.eyebrow}
+            title={arenaHome.explore.title}
+            description={arenaHome.hero.text}
+          />
+          <Link href="/arena-culture/photos" className="shrink-0 text-sm font-semibold text-ember-text">
+            Galerie Arena →
+          </Link>
+        </div>
+        {galleryAlbums.length ? (
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {galleryAlbums.map((album) => {
+              const cover = album.coverImage || album.photos[0]?.url || "";
+              if (!cover) return null;
+              return (
+                <Link
+                  key={album.slug}
+                  href={`/arena-culture/albums/${album.slug}`}
+                  className="group block focus-ring"
+                >
+                  <div className="kb-shine relative aspect-[16/10] overflow-hidden bg-ink-3">
+                    <PublicImage
+                      src={cover}
+                      alt={album.guestName || album.title}
+                      fill
+                      sizes="(max-width: 768px) 90vw, 33vw"
+                      className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                    />
+                  </div>
+                  <p className="mt-4 text-xs uppercase tracking-[0.2em] text-ember-text">
+                    Arena Culture
+                  </p>
+                  <h3 className="mt-2 font-display text-2xl transition group-hover:text-ember-text">
+                    {album.guestName || album.title}
+                  </h3>
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <EmptyState
+            title="Galerie Arena"
+            description="Les photos d’invités paraîtront ici, dans Arena Culture."
+            action={<ButtonLink href="/arena-culture">Entrer dans Arena Culture</ButtonLink>}
+          />
+        )}
       </section>
 
       <section id="actualites" className="kb-defer border-y border-line bg-ink-2">

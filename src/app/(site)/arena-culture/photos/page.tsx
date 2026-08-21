@@ -6,8 +6,8 @@ import { getArenaPhotoAlbums } from "@/lib/data";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Photos · Arena Culture",
-  description: "Albums photos Arena Grand Culture — un album par invité, dans l’ordre.",
+  title: "Galerie · Arena Culture",
+  description: "Galerie Arena Culture — un album par invité, dans l’ordre du plateau.",
 };
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ export default async function ArenaPhotosPage() {
   return (
     <>
       <ArenaPageIntro
-        title="Photos"
+        title="Galerie"
         description="Un album par invité, classé dans l’ordre du plateau. Ouvre un album pour voir les photos."
       />
 

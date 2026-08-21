@@ -52,7 +52,7 @@ export const getSettings = cache(async () => {
 
 async function loadHomePageData() {
   await Promise.all([publishDueArticles(), publishDueArenaShows()]);
-  const [settings, feed, stage, domains, featuredAlbum] = await Promise.all([
+  const [settings, feed, stage, domains, galleryAlbums] = await Promise.all([
     loadSettings(),
     prisma.article.findMany({
       where: {
@@ -81,10 +81,22 @@ async function loadHomePageData() {
       select: { id: true, name: true, icon: true },
       orderBy: { order: "asc" },
     }),
-    prisma.photoAlbum.findFirst({
+    prisma.photoAlbum.findMany({
       where: { visible: true },
       orderBy: [{ order: "asc" }, { date: "desc" }],
-      select: { coverImage: true },
+      take: 6,
+      select: {
+        slug: true,
+        guestName: true,
+        title: true,
+        coverImage: true,
+        photos: {
+          where: { visible: true, kind: "IMAGE" },
+          take: 1,
+          orderBy: { createdAt: "asc" },
+          select: { url: true },
+        },
+      },
     }),
   ]);
   const [featuredVideo, about, portfolio, partners, spotlightArtists, arenaHome] = await Promise.all([
@@ -117,6 +129,7 @@ async function loadHomePageData() {
     getArenaHome(),
   ]);
 
+  const featuredAlbum = galleryAlbums[0] || null;
   const headlineShow = stage.headline;
   const announcedShow = stage.announced;
   const spotlightShow = announcedShow || headlineShow;
@@ -129,6 +142,7 @@ async function loadHomePageData() {
     spotlightShow,
     domains,
     featuredAlbum,
+    galleryAlbums,
     featuredVideo: showVideo
       ? {
           title: headlineShow?.title || featuredVideo?.title || "Arena Culture",
