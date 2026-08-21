@@ -990,8 +990,16 @@
 }
 
 .ac-grid-posters a,
-.ac-grid-posters > div {
+.ac-grid-posters > div,
+.ac-grid-posters .ac-poster-shot {
   display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .ac-grid-posters img {

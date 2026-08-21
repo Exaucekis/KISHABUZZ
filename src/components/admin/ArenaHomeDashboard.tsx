@@ -311,38 +311,6 @@ export function ArenaHomeDashboard({
       </SectionForm>
       </div>
 
-      <div hidden={active !== "posters"}>
-      <SectionForm
-        section="posters"
-        kicker={home.posters.eyebrow}
-        title={home.posters.title}
-        hint="Titres de la rangée visuels. Les affiches sont celles des émissions ; les anciens visuels de page y sont archivés."
-      >
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="admin-field">
-            <label>Sur-titre</label>
-            <input name="eyebrow" required defaultValue={home.posters.eyebrow} />
-          </div>
-          <div className="admin-field">
-            <label>Titre</label>
-            <input name="title" required defaultValue={home.posters.title} />
-          </div>
-        </div>
-        <LiveTiles
-          items={live.shows
-            .filter((show) => show.poster)
-            .map((show) => ({
-              href: `/admin/arena/${show.id}`,
-              title: show.title,
-              image: show.poster,
-            }))}
-          empty="Pas encore d’affiche d’émission. Les visuels archivés restent sur Affiches."
-          moreHref="/admin/arena/emissions"
-          moreLabel="Éditer les affiches"
-        />
-      </SectionForm>
-      </div>
-
       <div hidden={active !== "photos"}>
       <SectionForm
         section="photos"

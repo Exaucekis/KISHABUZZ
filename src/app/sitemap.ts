@@ -17,7 +17,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/arena-culture",
     "/arena-culture/emissions",
     "/arena-culture/calendrier",
-    "/arena-culture/affiches",
     "/arena-culture/photos",
     "/arena-culture/archives",
     "/collaborations",

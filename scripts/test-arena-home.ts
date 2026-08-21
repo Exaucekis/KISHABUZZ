@@ -33,12 +33,12 @@ function save(section: (typeof ARENA_HOME_SECTIONS)[number], current: typeof ARE
 const empty = parseArenaHome(null, "");
 assert.equal(empty.hero.line1, "Culture.");
 assert.equal(empty.hero.line3, "Live.");
-assert.equal(empty.explore.items.length, 4);
+assert.equal(empty.explore.items.length, 3);
 assert.equal(empty.explore.items[0].href, "/arena-culture/emissions");
 assert.equal(empty.spotlight.emptyTitle, "Bientôt annoncé");
 assert.deepEqual(
   empty.explore.items.map((item) => item.key),
-  ["emissions", "affiches", "photos", "archives"]
+  ["emissions", "photos", "archives"]
 );
 assert.deepEqual([...ARENA_HOME_SECTIONS], [
   "hero",
@@ -51,7 +51,7 @@ assert.deepEqual([...ARENA_HOME_SECTIONS], [
   "memory",
 ]);
 assert.deepEqual([...ARENA_HOME_SECTIONS], Object.keys(ARENA_HOME_SECTION_META));
-assert.deepEqual([...PAGE_ARENA_SECTIONS], ["hero", "spotlight", "scene", "posters", "photos", "memory"]);
+assert.deepEqual([...PAGE_ARENA_SECTIONS], ["hero", "spotlight", "scene", "photos", "memory"]);
 assert.equal(ARENA_HOME_SECTION_META.hero.label, "Héro");
 assert.equal(ARENA_HOME_SECTION_META.memory.label, "Archives");
 

@@ -46,7 +46,6 @@ export const SITE_NAV_WITH_ARENA = [
 export const ARENA_NAV = [
   { href: "/arena-culture", label: "Accueil", exact: true },
   { href: "/arena-culture/emissions", label: "Émissions", exact: false },
-  { href: "/arena-culture/affiches", label: "Affiches", exact: false },
   { href: "/arena-culture/photos", label: "Galerie", exact: false },
   { href: "/arena-culture/archives", label: "Archives", exact: false },
 ] as const;

@@ -62,7 +62,7 @@ assert.equal(
 );
 assert.deepEqual(
   ARENA_NAV.map((item) => item.label),
-  ["Accueil", "Émissions", "Affiches", "Galerie", "Archives"]
+  ["Accueil", "Émissions", "Galerie", "Archives"]
 );
 assert.deepEqual(
   ARENA_ADMIN_LINKS.map((item) => item.label),

@@ -55,13 +55,6 @@ export const ARENA_EXPLORE_DEFAULTS: ArenaExploreItem[] = [
     image: "/artists/fally-ipupa.jpg",
   },
   {
-    key: "affiches",
-    href: "/arena-culture/affiches",
-    title: "Affiches",
-    subtitle: "Visuels officiels",
-    image: "/artists/koffi-olomide.jpg",
-  },
-  {
     key: "photos",
     href: "/arena-culture/photos",
     title: "Galerie",
@@ -105,7 +98,7 @@ export const ARENA_HOME_DEFAULTS: ArenaHomeConfig = {
   },
   scene: { eyebrow: "Scène", title: "Visages & voix" },
   shows: { eyebrow: "Émissions", title: "À (re)découvrir" },
-  posters: { eyebrow: "Affiches", title: "Visuels" },
+  posters: { eyebrow: "Affiches", title: "Affiches" },
   photos: { eyebrow: "Galerie", title: "Albums" },
   memory: {
     eyebrow: "Archives",
@@ -129,7 +122,7 @@ export const ARENA_HOME_SECTIONS = [
 ] as const;
 
 /** Onglets « Page Arena » : textes d’accueil seulement, sans doubler Émissions ni le menu. */
-export const PAGE_ARENA_SECTIONS = ["hero", "spotlight", "scene", "posters", "photos", "memory"] as const;
+export const PAGE_ARENA_SECTIONS = ["hero", "spotlight", "scene", "photos", "memory"] as const;
 
 export type ArenaHomeSection = (typeof ARENA_HOME_SECTIONS)[number];
 
@@ -235,7 +228,10 @@ export function parseArenaHome(raw: string | null | undefined, presentation = ""
     },
     posters: {
       eyebrow: text(parsed.posters?.eyebrow, d.posters.eyebrow),
-      title: text(parsed.posters?.title, d.posters.title),
+      title: (() => {
+        const title = text(parsed.posters?.title, d.posters.title);
+        return title === "Visuels" ? d.posters.title : title;
+      })(),
     },
     photos: {
       eyebrow: text(parsed.photos?.eyebrow, d.photos.eyebrow),

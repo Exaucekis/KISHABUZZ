@@ -10,13 +10,13 @@ import {
   getArenaPhotoAlbums,
   getArenaStage,
 } from "@/lib/data";
-import { arenaShowCover, arenaSpotlightGuest } from "@/lib/arena-spotlight";
+import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Arena Culture",
   description:
-    "Émissions, affiches, photos et archives — l'univers médiatique de KISHA BUZZ.",
+    "Émissions, photos et archives — l'univers médiatique de KISHA BUZZ.",
 };
 
 export const dynamic = "force-dynamic";
@@ -45,16 +45,6 @@ export default async function ArenaCulturePage() {
     }))
     .filter((tile) => tile.image)
     .slice(0, 6);
-
-  const posterTiles = [spotlight, headline]
-    .filter((show): show is NonNullable<typeof show> => Boolean(show?.poster))
-    .filter((show, index, list) => list.findIndex((item) => item.id === show.id) === index)
-    .map((show) => ({
-      href: `/arena-culture/emissions/${show.slug}`,
-      title: arenaSpotlightGuest(show)?.name || show.title,
-      image: arenaShowCover(show) || show.poster,
-    }))
-    .filter((tile) => tile.image);
 
   return (
     <>
@@ -161,14 +151,6 @@ export default async function ArenaCulturePage() {
         href="/arena-culture/photos"
         items={photoTiles}
         variant="square"
-      />
-
-      <ArenaMediaRow
-        eyebrow={home.posters.eyebrow}
-        title={home.posters.title}
-        href="/arena-culture/affiches"
-        items={posterTiles}
-        variant="poster"
       />
 
       <section className="ac-close">

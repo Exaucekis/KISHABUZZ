@@ -35,7 +35,7 @@ export default async function ArenaEmissionsPage() {
     <>
       <ArenaPageIntro
         title="Émissions"
-        description="La vidéo de l’émission, le nom de l’invité et le domaine. Les extraits suivent en dessous."
+        description="La vidéo, sa miniature, le nom de l’invité et le thème. Rien d’autre."
       />
 
       <section className="ac-page">

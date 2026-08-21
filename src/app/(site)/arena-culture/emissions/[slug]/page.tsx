@@ -33,7 +33,6 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
   const guests = show.guests.map((g) => g.guest).filter((g) => g.visible !== false);
   const lead = arenaSpotlightGuest(show);
   const video = arenaShowVideo(show);
-  const images = show.media.filter((m) => m.kind === "IMAGE");
   const extraVideos = show.media.filter((m) => m.kind === "VIDEO" && m.url !== video);
   const place = arenaShowPlace(show, show.event);
   const ticket = arenaTicketCta(show.event);
@@ -91,11 +90,6 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
             poster={videoPoster(video, show.videoThumbnail)}
           />
         </div>
-      ) : show.poster ? (
-        <div className="mx-auto max-w-4xl px-4 pt-10 md:px-6">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={show.poster} alt="" className="mx-auto max-h-[70vh] object-contain" />
-        </div>
       ) : null}
 
       <div className="mx-auto max-w-3xl px-4 py-12 md:px-6">
@@ -108,26 +102,13 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
         {guests.length ? (
           <div className="mt-12">
             <h2 className="font-display text-2xl">Invité</h2>
-            <ul className="mt-6 space-y-4">
+            <ul className="mt-6 space-y-3">
               {guests.map((g) => (
-                <li key={g.id} className="flex gap-4 border border-line p-4">
-                  {g.photo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={g.photo} alt={g.name} className="h-20 w-20 object-cover" />
-                  ) : (
-                    <div className="flex h-20 w-20 items-center justify-center bg-ink-3 font-display text-xl text-paper/30">
-                      {g.name.slice(0, 1)}
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-display text-xl">{g.name}</p>
-                    {g.profession ? (
-                      <p className="mt-1 text-sm text-paper-muted">{g.profession}</p>
-                    ) : null}
-                    {g.bio ? (
-                      <p className="mt-2 text-sm text-paper-muted line-clamp-3">{g.bio}</p>
-                    ) : null}
-                  </div>
+                <li key={g.id}>
+                  <p className="font-display text-xl">{g.name}</p>
+                  {g.profession ? (
+                    <p className="mt-1 text-sm text-paper-muted">{g.profession}</p>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -143,25 +124,6 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
                 <p className="mt-2 text-sm text-paper-muted">{v.title}</p>
               </div>
             ))}
-          </div>
-        ) : null}
-
-        {images.length ? (
-          <div className="mt-12">
-            <h2 className="font-display text-2xl">Photos</h2>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {images.map((img) => (
-                <div key={img.id} className="overflow-hidden bg-ink-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={img.thumbnail || img.url}
-                    alt={img.title}
-                    className="aspect-[4/3] w-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              ))}
-            </div>
           </div>
         ) : null}
 
