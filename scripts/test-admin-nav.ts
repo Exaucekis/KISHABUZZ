@@ -53,8 +53,8 @@ assert.deepEqual(
   ["/", "/evenements", "/a-propos", "/chroniques", "/publications", "/portfolio", "/collaborations", "/contact"]
 );
 assert.equal(
-  SITE_NAV_DESKTOP.some((item) => item.href === "/collaborations"),
-  false
+  SITE_NAV_DESKTOP.length,
+  SITE_NAV.filter((item) => item.href !== "/collaborations").length
 );
 assert.equal(
   SITE_NAV_WITH_ARENA.map((item) => item.href).indexOf("/arena-culture"),
