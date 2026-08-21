@@ -243,7 +243,7 @@ export function ArenaHomeDashboard({
         section="spotlight"
         kicker="À la une"
         title="Textes d’attente"
-        hint="Ces textes s’affichent s’il n’y a pas encore d’affiche de prochain invité. La vidéo se gère dans Émissions, l’affiche dans Prochain invité."
+        hint="Ces textes s’affichent seulement s’il n’y a pas encore de prochain invité. Pour publier l’invité et son affiche, ouvrez l’onglet Prochain invité — pas Galerie."
       >
         <input type="hidden" name="chipShows" value={home.spotlight.chipShows} />
         <input type="hidden" name="chipVideos" value={home.spotlight.chipVideos} />

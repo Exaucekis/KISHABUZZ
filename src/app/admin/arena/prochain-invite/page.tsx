@@ -23,7 +23,7 @@ export default async function AdminNextGuestPage() {
     <div>
       <AdminPageIntro
         title="Prochain invité"
-        hint="L’affiche s’affiche sous la vidéo d’émission. Un nouvel invité envoie l’ancien aux archives, sans retirer la vidéo en première."
+        hint="C’est le bloc Bientôt annoncé : publiez ici le prochain invité et son affiche. Galerie, c’est uniquement les albums photos."
         actions={[
           {
             href: "/",

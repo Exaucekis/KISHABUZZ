@@ -247,12 +247,16 @@ assert.doesNotMatch(publicArena, /ArenaCalendarCard/);
 assert.match(publicArena, /await connection\(\)/);
 assert.match(publicArena, /getArenaStage/);
 assert.match(publicArena, /VideoEmbed/);
+assert.match(publicArena, /const heroPoster = home\.hero\.poster/);
 const publicHome = readFileSync("src/app/(site)/page.tsx", "utf8");
 assert.match(publicHome, /arenaHome/);
 assert.doesNotMatch(publicHome, /arenaHome\.explore\.items/);
 assert.match(publicHome, /arenaHome\.explore\.eyebrow/);
 assert.match(publicHome, /arenaHome\.explore\.title/);
 assert.match(publicHome, /arenaHome\.spotlight\.emptyLabel/);
+assert.match(publicHome, /nextGuestPoster/);
+assert.doesNotMatch(publicHome, /featuredAlbum/);
+assert.doesNotMatch(publicHome, /invitee-plateau/);
 assert.match(publicHome, /\/arena-culture\/emissions/);
 assert.match(publicHome, /\/arena-culture\/photos/);
 

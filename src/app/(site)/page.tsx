@@ -23,9 +23,7 @@ export default async function HomePage() {
     settings,
     feed,
     announcedShow,
-    spotlightShow,
     domains,
-    featuredAlbum,
     galleryAlbums,
     featuredVideo,
     about,
@@ -35,14 +33,9 @@ export default async function HomePage() {
     arenaHome,
   } = await getHomePageData();
 
-  const guest = arenaSpotlightGuest(announcedShow || spotlightShow);
+  const guest = arenaSpotlightGuest(announcedShow);
   const announced = Boolean(announcedShow);
-  const spotlightPoster =
-    announcedShow?.poster ||
-    guest?.photo ||
-    arenaHome.hero.poster ||
-    featuredAlbum?.coverImage ||
-    "/arena/albums/invitee-plateau/01-invitee.jpg";
+  const nextGuestPoster = announcedShow?.poster || guest?.photo || "";
 
   return (
     <>
@@ -91,10 +84,16 @@ export default async function HomePage() {
       ) : null}
 
       <section className="home-spotlight relative overflow-hidden border-y border-line">
-        <div className="home-spotlight__bg" aria-hidden>
-          <PublicImage src={spotlightPoster} alt="" fill sizes="100vw" className="object-cover" />
-        </div>
-        <div className="home-spotlight__shade" aria-hidden />
+        {nextGuestPoster ? (
+          <>
+            <div className="home-spotlight__bg" aria-hidden>
+              <PublicImage src={nextGuestPoster} alt="" fill sizes="100vw" className="object-cover" />
+            </div>
+            <div className="home-spotlight__shade" aria-hidden />
+          </>
+        ) : (
+          <div className="home-spotlight__shade" aria-hidden />
+        )}
         <div className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-20 md:grid-cols-[1.05fr_0.95fr] md:items-end md:px-6 md:py-28">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#ffb347]">
@@ -108,7 +107,7 @@ export default async function HomePage() {
             <p className="mt-5 max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
               {announced
                 ? [announcedShow?.theme, guest?.profession].filter(Boolean).join(" · ") ||
-                  arenaHome.hero.text
+                  "Prochain invité Arena Culture."
                 : arenaHome.spotlight.emptyBody}
               {announced && announcedShow?.airDate
                 ? ` · ${formatDate(announcedShow.airDate)}${announcedShow.airTime ? ` · ${announcedShow.airTime}` : ""}`
@@ -135,15 +134,17 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="home-spotlight__poster">
-            <PublicImage
-              src={spotlightPoster}
-              alt={guest?.name || announcedShow?.title || arenaHome.hero.line1}
-              fill
-              sizes="(max-width: 768px) 90vw, 42vw"
-              className="object-cover"
-            />
-          </div>
+          {nextGuestPoster ? (
+            <div className="home-spotlight__poster">
+              <PublicImage
+                src={nextGuestPoster}
+                alt={guest?.name || announcedShow?.title || "Prochain invité Arena Culture"}
+                fill
+                sizes="(max-width: 768px) 90vw, 42vw"
+                className="object-cover"
+              />
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -152,7 +153,7 @@ export default async function HomePage() {
           <SectionHeading
             eyebrow={arenaHome.explore.eyebrow}
             title={arenaHome.explore.title}
-            description={arenaHome.hero.text}
+            description="Albums photos Arena Culture : un album par invité, dans l’ordre du plateau."
           />
           <Link href="/arena-culture/photos" className="shrink-0 text-sm font-semibold text-ember-text">
             Galerie Arena →

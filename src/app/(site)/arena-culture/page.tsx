@@ -37,7 +37,7 @@ export default async function ArenaCulturePage() {
   const guest = arenaSpotlightGuest(spotlight);
   const headlineGuest = arenaSpotlightGuest(headline);
   const headlineVideo = headline ? arenaShowVideo(headline) : "";
-  const heroPoster = spotlight?.poster || guest?.photo || home.hero.poster;
+  const heroPoster = home.hero.poster;
 
   const sceneTiles = featuredGuests
     .filter((item) => item.photo)
@@ -113,11 +113,11 @@ export default async function ArenaCulturePage() {
 
       <section className="ac-spotlight">
         <div className="ac-spotlight__grid">
-          {spotlight?.poster || guest?.photo || home.hero.poster ? (
+          {spotlight?.poster || guest?.photo ? (
             <div className="ac-spotlight__visual">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={spotlight?.poster || guest?.photo || home.hero.poster}
+                src={spotlight?.poster || guest?.photo}
                 alt={guest?.name || spotlight?.title || "Prochain invité Arena Culture"}
                 loading="lazy"
                 decoding="async"

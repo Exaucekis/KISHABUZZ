@@ -154,7 +154,7 @@ export const ARENA_HOME_SECTION_META: Record<
   },
   spotlight: {
     label: "À la une",
-    where: "l’affiche à la une, sur l’accueil et /arena-culture",
+    where: "l’affiche du prochain invité, publiée depuis l’onglet Prochain invité",
   },
   scene: {
     label: "Scène",
