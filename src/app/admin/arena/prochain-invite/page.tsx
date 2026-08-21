@@ -23,7 +23,7 @@ export default async function AdminNextGuestPage() {
     <div>
       <AdminPageIntro
         title="Prochain invité"
-        hint="C’est le bloc Bientôt annoncé : publiez ici le prochain invité et son affiche. Galerie, c’est uniquement les albums photos."
+        hint="Ici, on n’écrit pas la fiche. On choisit quelqu’un déjà créé, on ajoute l’affiche d’émission, et ça s’affiche sur l’accueil sous « Prochain invité »."
         actions={[
           {
             href: "/",
@@ -33,8 +33,9 @@ export default async function AdminNextGuestPage() {
           },
           {
             href: "/admin/arena/guests",
-            label: "Fiches invités",
-            hint: "Portraits et bios",
+            label: "1. Créer une fiche",
+            hint: "Nom, photo, bio — obligatoire avant d’annoncer",
+            variant: guests.length ? "ghost" : "primary",
           },
         ]}
       />

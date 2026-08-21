@@ -9,7 +9,6 @@ import {
   getArenaHome,
   getArenaPhotoAlbums,
   getArenaStage,
-  getFeaturedArenaGuests,
 } from "@/lib/data";
 import { arenaShowCover, arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
@@ -17,7 +16,7 @@ import { formatDate } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Arena Culture",
   description:
-    "Émissions, invités, affiches, photos, vidéos et archives — l'univers médiatique de KISHA BUZZ.",
+    "Émissions, affiches, photos et archives — l'univers médiatique de KISHA BUZZ.",
 };
 
 export const dynamic = "force-dynamic";
@@ -25,10 +24,9 @@ export const revalidate = 0;
 
 export default async function ArenaCulturePage() {
   await connection();
-  const [home, stage, featuredGuests, albums] = await Promise.all([
+  const [home, stage, albums] = await Promise.all([
     getArenaHome(),
     getArenaStage(),
-    getFeaturedArenaGuests(8),
     getArenaPhotoAlbums(),
   ]);
 
@@ -38,14 +36,6 @@ export default async function ArenaCulturePage() {
   const headlineGuest = arenaSpotlightGuest(headline);
   const headlineVideo = headline ? arenaShowVideo(headline) : "";
   const heroPoster = home.hero.poster;
-
-  const sceneTiles = featuredGuests
-    .filter((item) => item.photo)
-    .map((item) => ({
-      title: item.name,
-      image: item.photo,
-      href: `/arena-culture/invites/${item.slug}`,
-    }));
 
   const photoTiles = albums
     .map((album) => ({
@@ -73,7 +63,6 @@ export default async function ArenaCulturePage() {
         line2={home.hero.line2}
         line3={home.hero.line3}
         description={home.hero.text}
-        ctaInvites={home.hero.ctaInvites}
         poster={heroPoster}
         spotlightTitle={headlineGuest?.name || guest?.name}
         spotlightHref={
@@ -128,13 +117,7 @@ export default async function ArenaCulturePage() {
             <p className="ac-kicker">{home.spotlight.emptyLabel}</p>
             {spotlight ? (
               <>
-                <h2>
-                  {guest ? (
-                    <Link href={`/arena-culture/invites/${guest.slug}`}>{guest.name}</Link>
-                  ) : (
-                    spotlight.title
-                  )}
-                </h2>
+                <h2>{guest?.name || spotlight.title}</h2>
                 <p>
                   {[spotlight.theme, guest?.profession].filter(Boolean).join(" · ") ||
                     "Bientôt sur le plateau Arena Grand Culture."}
@@ -171,14 +154,6 @@ export default async function ArenaCulturePage() {
           </div>
         </div>
       </section>
-
-      <ArenaMediaRow
-        eyebrow={home.scene.eyebrow}
-        title={home.scene.title}
-        href="/arena-culture/invites"
-        items={sceneTiles}
-        variant="poster"
-      />
 
       <ArenaMediaRow
         eyebrow="Galerie"

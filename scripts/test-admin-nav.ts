@@ -62,7 +62,7 @@ assert.equal(
 );
 assert.deepEqual(
   ARENA_NAV.map((item) => item.label),
-  ["Accueil", "Émissions", "Invités", "Affiches", "Galerie", "Archives"]
+  ["Accueil", "Émissions", "Affiches", "Galerie", "Archives"]
 );
 assert.deepEqual(
   ARENA_ADMIN_LINKS.map((item) => item.label),
@@ -70,7 +70,7 @@ assert.deepEqual(
     "Page Arena",
     "Prochain invité",
     "Émissions",
-    "Invités",
+    "Fiches invités",
     "Galerie",
     "Archives",
     "Saisons",

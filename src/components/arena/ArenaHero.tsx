@@ -15,7 +15,6 @@ type Props = {
   line1?: string;
   line2?: string;
   line3?: string;
-  ctaInvites?: string;
   spotlightTitle?: string;
   spotlightHref?: string;
   poster?: string;
@@ -27,7 +26,6 @@ export function ArenaHero({
   line1 = "Culture.",
   line2 = "Émissions.",
   line3 = "Live.",
-  ctaInvites = "Invités",
   spotlightTitle,
   spotlightHref,
   poster,
@@ -95,9 +93,6 @@ export function ArenaHero({
         <div className="ac-hero__cta">
           <Link href={spotlightHref || "/arena-culture/emissions"} className="ac-btn ac-btn--primary">
             {ctaLabel || (spotlightTitle ? `Prochain · ${spotlightTitle}` : "Voir les émissions")}
-          </Link>
-          <Link href="/arena-culture/invites" className="ac-btn ac-btn--ghost">
-            {ctaInvites}
           </Link>
         </div>
       </div>

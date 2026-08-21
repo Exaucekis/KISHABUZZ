@@ -64,7 +64,7 @@ async function main() {
 
   const home = parseArenaHome(homeRow?.body, presentation?.body || "");
   check(Boolean(home.hero.line1 && home.hero.text), "héro a titre + texte");
-  check(home.explore.items.length === 5, "5 cartes Explorer");
+  check(home.explore.items.length === 4, "4 cartes Explorer");
   check(
     home.explore.items.every((item, i) => item.href === ARENA_EXPLORE_DEFAULTS[i].href),
     "liens Explorer intactes"
@@ -114,7 +114,6 @@ async function main() {
 
     for (const path of [
       "/arena-culture/emissions",
-      "/arena-culture/invites",
       "/arena-culture/affiches",
       "/arena-culture/photos",
       "/arena-culture/archives",

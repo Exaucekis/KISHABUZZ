@@ -222,11 +222,7 @@ export function ArenaHomeDashboard({
             <textarea name="text" rows={3} required defaultValue={home.hero.text} />
             <AdminHint>Phrase sous le titre. Visible aussi comme texte Arena Culture.</AdminHint>
           </div>
-          <div className="admin-field">
-            <label>Bouton secondaire</label>
-            <input name="ctaInvites" required defaultValue={home.hero.ctaInvites} />
-            <AdminHint>Libellé du bouton vers les invités.</AdminHint>
-          </div>
+          <input type="hidden" name="ctaInvites" value={home.hero.ctaInvites} />
         </div>
         <MediaField
           name="poster"

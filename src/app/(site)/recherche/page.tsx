@@ -124,7 +124,7 @@ export default async function RecherchePage({ searchParams }: Props) {
                 {results.guests.map((g) => (
                   <ResultLink
                     key={g.id}
-                    href={`/arena-culture/invites/${g.slug}`}
+                    href="/arena-culture"
                     title={g.name}
                     meta={g.profession || undefined}
                   />

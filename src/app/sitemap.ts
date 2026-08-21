@@ -17,7 +17,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/arena-culture",
     "/arena-culture/emissions",
     "/arena-culture/calendrier",
-    "/arena-culture/invites",
     "/arena-culture/affiches",
     "/arena-culture/photos",
     "/arena-culture/archives",
@@ -35,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   try {
-    const [articles, shows, portfolio, guests, albums, events] = await Promise.all([
+    const [articles, shows, portfolio, albums, events] = await Promise.all([
       prisma.article.findMany({
         where: { status: "PUBLISHED" },
         select: { slug: true, contentType: true, updatedAt: true },
@@ -46,10 +45,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
       prisma.portfolioItem.findMany({
         where: { status: "PUBLISHED" },
-        select: { slug: true, updatedAt: true },
-      }),
-      prisma.arenaGuest.findMany({
-        where: { visible: true },
         select: { slug: true, updatedAt: true },
       }),
       prisma.photoAlbum.findMany({
@@ -79,12 +74,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...portfolio.map((p) => ({
         url: `${base}/portfolio/${p.slug}`,
         lastModified: p.updatedAt,
-        changeFrequency: "monthly" as const,
-        priority: 0.6,
-      })),
-      ...guests.map((g) => ({
-        url: `${base}/arena-culture/invites/${g.slug}`,
-        lastModified: g.updatedAt,
         changeFrequency: "monthly" as const,
         priority: 0.6,
       })),

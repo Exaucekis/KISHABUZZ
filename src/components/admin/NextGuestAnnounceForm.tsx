@@ -55,7 +55,7 @@ export function NextGuestAnnounceForm({
             <p className="text-xs uppercase tracking-wide text-amber-200">En ligne maintenant</p>
             <p className="font-medium">{current.guestName || current.title}</p>
             <p className="text-sm text-[#9aa3b5]">
-              Visible sur l’accueil et /arena-culture sous « Prochain invité ».
+              Visible sur l’accueil et Arena sous « Prochain invité ».
             </p>
           </div>
           <StatusBadge status={current.status} />
@@ -81,12 +81,30 @@ export function NextGuestAnnounceForm({
             <input type="hidden" name="next" value="/admin/arena/archives" />
           </AdminConfirmForm>
         </div>
-      ) : (
+      ) : guests.length ? (
         <p className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-[#9aa3b5]">
-          Personne n’est encore annoncé. Choisissez un invité, ajoutez l’affiche, puis Annoncer.
+          Personne n’est encore sur l’accueil. Choisissez une fiche ci-dessous, ajoutez l’affiche
+          d’émission, puis cliquez Annoncer.
         </p>
+      ) : (
+        <div className="admin-card space-y-3">
+          <p className="font-medium">Rien à annoncer pour l’instant</p>
+          <p className="text-sm text-[#9aa3b5]">
+            Cette page ne crée pas la personne. Elle affiche seulement l’affiche du prochain invité
+            sur l’accueil. Il n’y a encore aucune fiche : créez-en une, puis revenez ici.
+          </p>
+          <ol className="list-decimal space-y-1 pl-5 text-sm text-[#eef1f6]">
+            <li>Ouvrez Fiches invités et créez le nom + le portrait.</li>
+            <li>Revenez ici, choisissez cet invité, déposez l’affiche d’émission.</li>
+            <li>Cliquez Annoncer : ça apparaît tout de suite sur l’accueil.</li>
+          </ol>
+          <Link href="/admin/arena/guests" className="admin-btn admin-btn-primary">
+            Créer la première fiche
+          </Link>
+        </div>
       )}
 
+      {guests.length ? (
       <form id="annonce" action={action} className="admin-card space-y-4">
         {current?.id ? <input type="hidden" name="id" value={current.id} /> : null}
         <div className="admin-field">
@@ -101,7 +119,8 @@ export function NextGuestAnnounceForm({
             ))}
           </select>
           <AdminHint>
-            Les fiches se créent dans Invités. Ici on annonce qui apparaît en « Prochain invité ».
+            La liste vient des fiches. Si le nom n’y est pas, créez d’abord la fiche (bouton
+            ci-dessous).
           </AdminHint>
         </div>
         <MediaField
@@ -110,7 +129,7 @@ export function NextGuestAnnounceForm({
           defaultValue={current?.poster || ""}
           kind="image"
           folder="covers"
-          hint="Cette affiche s’affiche tout de suite sur l’accueil et Arena."
+          hint="Image de l’émission (pas le portrait). C’est ça qui s’affiche en grand sur l’accueil."
         />
         <div className="grid gap-4 md:grid-cols-2">
           <div className="admin-field">
@@ -156,7 +175,7 @@ export function NextGuestAnnounceForm({
             {current ? "Annoncer un nouvel invité" : "Annoncer sur le site"}
           </SubmitButton>
           <Link href="/admin/arena/guests" className="admin-btn admin-btn-ghost">
-            Créer un invité
+            La fiche n’existe pas ? Créer
           </Link>
         </div>
         <p className="admin-action-hint">
@@ -164,6 +183,7 @@ export function NextGuestAnnounceForm({
           reste en première ; la nouvelle affiche s’affiche juste en dessous.
         </p>
       </form>
+      ) : null}
     </div>
   );
 }

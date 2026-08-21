@@ -55,13 +55,6 @@ export const ARENA_EXPLORE_DEFAULTS: ArenaExploreItem[] = [
     image: "/artists/fally-ipupa.jpg",
   },
   {
-    key: "invites",
-    href: "/arena-culture/invites",
-    title: "Invités",
-    subtitle: "Talents & voix",
-    image: "/artists/gaz-mawete.jpg",
-  },
-  {
     key: "affiches",
     href: "/arena-culture/affiches",
     title: "Affiches",

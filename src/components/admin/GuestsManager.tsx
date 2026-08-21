@@ -43,7 +43,7 @@ function GuestForm({ guest }: { guest?: Guest }) {
         kind="image"
         folder="guests"
         className="admin-field"
-        hint="Portrait. Fichier ou lien. S’affiche sur Invités et les émissions."
+        hint="Portrait (visage). Pas l’affiche de l’émission — celle-là se met dans Prochain invité."
       />
       <div className="admin-field">
         <label>Bio</label>
@@ -55,14 +55,18 @@ function GuestForm({ guest }: { guest?: Guest }) {
           <input type="checkbox" name="visible" defaultChecked={guest?.visible ?? true} />
           Publier sur le site
         </label>
-        <AdminHint>Décochez pour garder l’invité en brouillon, hors des pages Arena.</AdminHint>
+        <AdminHint>
+          Ça garde la fiche pour Prochain invité et les émissions. Il n’y a plus de page Invités publique.
+        </AdminHint>
       </div>
       <div className="admin-field">
         <label className="admin-check">
           <input type="checkbox" name="featured" defaultChecked={guest?.featured || false} />
           Mettre en avant
         </label>
-        <AdminHint>Apparaît dans « Visages & voix » sur l’accueil Arena.</AdminHint>
+        <AdminHint>
+          Optionnel. Rangée « Visages & voix » sur Arena — ce n’est pas le bloc Prochain invité.
+        </AdminHint>
       </div>
       {state.message && !state.ok ? (
         <p className={`mb-2 text-sm text-red-300`}>{state.message}</p>
@@ -78,8 +82,11 @@ export function GuestsManager({ guests }: { guests: Guest[] }) {
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
       <div>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#9aa3b5]">
-          Nouvel invité
+          Étape 1 · Nouvelle fiche
         </h2>
+        <p className="admin-page-hint mb-3">
+          Remplissez au moins le nom. La photo est le portrait (tête), pas l’affiche d’émission.
+        </p>
         <GuestForm />
       </div>
       <div className="space-y-3">
@@ -95,16 +102,6 @@ export function GuestsManager({ guests }: { guests: Guest[] }) {
                 </p>
               </div>
               <div className="flex flex-wrap gap-1">
-                {g.slug && g.visible ? (
-                  <a
-                    href={`/arena-culture/invites/${g.slug}`}
-                    className="admin-btn admin-btn-ghost text-xs"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Voir
-                  </a>
-                ) : null}
                 <form action={setArenaGuestVisible}>
                   <input type="hidden" name="id" value={g.id} />
                   <input type="hidden" name="visible" value={g.visible ? "0" : "1"} />
@@ -123,7 +120,15 @@ export function GuestsManager({ guests }: { guests: Guest[] }) {
             <GuestForm guest={g} />
           </div>
         ))}
-        {!guests.length ? <p className="text-sm text-[#9aa3b5]">Aucun invité.</p> : null}
+        {!guests.length ? (
+          <div className="admin-card space-y-2">
+            <p className="font-medium">Aucune fiche pour l’instant</p>
+            <p className="text-sm text-[#9aa3b5]">
+              C’est normal. Créez la première personne avec le formulaire à gauche, puis cliquez
+              Créer. Ensuite ouvrez Prochain invité pour l’afficher sur l’accueil avec l’affiche.
+            </p>
+          </div>
+        ) : null}
       </div>
     </div>
   );

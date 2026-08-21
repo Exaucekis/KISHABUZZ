@@ -10,19 +10,19 @@ export default async function AdminArenaGuestsPage() {
   return (
     <div>
       <AdminPageIntro
-        title="Invités Arena"
-        hint="Créez l’invité, ajoutez photo et bio, puis publiez. Pour l’afficher sur l’accueil, ouvrez Prochain invité."
+        title="Fiches invités"
+        hint="C’est le carnet : nom, portrait, métier, bio. Créer une fiche ne la met pas encore sur l’accueil. Pour ça, allez ensuite dans Prochain invité et ajoutez l’affiche."
         actions={[
           {
             href: "/admin/arena/prochain-invite",
-            label: "Prochain invité",
-            hint: "Annoncer sur l’accueil",
-            variant: "primary",
+            label: "2. Annoncer sur l’accueil",
+            hint: "Choisir la fiche + affiche d’émission",
+            variant: guests.length ? "primary" : "ghost",
           },
           {
-            href: "/arena-culture/invites",
-            label: "Voir la page",
-            hint: "Ouvre /arena-culture/invites",
+            href: "/arena-culture",
+            label: "Voir l’accueil Arena",
+            hint: "Bloc Prochain invité",
             target: "_blank",
           },
         ]}

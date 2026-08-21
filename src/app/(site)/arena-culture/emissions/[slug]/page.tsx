@@ -120,11 +120,7 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
                     </div>
                   )}
                   <div>
-                    <p className="font-display text-xl">
-                      <Link href={`/arena-culture/invites/${g.slug}`} className="hover:text-[var(--ac-amber)]">
-                        {g.name}
-                      </Link>
-                    </p>
+                    <p className="font-display text-xl">{g.name}</p>
                     {g.profession ? (
                       <p className="mt-1 text-sm text-paper-muted">{g.profession}</p>
                     ) : null}

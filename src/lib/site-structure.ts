@@ -46,7 +46,6 @@ export const SITE_NAV_WITH_ARENA = [
 export const ARENA_NAV = [
   { href: "/arena-culture", label: "Accueil", exact: true },
   { href: "/arena-culture/emissions", label: "Émissions", exact: false },
-  { href: "/arena-culture/invites", label: "Invités", exact: false },
   { href: "/arena-culture/affiches", label: "Affiches", exact: false },
   { href: "/arena-culture/photos", label: "Galerie", exact: false },
   { href: "/arena-culture/archives", label: "Archives", exact: false },
@@ -58,9 +57,9 @@ export const ARENA_NAV = [
  */
 export const ARENA_ADMIN_LINKS = [
   { href: "/admin/arena", label: "Page Arena", hint: "Textes de l’accueil Arena" },
-  { href: "/admin/arena/prochain-invite", label: "Prochain invité", hint: "Publier l’invité et l’affiche Bientôt" },
+  { href: "/admin/arena/prochain-invite", label: "Prochain invité", hint: "Affiche d’accueil, après la fiche" },
   { href: "/admin/arena/emissions", label: "Émissions", hint: "Invité, domaine, vidéo, miniature" },
-  { href: "/admin/arena/guests", label: "Invités", hint: "Portraits et fiches" },
+  { href: "/admin/arena/guests", label: "Fiches invités", hint: "Nom, portrait et bio — étape 1" },
   { href: "/admin/arena/albums", label: "Galerie", hint: "Albums photos, un par invité" },
   { href: "/admin/arena/archives", label: "Archives", hint: "Anciennes émissions" },
   { href: "/admin/arena/seasons", label: "Saisons", hint: "Découpage de l’année" },
