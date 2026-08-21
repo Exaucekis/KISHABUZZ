@@ -45,7 +45,7 @@ export function QuickPhotoForm({ guests }: { guests: string[] }) {
       {state.message && !state.ok ? (
         <p className="mb-2 text-sm text-red-300">{state.message}</p>
       ) : null}
-      <SaveResultFromState state={state} titleOk="Photo en ligne" />
+      <SaveResultFromState state={state} titleOk="Photo en ligne" resetForm />
       <SubmitButton>Publier</SubmitButton>
     </form>
   );

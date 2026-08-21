@@ -102,7 +102,27 @@ export function MediaField({
   const [cropOpen, setCropOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const urlInputRef = useRef<HTMLInputElement>(null);
   const uploadFormId = `media-upload-${useId().replace(/:/g, "")}`;
+
+  useEffect(() => {
+    const form = urlInputRef.current?.form;
+    if (!form) return;
+    const onReset = () => {
+      setUrl(defaultValue);
+      setAlt(defaultAlt);
+      setFocus(defaultFocus);
+      setBusy(false);
+      setMessage("");
+      setOk(false);
+      setDragOver(false);
+      setLibraryOpen(false);
+      setCropOpen(false);
+      if (inputRef.current) inputRef.current.value = "";
+    };
+    form.addEventListener("reset", onReset);
+    return () => form.removeEventListener("reset", onReset);
+  }, [defaultValue, defaultAlt, defaultFocus]);
 
   function applyUrl(next: string) {
     setUrl(next);
@@ -179,7 +199,7 @@ export function MediaField({
     <div className={className}>
       <label htmlFor={name}>{label}</label>
       {kind === "icon" ? <IconPicker value={url} onChange={(next) => void commitUrl(next)} /> : null}
-      <input type="hidden" name={name} value={url} />
+      <input ref={urlInputRef} type="hidden" name={name} value={url} />
       {dropzone ? (
         <label
           className={`mb-3 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-6 text-center transition ${

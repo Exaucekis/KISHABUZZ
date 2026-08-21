@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
+import { useRouter } from "next/navigation";
 import {
   addPhotoToAlbum,
   removePhotoFromAlbum,
@@ -32,7 +33,13 @@ type Album = {
 const initial: AdminActionState = { ok: false, message: "" };
 
 export function AlbumPhotosManager({ album }: { album: Album }) {
+  const router = useRouter();
   const [state, action] = useActionState(addPhotoToAlbum, initial);
+
+  async function refreshAfter(actionFn: (formData: FormData) => Promise<void>, formData: FormData) {
+    await actionFn(formData);
+    router.refresh();
+  }
 
   return (
     <div className="space-y-6">
@@ -43,9 +50,19 @@ export function AlbumPhotosManager({ album }: { album: Album }) {
             {album.guestName}
           </h1>
         </div>
-        <Link href="/admin/arena/albums" className="admin-btn admin-btn-ghost">
-          ← Tous les albums
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={`/arena-culture/albums/${album.slug}`}
+            className="admin-btn admin-btn-ghost"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Voir l’album
+          </a>
+          <Link href="/admin/arena/albums" className="admin-btn admin-btn-ghost">
+            ← Tous les albums
+          </Link>
+        </div>
       </div>
 
       <form action={action} className="admin-card">
@@ -78,7 +95,7 @@ export function AlbumPhotosManager({ album }: { album: Album }) {
         {state.message && !state.ok ? (
           <p className="mb-2 text-sm text-red-300">{state.message}</p>
         ) : null}
-        <SaveResultFromState state={state} titleOk="Photo ajoutée" />
+        <SaveResultFromState state={state} titleOk="Photo ajoutée" resetForm />
         <SubmitButton>Ajouter la photo</SubmitButton>
       </form>
 
@@ -90,7 +107,7 @@ export function AlbumPhotosManager({ album }: { album: Album }) {
             <div className="space-y-2 p-3">
               <p className="font-medium">{p.title}</p>
               <div className="flex flex-wrap gap-2">
-                <form action={setAlbumCover}>
+                <form action={refreshAfter.bind(null, setAlbumCover)}>
                   <input type="hidden" name="albumId" value={album.id} />
                   <input type="hidden" name="url" value={p.url} />
                   <input type="hidden" name="albumSlug" value={album.slug} />
@@ -98,7 +115,7 @@ export function AlbumPhotosManager({ album }: { album: Album }) {
                     {album.coverImage === p.url ? "Couverture ✓" : "Définir couverture"}
                   </button>
                 </form>
-                <form action={removePhotoFromAlbum}>
+                <form action={refreshAfter.bind(null, removePhotoFromAlbum)}>
                   <input type="hidden" name="id" value={p.id} />
                   <input type="hidden" name="albumSlug" value={album.slug} />
                   <button type="submit" className="admin-btn admin-btn-danger text-xs">

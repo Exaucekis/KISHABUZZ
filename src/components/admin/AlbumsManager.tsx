@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { deletePhotoAlbum, reorderPhotoAlbums } from "@/actions/admin/albums";
 import { QuickPhotoForm } from "@/components/admin/QuickPhotoForm";
 import { SortableOrderList } from "@/components/admin/SortableOrderList";
@@ -26,7 +27,8 @@ export function AlbumsManager({
   albums: Album[];
   guestNames?: string[];
 }) {
-  const names = [...guestNames, ...albums.map((album) => album.guestName)];
+  const router = useRouter();
+  const names = [...new Set([...guestNames, ...albums.map((album) => album.guestName)])];
 
   return (
     <div className="space-y-6">
@@ -62,7 +64,20 @@ export function AlbumsManager({
                 <Link href={`/admin/arena/albums/${a.slug}`} className="admin-btn admin-btn-ghost text-xs">
                   Voir les photos
                 </Link>
-                <form action={deletePhotoAlbum}>
+                <a
+                  href={`/arena-culture/albums/${a.slug}`}
+                  className="admin-btn admin-btn-ghost text-xs"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Voir en ligne
+                </a>
+                <form
+                  action={async (formData) => {
+                    await deletePhotoAlbum(formData);
+                    router.refresh();
+                  }}
+                >
                   <input type="hidden" name="id" value={a.id} />
                   <button type="submit" className="admin-btn admin-btn-danger text-xs">
                     Suppr.

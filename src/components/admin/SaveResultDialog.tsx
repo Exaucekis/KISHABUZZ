@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import type { AdminActionState } from "@/lib/admin";
 
@@ -139,13 +140,17 @@ export function SaveResultFromState({
   titleOk = "C’est en ligne",
   titleErr = "Enregistrement impossible",
   onOk,
+  resetForm = false,
 }: {
   state: AdminActionState;
   titleOk?: string;
   titleErr?: string;
   onOk?: () => void;
+  resetForm?: boolean;
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const hostRef = useRef<HTMLSpanElement>(null);
   const close = useCallback(() => setOpen(false), []);
   const onOkRef = useRef(onOk);
   onOkRef.current = onOk;
@@ -153,16 +158,22 @@ export function SaveResultFromState({
   useEffect(() => {
     if (!state.message) return;
     setOpen(true);
-    if (state.ok) onOkRef.current?.();
-  }, [state]);
+    if (!state.ok) return;
+    if (resetForm) hostRef.current?.closest("form")?.reset();
+    onOkRef.current?.();
+    router.refresh();
+  }, [state, resetForm, router]);
 
   return (
-    <SaveResultDialog
-      open={open && Boolean(state.message)}
-      ok={state.ok}
-      title={state.ok ? titleOk : titleErr}
-      description={state.message}
-      onClose={close}
-    />
+    <>
+      <span ref={hostRef} className="hidden" aria-hidden />
+      <SaveResultDialog
+        open={open && Boolean(state.message)}
+        ok={state.ok}
+        title={state.ok ? titleOk : titleErr}
+        description={state.message}
+        onClose={close}
+      />
+    </>
   );
 }

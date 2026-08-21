@@ -23,6 +23,14 @@ export default async function AdminArenaAlbumsPage() {
       <AdminPageIntro
         title="Galerie Arena"
         hint="Invité + photo. L’album se crée tout seul et la photo est en ligne sur Arena → Galerie, et sur l’accueil KISHA."
+        actions={[
+          {
+            href: "/arena-culture/photos",
+            label: "Voir la galerie",
+            hint: "Ouvre la page publique",
+            target: "_blank",
+          },
+        ]}
       />
       <ArenaAdminNav current="/admin/arena/albums" />
       <AlbumsManager albums={albums} guestNames={guests.map((guest) => guest.name)} />
