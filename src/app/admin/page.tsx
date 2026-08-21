@@ -1,11 +1,10 @@
-import Link from "next/link";
 import { ArenaCulturePanel } from "@/components/admin/ArenaCulturePanel";
 import { EditorialDashboard } from "@/components/admin/EditorialDashboard";
 import { AdminAction, AdminActionRow, AdminPageIntro } from "@/components/admin/AdminHint";
-import { AdminHomeTabs } from "@/components/admin/AdminHomeTabs";
 import { auth } from "@/lib/auth";
 import { editorialHeadline } from "@/lib/editorial-dashboard";
-import { videoPoster } from "@/lib/media";
+import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
+import { getArenaStage } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { roleLabel } from "@/lib/roles";
 
@@ -19,30 +18,16 @@ export default async function AdminDashboardPage() {
   const [
     draftsCount,
     scheduledCount,
-    publishedCount,
     contactsNew,
     arenaDrafts,
     drafts,
     scheduled,
     contacts,
-    latestShow,
-    chroniques,
-    photos,
-    videos,
-    partners,
-    artists,
-    subscribers,
-    users,
-    publishedShows,
-    publishedGuests,
-    arenaVideos,
-    arenaAlbums,
-    arenaVideoRows,
-    publishedEvents,
+    liveEvents,
+    stage,
   ] = await Promise.all([
     prisma.article.count({ where: { status: "DRAFT" } }),
     prisma.article.count({ where: { status: "SCHEDULED" } }),
-    prisma.article.count({ where: { status: "PUBLISHED" } }),
     prisma.contactRequest.count({ where: { status: "NEW" } }),
     prisma.arenaShow.count({ where: { status: "DRAFT" } }),
     prisma.article.findMany({
@@ -70,34 +55,13 @@ export default async function AdminDashboardPage() {
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
-    prisma.arenaShow.findFirst({
-      orderBy: [{ airDate: "desc" }, { number: "desc" }],
-      select: {
-        id: true,
-        title: true,
-        status: true,
-        airDate: true,
-        guests: { take: 1, select: { guest: { select: { name: true } } } },
-      },
+    prisma.event.findMany({
+      where: { status: { in: ["PUBLISHED", "SOLD_OUT"] } },
+      select: { id: true, title: true, startsAt: true, status: true, city: true, venueName: true },
+      orderBy: { startsAt: "asc" },
+      take: 5,
     }),
-    prisma.article.count({ where: { contentType: "CHRONIQUE" } }),
-    prisma.mediaAsset.count({ where: { kind: "IMAGE" } }),
-    prisma.mediaAsset.count({ where: { kind: "VIDEO" } }),
-    prisma.partner.count(),
-    prisma.spotlightArtist.count(),
-    prisma.newsletterSubscriber.count({ where: { status: "ACTIVE" } }),
-    prisma.user.count(),
-    prisma.arenaShow.count({ where: { status: "PUBLISHED" } }),
-    prisma.arenaGuest.count({ where: { visible: true } }),
-    prisma.mediaAsset.count({
-      where: { kind: "VIDEO", OR: [{ category: "ARENA_CULTURE" }, { arenaShowId: { not: null } }] },
-    }),
-    prisma.photoAlbum.count({ where: { visible: true } }),
-    prisma.mediaAsset.findMany({
-      where: { kind: "VIDEO", OR: [{ category: "ARENA_CULTURE" }, { arenaShowId: { not: null } }] },
-      select: { url: true, thumbnail: true },
-    }),
-    prisma.event.count({ where: { status: { in: ["PUBLISHED", "SOLD_OUT"] } } }),
+    getArenaStage(),
   ]);
 
   const headline = editorialHeadline({
@@ -107,146 +71,96 @@ export default async function AdminDashboardPage() {
     arenaDrafts,
   });
 
-  const workCards = [
-    { label: "Brouillons", value: draftsCount, href: "/admin/articles?status=DRAFT", hint: "Textes à finir ou relire." },
-    { label: "Programmés", value: scheduledCount, href: "/admin/articles?status=SCHEDULED", hint: "Mise en ligne automatique." },
-    { label: "Contacts nouveaux", value: contactsNew, href: "/admin/contacts?status=NEW", hint: "Messages à traiter." },
-    { label: "Émissions brouillon", value: arenaDrafts, href: "/admin/arena/emissions", hint: "Épisodes Arena non publiés." },
-  ];
-
-  const siteCards = [
-    { label: "Publiés", value: publishedCount, href: "/admin/articles", hint: "En ligne sur le site." },
-    { label: "Chroniques", value: chroniques, href: "/admin/articles?type=CHRONIQUE", hint: "Textes d’opinion." },
-    { label: "Photos", value: photos, href: "/admin/media?kind=IMAGE", hint: "Galerie média." },
-    { label: "Vidéos", value: videos, href: "/admin/arena/videos", hint: "Vidéos Arena et extraits." },
-    { label: "Événements", value: publishedEvents, href: "/admin/evenements", hint: "Billetterie en ligne." },
-    { label: "Partenaires", value: partners, href: "/admin/partners", hint: "Collaborations." },
-    { label: "Artistes à la une", value: artists, href: "/admin/artists", hint: "Bandeau d’accueil." },
-    { label: "Newsletter", value: subscribers, href: "/admin/newsletter", hint: "Abonnés actifs." },
-    ...(session?.user?.role === "SUPERADMIN"
-      ? [{ label: "Utilisateurs", value: users, href: "/admin/users", hint: "Comptes et rôles." }]
-      : []),
-  ];
-
   return (
-    <div>
+    <div className="space-y-10">
       <AdminPageIntro
         title="Tableau de bord"
-        hint={`${headline} Choisissez un onglet : chaque rubrique a uniquement ses boutons. Connecté en tant que ${session?.user?.name || session?.user?.email} · ${roleLabel(session?.user?.role)}.`}
+        hint={`${headline} ${session?.user?.name || session?.user?.email} · ${roleLabel(session?.user?.role)}.`}
       />
 
-      <AdminHomeTabs
-        editorial={
-          <section className="admin-dash-panel">
-            <div className="admin-dash-panel__head">
-              <div>
-                <h2 className="admin-dash-panel__title">À traiter</h2>
-                <p className="admin-dash-panel__hint">
-                  File éditoriale : brouillons, publications programmées et messages reçus.
-                </p>
-              </div>
-              <AdminActionRow>
-                <AdminAction
-                  href="/admin/articles/new"
-                  label="Nouvel article"
-                  hint="Chronique ou publication"
-                  variant="primary"
-                />
-                <AdminAction
-                  href="/admin/contacts?status=NEW"
-                  label="Ouvrir les contacts"
-                  hint="Répondre aux messages"
-                />
-              </AdminActionRow>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {workCards.map((card) => (
-                <Link key={card.label} href={card.href} className="admin-card block hover:border-white/20">
-                  <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">{card.label}</p>
-                  <p className="mt-2 text-3xl font-bold tabular-nums">{card.value}</p>
-                  <p className="admin-card-hint">{card.hint}</p>
-                </Link>
-              ))}
-            </div>
-            <EditorialDashboard drafts={drafts} scheduled={scheduled} contacts={contacts} />
-          </section>
-        }
-        arena={
-          <section className="admin-dash-panel">
-            <AdminActionRow>
-              <AdminAction
-                href="/admin/arena/prochain-invite"
-                label="Prochain invité"
-                hint="Annoncer : visible tout de suite sur l’accueil"
-                variant="primary"
-              />
-              <AdminAction
-                href="/admin/arena/new"
-                label="Nouvelle émission"
-                hint="Créer un épisode Arena"
-              />
-              <AdminAction
-                href="/admin/arena/videos"
-                label="Ajouter une vidéo"
-                hint="Replay ou extrait"
-              />
-              <AdminAction
-                href="/admin/arena"
-                label="Page Arena"
-                hint="Textes et visuels d’accueil"
-              />
-            </AdminActionRow>
-            <ArenaCulturePanel
-              publishedShows={publishedShows}
-              draftShows={arenaDrafts}
-              publishedGuests={publishedGuests}
-              videos={arenaVideos}
-              albums={arenaAlbums}
-              videosWithoutPoster={arenaVideoRows.filter((row) => !videoPoster(row.url, row.thumbnail)).length}
-              latestShow={latestShow}
+      <section className="admin-dash-panel">
+        <div className="admin-dash-panel__head">
+          <div>
+            <h2 className="admin-dash-panel__title">À faire</h2>
+            <p className="admin-dash-panel__hint">
+              Ce que vous touchez souvent : textes en attente, messages, billetterie en cours.
+            </p>
+          </div>
+          <AdminActionRow>
+            <AdminAction
+              href="/admin/articles/new"
+              label="Nouvel article"
+              hint="Chronique ou publication"
+              variant="primary"
             />
-          </section>
-        }
-        site={
-          <section className="admin-dash-panel">
-            <div className="admin-dash-panel__head">
-              <div>
-                <h2 className="admin-dash-panel__title">Accueil & site</h2>
-                <p className="admin-dash-panel__hint">
-                  Ce qui s’affiche sur la page principale : hero, artistes, partenaires, événements.
-                </p>
-              </div>
-              <AdminActionRow>
-                <AdminAction
-                  href="/admin/settings"
-                  label="Paramètres"
-                  hint="Nom, accroche, visuel d’accueil"
-                  variant="primary"
-                />
-                <AdminAction
-                  href="/admin/artists"
-                  label="Artistes à la une"
-                  hint="Bandeau Spotlight de l’accueil"
-                />
-                <AdminAction
-                  href="/admin/evenements/new"
-                  label="Nouvel événement"
-                  hint="Billetterie en ligne"
-                />
-              </AdminActionRow>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {siteCards.map((card) => (
-                <Link key={card.label} href={card.href} className="admin-card block hover:border-white/20">
-                  <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">{card.label}</p>
-                  <p className="mt-2 text-2xl font-bold tabular-nums">{card.value}</p>
-                  <p className="admin-card-hint">{card.hint}</p>
-                </Link>
-              ))}
-            </div>
-          </section>
-        }
-      />
+            <AdminAction
+              href="/admin/evenements/new"
+              label="Nouvel événement"
+              hint="Ouvrir une vente"
+            />
+            <AdminAction
+              href="/admin/contacts?status=NEW"
+              label="Messages"
+              hint="Répondre aux contacts"
+            />
+          </AdminActionRow>
+        </div>
+        <EditorialDashboard
+          drafts={drafts}
+          scheduled={scheduled}
+          contacts={contacts}
+          events={liveEvents}
+        />
+      </section>
+
+      <section className="admin-dash-panel">
+        <div className="admin-dash-panel__head">
+          <div>
+            <h2 className="admin-dash-panel__title">Arena maintenant</h2>
+            <p className="admin-dash-panel__hint">
+              À chaque épisode : la vidéo en cours et l’affiche du prochain invité.
+            </p>
+          </div>
+          <AdminActionRow>
+            <AdminAction
+              href="/admin/arena/emissions"
+              label="Émissions"
+              hint="Vidéo, invité, domaine"
+              variant="primary"
+            />
+            <AdminAction
+              href="/admin/arena/prochain-invite"
+              label="Prochain invité"
+              hint="Changer l’affiche"
+            />
+            <AdminAction href="/admin/arena/albums" label="Photos" hint="Album de l’invité" />
+          </AdminActionRow>
+        </div>
+        <ArenaCulturePanel
+          headline={
+            stage.headline
+              ? {
+                  id: stage.headline.id,
+                  title: stage.headline.title,
+                  status: stage.headline.status,
+                  guestName: arenaSpotlightGuest(stage.headline)?.name || null,
+                  hasVideo: Boolean(String(stage.headline.videoUrl || "").trim()),
+                }
+              : null
+          }
+          announced={
+            stage.announced
+              ? {
+                  id: stage.announced.id,
+                  title: stage.announced.title,
+                  status: stage.announced.status,
+                  guestName: arenaSpotlightGuest(stage.announced)?.name || null,
+                  poster: stage.announced.poster,
+                }
+              : null
+          }
+        />
+      </section>
     </div>
   );
 }

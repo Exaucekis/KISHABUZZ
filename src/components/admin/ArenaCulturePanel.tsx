@@ -1,96 +1,77 @@
 import Link from "next/link";
 import { StatusBadge } from "@/components/admin/StatusBadge";
-import { formatDate } from "@/lib/utils";
 
-type Show = {
+type LiveShow = {
   id: string;
   title: string;
   status: string;
-  airDate: Date | null;
-  guests: { guest: { name: string } }[];
+  guestName: string | null;
 };
 
 export function ArenaCulturePanel({
-  publishedShows,
-  draftShows,
-  publishedGuests,
-  videos,
-  albums,
-  videosWithoutPoster,
-  latestShow,
+  headline,
+  announced,
 }: {
-  publishedShows: number;
-  draftShows: number;
-  publishedGuests: number;
-  videos: number;
-  albums: number;
-  videosWithoutPoster: number;
-  latestShow: Show | null;
+  headline: (LiveShow & { hasVideo: boolean }) | null;
+  announced: (LiveShow & { poster: string }) | null;
 }) {
-  const cards = [
-    { label: "Émissions publiées", value: publishedShows, href: "/admin/arena/emissions", hint: "En ligne sur Arena Culture." },
-    { label: "Émissions brouillon", value: draftShows, href: "/admin/arena/emissions", hint: "À relire ou publier." },
-    { label: "Invités publiés", value: publishedGuests, href: "/admin/arena/guests", hint: "Fiches visibles sur le site." },
-    { label: "Vidéos Arena", value: videos, href: "/admin/arena/videos", hint: "Replays et extraits." },
-    { label: "Albums photos", value: albums, href: "/admin/arena/albums", hint: "Plateaux et coulisses." },
-  ];
-
   return (
-    <section className="admin-dash-panel">
-      <div className="admin-dash-panel__head">
-        <div>
-          <h2 className="admin-dash-panel__title">Arena Culture</h2>
-          <p className="admin-dash-panel__hint">
-            Un onglet, une tâche. Les boutons ci-dessous ne concernent que l’émission.
-            {videosWithoutPoster
-              ? ` ${videosWithoutPoster} vidéo${videosWithoutPoster > 1 ? "s" : ""} sans miniature.`
-              : ""}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {cards.map((card) => (
-          <Link key={card.label} href={card.href} className="admin-card block hover:border-white/20">
-            <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">{card.label}</p>
-            <p className="mt-2 text-2xl font-bold tabular-nums">{card.value}</p>
-            <p className="admin-card-hint">{card.hint}</p>
-          </Link>
-        ))}
-      </div>
-
-      <div className="admin-card mt-4">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-[#9aa3b5]">
-            Dernière émission
-          </h3>
-          <Link href="/admin/arena/emissions" className="text-xs text-[#9aa3b5] hover:text-white">
-            Tout voir
-          </Link>
-        </div>
-        {latestShow ? (
-          <div>
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              <Link href={`/admin/arena/${latestShow.id}`} className="font-medium hover:underline">
-                {latestShow.title}
-              </Link>
-              <StatusBadge status={latestShow.status} />
+    <div className="grid gap-3 lg:grid-cols-2">
+      <article className="admin-card">
+        <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">Émission en cours</p>
+        {headline ? (
+          <>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <h3 className="font-medium">{headline.guestName || headline.title}</h3>
+              <StatusBadge status={headline.status} />
             </div>
-            <p className="text-sm text-[#9aa3b5]">
-              {latestShow.guests[0]?.guest.name || "Sans invité"}
-              {latestShow.airDate ? ` · ${formatDate(latestShow.airDate, "d MMM yyyy")}` : ""}
+            <p className="mt-1 text-sm text-[#9aa3b5]">
+              {headline.hasVideo ? "Vidéo en ligne sur Émissions." : "Publiée, encore sans vidéo."}
             </p>
-            <Link
-              href={`/admin/arena/${latestShow.id}`}
-              className="admin-btn admin-btn-ghost mt-3 text-xs"
-            >
-              Éditer
+            <Link href={`/admin/arena/${headline.id}`} className="admin-btn admin-btn-ghost mt-3 text-xs">
+              Modifier
             </Link>
+          </>
+        ) : (
+          <>
+            <p className="mt-2 text-sm text-[#eef1f6]">Aucune émission en vidéo pour l’instant.</p>
+            <Link href="/admin/arena/emissions" className="admin-btn admin-btn-primary mt-3 text-xs">
+              Publier une émission
+            </Link>
+          </>
+        )}
+      </article>
+
+      <article className="admin-card">
+        <p className="text-xs uppercase tracking-wide text-[#9aa3b5]">Prochain invité</p>
+        {announced ? (
+          <div className="mt-2 flex gap-3">
+            {announced.poster ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={announced.poster} alt="" className="h-16 w-12 shrink-0 rounded object-cover" />
+            ) : null}
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-medium">{announced.guestName || announced.title}</h3>
+                <StatusBadge status={announced.status} />
+              </div>
+              <Link
+                href="/admin/arena/prochain-invite"
+                className="admin-btn admin-btn-ghost mt-3 text-xs"
+              >
+                Changer l’affiche
+              </Link>
+            </div>
           </div>
         ) : (
-          <p className="text-sm text-[#9aa3b5]">Aucune émission pour l’instant.</p>
+          <>
+            <p className="mt-2 text-sm text-[#eef1f6]">Pas encore d’affiche annoncée.</p>
+            <Link href="/admin/arena/prochain-invite" className="admin-btn admin-btn-primary mt-3 text-xs">
+              Annoncer le prochain invité
+            </Link>
+          </>
         )}
-      </div>
-    </section>
+      </article>
+    </div>
   );
 }

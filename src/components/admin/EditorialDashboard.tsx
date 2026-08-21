@@ -21,6 +21,15 @@ type Contact = {
   createdAt: Date;
 };
 
+type LiveEvent = {
+  id: string;
+  title: string;
+  startsAt: Date;
+  status: string;
+  city: string;
+  venueName: string;
+};
+
 function QueueCard({
   title,
   href,
@@ -49,13 +58,15 @@ export function EditorialDashboard({
   drafts,
   scheduled,
   contacts,
+  events,
 }: {
   drafts: Draft[];
   scheduled: Scheduled[];
   contacts: Contact[];
+  events: LiveEvent[];
 }) {
   return (
-    <div className="mt-4 grid gap-4 lg:grid-cols-3">
+    <div className="mt-4 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
       <QueueCard title="Brouillons" href="/admin/articles?status=DRAFT" empty="Aucun brouillon.">
         {drafts.length ? (
           <ul className="space-y-3">
@@ -131,6 +142,39 @@ export function EditorialDashboard({
                 <p className="text-xs text-[#9aa3b5]">
                   {contact.name} · {formatDate(contact.createdAt, "d MMM yyyy HH:mm")}
                 </p>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </QueueCard>
+
+      <QueueCard
+        title="Événements en vente"
+        href="/admin/evenements?vue=en-cours"
+        empty="Aucun événement en cours."
+      >
+        {events.length ? (
+          <ul className="space-y-3">
+            {events.map((event) => (
+              <li key={event.id} className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <Link
+                    href={`/admin/evenements/${event.id}?onglet=en-cours`}
+                    className="font-medium hover:underline"
+                  >
+                    {event.title}
+                  </Link>
+                  <p className="text-xs text-[#9aa3b5]">
+                    {formatDate(event.startsAt, "d MMM yyyy HH:mm")}
+                    {event.city || event.venueName ? ` · ${event.city || event.venueName}` : ""}
+                  </p>
+                </div>
+                <Link
+                  href={`/admin/evenements/${event.id}?onglet=en-cours`}
+                  className="admin-btn admin-btn-ghost text-xs"
+                >
+                  Ouvrir
+                </Link>
               </li>
             ))}
           </ul>
