@@ -37,6 +37,8 @@ const PLACEHOLDERS: Record<MediaFieldKind, string> = {
   any: "Lien réseau social ou fichier",
 };
 
+const VIDEO_MAX_BYTES = 80 * 1024 * 1024;
+
 function extOf(file: File) {
   const name = file.name.toLowerCase();
   const match = name.match(/\.[a-z0-9]+$/);
@@ -49,14 +51,48 @@ function extOf(file: File) {
   return ".jpg";
 }
 
-async function uploadViaBlob(file: File, folder: string) {
+async function uploadViaBlob(file: File, folder: string, onProgress: (pct: number) => void) {
   const { upload } = await import("@vercel/blob/client");
   const pathname = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}${extOf(file)}`;
   const blob = await upload(pathname, file, {
     access: "public",
     handleUploadUrl: "/api/admin/blob",
+    multipart: file.size > 4 * 1024 * 1024,
+    onUploadProgress: (event: { percentage?: number }) => {
+      if (typeof event.percentage === "number") onProgress(Math.round(event.percentage));
+    },
   });
   return blob.url;
+}
+
+function uploadViaApi(file: File, folder: string, onProgress: (pct: number) => void) {
+  return new Promise<string>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/admin/upload");
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable && event.total) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    };
+    xhr.onload = () => {
+      try {
+        const data = JSON.parse(xhr.responseText) as { ok?: boolean; url?: string; message?: string };
+        if (xhr.status >= 200 && xhr.status < 300 && data.url) {
+          resolve(data.url);
+          return;
+        }
+        reject(new Error(data.message || "Échec de l’envoi."));
+      } catch {
+        reject(new Error("Échec de l’envoi."));
+      }
+    };
+    xhr.onerror = () => reject(new Error("Réseau interrompu pendant l’envoi."));
+    xhr.onabort = () => reject(new Error("Envoi annulé."));
+    const fd = new FormData();
+    fd.set("file", file);
+    fd.set("folder", folder);
+    xhr.send(fd);
+  });
 }
 
 export function MediaField({
@@ -96,6 +132,7 @@ export function MediaField({
   const [alt, setAlt] = useState(defaultAlt);
   const [focus, setFocus] = useState(defaultFocus);
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
   const [ok, setOk] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -113,6 +150,7 @@ export function MediaField({
       setAlt(defaultAlt);
       setFocus(defaultFocus);
       setBusy(false);
+      setProgress(0);
       setMessage("");
       setOk(false);
       setDragOver(false);
@@ -157,38 +195,55 @@ export function MediaField({
   async function onFile(file: File | undefined) {
     if (!file) return;
     setBusy(true);
+    setProgress(0);
     setMessage("");
+    setOk(false);
     const isVideo = file.type.startsWith("video/");
 
-    if (isVideo && file.size > 3.5 * 1024 * 1024) {
-      try {
-        const blobUrl = await uploadViaBlob(file, folder);
+    if (isVideo && file.size > VIDEO_MAX_BYTES) {
+      setBusy(false);
+      setOk(false);
+      setMessage("Vidéo trop lourde (80 Mo max).");
+      return;
+    }
+
+    try {
+      if (isVideo) {
+        let videoUrl = "";
+        try {
+          videoUrl = await uploadViaBlob(file, folder, setProgress);
+        } catch {
+          videoUrl = await uploadViaApi(file, folder, setProgress);
+        }
         await registerLibraryFile({
-          url: blobUrl,
+          url: videoUrl,
           kind: "VIDEO",
           title: file.name.replace(/\.[^.]+$/, ""),
           folder,
         });
-        setBusy(false);
         if (inputRef.current) inputRef.current.value = "";
-        await commitUrl(blobUrl);
+        setBusy(false);
+        setProgress(100);
+        await commitUrl(videoUrl);
         return;
-      } catch {
-        // Local / sans token Blob : on retombe sur l’action serveur.
       }
-    }
 
-    const fd = new FormData();
-    fd.set("file", file);
-    fd.set("folder", folder);
-    const result = await uploadMedia(fd);
-    setBusy(false);
-    setOk(result.ok);
-    if (inputRef.current) inputRef.current.value = "";
-    if (result.ok && result.url) {
-      await commitUrl(result.url);
-    } else {
-      setMessage(result.message);
+      const fd = new FormData();
+      fd.set("file", file);
+      fd.set("folder", folder);
+      const result = await uploadMedia(fd);
+      if (inputRef.current) inputRef.current.value = "";
+      setBusy(false);
+      setOk(result.ok);
+      if (result.ok && result.url) {
+        await commitUrl(result.url);
+      } else {
+        setMessage(result.message);
+      }
+    } catch (error) {
+      setBusy(false);
+      setOk(false);
+      setMessage(error instanceof Error ? error.message : "Échec de l’envoi.");
     }
   }
 
@@ -219,11 +274,27 @@ export function MediaField({
           }}
         >
           <span className="text-sm font-semibold text-[#eef1f6]">
-            {busy ? "Envoi en cours…" : kind === "video" ? "Cliquez ou déposez la vidéo ici" : "Cliquez ou déposez la photo ici"}
+            {busy
+              ? kind === "video"
+                ? `Envoi de la vidéo… ${progress}%`
+                : "Envoi en cours…"
+              : kind === "video"
+                ? "Cliquez ou déposez la vidéo ici"
+                : "Cliquez ou déposez la photo ici"}
           </span>
           <span className="mt-1 text-xs text-[#9aa3b5]">
-            {kind === "video" ? "Fichier MP4 / WebM" : "JPG, PNG ou WebP"}
+            {kind === "video"
+              ? "Fichier MP4 / WebM — l’envoi continue sans bloquer la page"
+              : "JPG, PNG ou WebP"}
           </span>
+          {busy && kind === "video" ? (
+            <span className="mt-3 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-white/10">
+              <span
+                className="block h-full rounded-full bg-amber-300 transition-[width]"
+                style={{ width: `${Math.max(progress, 4)}%` }}
+              />
+            </span>
+          ) : null}
           <input
             ref={inputRef}
             type="file"
@@ -254,7 +325,7 @@ export function MediaField({
           <>
             <span>ou</span>
             <label className="admin-btn admin-btn-ghost shrink-0 cursor-pointer">
-              {busy ? "Envoi…" : "Téléverser"}
+              {busy ? (kind === "video" ? `Envoi ${progress}%` : "Envoi…") : "Téléverser"}
               <input
                 ref={inputRef}
                 type="file"

@@ -61,7 +61,7 @@ export function ArenaShowForm({
               {show?.id ? "Modifier l’émission" : "Nouvelle émission"}
             </p>
             <p className="mt-1 text-sm text-[#9aa3b5]">
-              Ici seulement : nom de l’invité, domaine, vidéo, miniature. Pas d’affiche, ni date,
+              Ici seulement : nom de l’invité, thème, vidéo, miniature. Pas d’affiche, ni date,
               ni heure — c’est lancé tout de suite. Le prochain invité et la une se gèrent dans
               leurs onglets.
             </p>
@@ -92,7 +92,7 @@ export function ArenaShowForm({
           </div>
 
           <div className="admin-field">
-            <label htmlFor="theme">Domaine</label>
+            <label htmlFor="theme">Thème de l’émission</label>
             <input
               id="theme"
               name="theme"
@@ -113,7 +113,7 @@ export function ArenaShowForm({
                   <option key={value} value={value} />
                 ))}
             </datalist>
-            <AdminHint>Le domaine s’affiche sous le nom, sur la page Émissions.</AdminHint>
+            <AdminHint>Le thème s’affiche sous le nom, sur la page Émissions.</AdminHint>
           </div>
 
           <div className="admin-card md:col-span-2 space-y-4 border-amber-400/25 bg-amber-400/5">
@@ -122,8 +122,9 @@ export function ArenaShowForm({
                 Vidéo de l’émission
               </p>
               <p className="mt-2 text-sm leading-relaxed text-[#c5ccd8]">
-                Téléversez directement la vidéo, puis sa miniature. Les deux apparaissent sur la
-                page publique Émissions.
+                Téléversez directement la vidéo, puis sa miniature. Un pourcentage s’affiche pendant
+                l’envoi : la page ne se bloque plus. Les deux apparaissent sur la page publique
+                Émissions.
               </p>
             </div>
             <MediaField

@@ -57,7 +57,7 @@ export const ARENA_NAV = [
 export const ARENA_ADMIN_LINKS = [
   { href: "/admin/arena", label: "Page Arena", hint: "Textes de l’accueil Arena" },
   { href: "/admin/arena/prochain-invite", label: "Prochain invité", hint: "Affiche d’accueil, après la fiche" },
-  { href: "/admin/arena/emissions", label: "Émissions", hint: "Invité, domaine, vidéo, miniature" },
+  { href: "/admin/arena/emissions", label: "Émissions", hint: "Invité, thème, vidéo, miniature" },
   { href: "/admin/arena/guests", label: "Fiches invités", hint: "Nom, portrait et bio — étape 1" },
   { href: "/admin/arena/albums", label: "Galerie", hint: "Albums photos, un par invité" },
   { href: "/admin/arena/archives", label: "Archives", hint: "Anciennes émissions" },

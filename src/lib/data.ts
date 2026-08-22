@@ -292,6 +292,18 @@ export async function getArenaSpotlight() {
   return headline || announced;
 }
 
+export async function getPublishedArenaShows() {
+  noStore();
+  await publishDueArenaShows();
+  return prisma.arenaShow.findMany({
+    where: { status: "PUBLISHED", NOT: { videoUrl: "" } },
+    include: {
+      guests: { include: { guest: true } },
+    },
+    orderBy: [{ isFeatured: "desc" }, { updatedAt: "desc" }, { number: "desc" }],
+  });
+}
+
 export async function getGuestOfTheWeek() {
   return getArenaSpotlight();
 }

@@ -1,7 +1,6 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { canAccessAdmin } from "@/lib/roles";
 
 export const runtime = "nodejs";
@@ -34,23 +33,6 @@ export async function POST(request: Request) {
         addRandomSuffix: true,
         maximumSizeInBytes: 80 * 1024 * 1024,
       }),
-      onUploadCompleted: async ({ blob }) => {
-        const kind = /\.(mp4|webm|ogg|mov)(\?|$)/i.test(blob.pathname || blob.url) ? "VIDEO" : "IMAGE";
-        try {
-          await prisma.libraryFile.upsert({
-            where: { url: blob.url },
-            create: {
-              url: blob.url,
-              kind,
-              title: blob.pathname.split("/").pop() || "",
-              folder: blob.pathname.split("/")[0] || "media",
-            },
-            update: {},
-          });
-        } catch {
-          /* ignore si la migration n’est pas encore appliquée */
-        }
-      },
     });
     return NextResponse.json(jsonResponse);
   } catch (error) {

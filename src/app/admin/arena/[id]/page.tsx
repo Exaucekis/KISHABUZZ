@@ -35,7 +35,7 @@ export default async function EditArenaShowPage({ params }: Props) {
     <div>
       <AdminPageIntro
         title={`Éditer · ${show.title}`}
-        hint="Nom de l’invité, domaine, vidéo et miniature. Pas d’affiche ici — le prochain invité se gère dans son onglet."
+        hint="Nom de l’invité, thème, vidéo et miniature. Pas d’affiche ici — le prochain invité se gère dans son onglet."
       />
       <ArenaAdminNav current="/admin/arena/emissions" />
       <ArenaShowForm show={show} guests={guests} domains={domains} />
