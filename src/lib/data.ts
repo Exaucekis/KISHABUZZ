@@ -51,117 +51,141 @@ export const getSettings = cache(async () => {
 });
 
 async function loadHomePageData() {
-  await Promise.all([publishDueArticles(), publishDueArenaShows()]);
-  const [settings, feed, stage, domains, galleryAlbums] = await Promise.all([
-    loadSettings(),
-    prisma.article.findMany({
-      where: {
-        status: "PUBLISHED",
-        OR: [{ publishedAt: { lte: new Date() } }, { publishedAt: null }],
-      },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        excerpt: true,
-        coverImage: true,
-        coverAlt: true,
-        coverFocus: true,
-        contentType: true,
-        publishedAt: true,
-        authorName: true,
-        category: { select: { name: true } },
-      },
-      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-      take: 6,
-    }),
-    getArenaStage(),
-    prisma.domain.findMany({
-      where: { visible: true },
-      select: { id: true, name: true, icon: true },
-      orderBy: { order: "asc" },
-    }),
-    prisma.photoAlbum.findMany({
-      where: { visible: true },
-      orderBy: [{ order: "asc" }, { date: "desc" }],
-      take: 6,
-      select: {
-        slug: true,
-        guestName: true,
-        title: true,
-        coverImage: true,
-        photos: {
-          where: { visible: true, kind: "IMAGE" },
-          take: 1,
-          orderBy: { createdAt: "asc" },
-          select: { url: true },
+  try {
+    await Promise.all([publishDueArticles(), publishDueArenaShows()]);
+    const [settings, feed, stage, domains, galleryAlbums] = await Promise.all([
+      loadSettings(),
+      prisma.article.findMany({
+        where: {
+          status: "PUBLISHED",
+          OR: [{ publishedAt: { lte: new Date() } }, { publishedAt: null }],
         },
-      },
-    }),
-  ]);
-  const [featuredVideo, about, portfolio, partners, spotlightArtists, arenaHome] = await Promise.all([
-    prisma.mediaAsset.findFirst({
-      where: { visible: true, kind: "VIDEO", category: "ARENA_CULTURE" },
-      orderBy: [{ featured: "desc" }, { date: "desc" }, { createdAt: "desc" }],
-      select: { title: true, description: true, url: true, thumbnail: true },
-    }),
-    prisma.pageContent.findUnique({
-      where: { key: "about.qui" },
-      select: { title: true, body: true },
-    }),
-    prisma.portfolioItem.findMany({
-      where: { status: "PUBLISHED" },
-      select: { id: true, slug: true, title: true, type: true, description: true },
-      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
-      take: 3,
-    }),
-    prisma.partner.findMany({
-      where: { visible: true },
-      select: { id: true, name: true, description: true },
-      orderBy: [{ order: "asc" }, { name: "asc" }],
-      take: 6,
-    }),
-    prisma.spotlightArtist.findMany({
-      where: { visible: true },
-      select: { id: true, name: true, role: true, image: true },
-      orderBy: { order: "asc" },
-    }),
-    getArenaHome(),
-  ]);
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          excerpt: true,
+          coverImage: true,
+          coverAlt: true,
+          coverFocus: true,
+          contentType: true,
+          publishedAt: true,
+          authorName: true,
+          category: { select: { name: true } },
+        },
+        orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+        take: 6,
+      }),
+      getArenaStage(),
+      prisma.domain.findMany({
+        where: { visible: true },
+        select: { id: true, name: true, icon: true },
+        orderBy: { order: "asc" },
+      }),
+      prisma.photoAlbum.findMany({
+        where: { visible: true },
+        orderBy: [{ order: "asc" }, { date: "desc" }],
+        take: 6,
+        select: {
+          slug: true,
+          guestName: true,
+          title: true,
+          coverImage: true,
+          photos: {
+            where: { visible: true, kind: "IMAGE" },
+            take: 1,
+            orderBy: { createdAt: "asc" },
+            select: { url: true },
+          },
+        },
+      }),
+    ]);
+    const [featuredVideo, about, portfolio, partners, spotlightArtists, arenaHome] = await Promise.all([
+      prisma.mediaAsset.findFirst({
+        where: { visible: true, kind: "VIDEO", category: "ARENA_CULTURE" },
+        orderBy: [{ featured: "desc" }, { date: "desc" }, { createdAt: "desc" }],
+        select: { title: true, description: true, url: true, thumbnail: true },
+      }),
+      prisma.pageContent.findUnique({
+        where: { key: "about.qui" },
+        select: { title: true, body: true },
+      }),
+      prisma.portfolioItem.findMany({
+        where: { status: "PUBLISHED" },
+        select: { id: true, slug: true, title: true, type: true, description: true },
+        orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+        take: 3,
+      }),
+      prisma.partner.findMany({
+        where: { visible: true },
+        select: { id: true, name: true, description: true },
+        orderBy: [{ order: "asc" }, { name: "asc" }],
+        take: 6,
+      }),
+      prisma.spotlightArtist.findMany({
+        where: { visible: true },
+        select: { id: true, name: true, role: true, image: true },
+        orderBy: { order: "asc" },
+      }),
+      getArenaHome(),
+    ]);
 
-  const featuredAlbum = galleryAlbums[0] || null;
-  const headlineShow = stage.headline;
-  const announcedShow = stage.announced;
-  const spotlightShow = announcedShow || headlineShow;
-  const showVideo = headlineShow ? arenaShowVideo(headlineShow) : "";
-  return {
-    settings,
-    feed,
-    headlineShow,
-    announcedShow,
-    spotlightShow,
-    domains,
-    featuredAlbum,
-    galleryAlbums,
-    featuredVideo: showVideo
-      ? {
-          title: headlineShow?.title || featuredVideo?.title || "Arena Culture",
-          artistName: arenaSpotlightGuest(headlineShow)?.name || "",
-          description: headlineShow?.theme || featuredVideo?.description || "",
-          url: showVideo,
-          thumbnail: headlineShow?.videoThumbnail || "",
-          slug: headlineShow?.slug || "",
-        }
-      : featuredVideo
-        ? { ...featuredVideo, artistName: "", slug: "" }
-        : null,
-    about,
-    portfolio,
-    partners,
-    artists: toSpotlightArtistCards(spotlightArtists),
-    arenaHome,
-  };
+    const featuredAlbum = galleryAlbums[0] || null;
+    const headlineShow = stage.headline;
+    const announcedShow = stage.announced;
+    const spotlightShow = announcedShow || headlineShow;
+    const showVideo = headlineShow ? arenaShowVideo(headlineShow) : "";
+    return {
+      settings,
+      feed,
+      headlineShow,
+      announcedShow,
+      spotlightShow,
+      domains,
+      featuredAlbum,
+      galleryAlbums,
+      featuredVideo: showVideo
+        ? {
+            title: headlineShow?.title || featuredVideo?.title || "Arena Culture",
+            artistName: arenaSpotlightGuest(headlineShow)?.name || "",
+            description: headlineShow?.theme || featuredVideo?.description || "",
+            url: showVideo,
+            thumbnail: headlineShow?.videoThumbnail || "",
+            slug: headlineShow?.slug || "",
+          }
+        : featuredVideo
+          ? { ...featuredVideo, artistName: "", slug: "" }
+          : null,
+      about,
+      portfolio,
+      partners,
+      artists: toSpotlightArtistCards(spotlightArtists),
+      arenaHome,
+    };
+  } catch (error) {
+    console.error("home: database unreachable, using fallback data", error);
+    const arenaHome = parseArenaHome(null, "");
+    return {
+      settings: fallbackSettings,
+      feed: [],
+      headlineShow: null,
+      announcedShow: null,
+      spotlightShow: null,
+      domains: [],
+      featuredAlbum: null,
+      galleryAlbums: [],
+      featuredVideo: null,
+      about: null,
+      portfolio: [],
+      partners: [],
+      artists: [],
+      arenaHome,
+    };
+  }
 }
+
+
+const fallbackArenaHome = parseArenaHome(null, "");
 
 export const getHomePageData = cache(async () => {
   noStore();
@@ -208,9 +232,7 @@ export async function getPublishedArticles(opts?: {
     where: {
       status: "PUBLISHED",
       ...(types ? { contentType: { in: types } } : {}),
-      ...(opts?.categorySlug
-        ? { category: { slug: opts.categorySlug } }
-        : {}),
+      ...(opts?.categorySlug ? { category: { slug: opts.categorySlug } } : {}),
       OR: [{ publishedAt: { lte: new Date() } }, { publishedAt: null }],
     },
     include: { category: true, tags: { include: { tag: true } } },
@@ -259,6 +281,7 @@ export async function getArenaStage() {
     season: true,
     media: { where: { visible: true } },
   } as const;
+
   const headline =
     (await prisma.arenaShow.findFirst({
       where: { isFeatured: true, status: "PUBLISHED", NOT: { videoUrl: "" } },
@@ -275,6 +298,7 @@ export async function getArenaStage() {
       include,
       orderBy: [{ updatedAt: "desc" }, { airDate: "desc" }],
     }));
+
   const announced = await prisma.arenaShow.findFirst({
     where: {
       status: "SCHEDULED",
@@ -284,6 +308,7 @@ export async function getArenaStage() {
     include,
     orderBy: [{ isGuestOfWeek: "desc" }, { updatedAt: "desc" }],
   });
+
   return { headline, announced };
 }
 

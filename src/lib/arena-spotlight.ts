@@ -23,12 +23,20 @@ export function arenaSpotlightMode(
   return "headline";
 }
 
-export function arenaSpotlightGuest<T extends { visible?: boolean | null }>(
-  show: { guests?: Array<{ guest: T | null | undefined }> } | null | undefined
-): T | null {
+type ArenaSpotlightGuest = {
+  id?: string | null;
+  visible?: boolean | null;
+  name?: string | null;
+  profession?: string | null;
+  photo?: string | null;
+};
+
+export function arenaSpotlightGuest(
+  show: { guests?: Array<{ guest?: ArenaSpotlightGuest | null }> } | null | undefined
+): ArenaSpotlightGuest | null {
   const guests = (show?.guests || [])
     .map((row) => row.guest)
-    .filter((guest): guest is T => Boolean(guest));
+    .filter((guest): guest is ArenaSpotlightGuest => Boolean(guest));
   return guests.find((guest) => guest.visible !== false) || guests[0] || null;
 }
 

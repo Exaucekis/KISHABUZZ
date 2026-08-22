@@ -53,7 +53,7 @@ export default async function ArenaCulturePage() {
         line3={home.hero.line3}
         description={home.hero.text}
         poster={heroPoster}
-        spotlightTitle={headlineGuest?.name || guest?.name}
+        spotlightTitle={headlineGuest?.name ?? guest?.name ?? undefined}
         spotlightHref={
           headline
             ? `/arena-culture/emissions/${headline.slug}`
@@ -78,7 +78,7 @@ export default async function ArenaCulturePage() {
             <div className="ac-spotlight__visual">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={spotlight?.poster || guest?.photo}
+                src={spotlight?.poster || guest?.photo || undefined}
                 alt={guest?.name || spotlight?.title || "Prochain invité Arena Culture"}
                 loading="lazy"
                 decoding="async"
