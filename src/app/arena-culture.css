@@ -763,8 +763,29 @@
 
 .ac-episode .kb-embed {
   width: 100%;
-  border-radius: 0.75rem;
-  border: 1px solid var(--ac-line);
+  border-radius: 0.875rem;
+  border: 1px solid rgba(255, 140, 0, 0.18);
+  box-shadow:
+    0 0 0 1px rgba(255, 140, 0, 0.07),
+    0 6px 32px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(255, 120, 0, 0.06);
+  transition: box-shadow 0.35s ease;
+  overflow: hidden;
+}
+
+.ac-episode:hover .kb-embed {
+  box-shadow:
+    0 0 0 1px rgba(255, 140, 0, 0.22),
+    0 10px 44px rgba(0, 0, 0, 0.6),
+    0 0 80px rgba(255, 120, 0, 0.12);
+}
+
+.ac-episode--featured .kb-embed {
+  border-color: rgba(255, 140, 0, 0.28);
+  box-shadow:
+    0 0 0 1px rgba(255, 140, 0, 0.1),
+    0 10px 48px rgba(0, 0, 0, 0.6),
+    0 0 90px rgba(255, 120, 0, 0.1);
 }
 
 .ac-episode__poster {

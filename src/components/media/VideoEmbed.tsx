@@ -15,22 +15,42 @@ function PlayPoster({
   return (
     <button
       type="button"
-      className="kb-embed kb-embed--16-9 group relative w-full overflow-hidden bg-black text-left"
+      className="kb-embed kb-embed--16-9 kb-play-poster group relative w-full overflow-hidden bg-black text-left"
       onClick={onPlay}
       aria-label={`Lire ${title || "la vidéo"}`}
     >
+      {/* Image de fond */}
       {poster ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-80" />
+        <img
+          src={poster}
+          alt=""
+          className="kb-play-poster__bg absolute inset-0 h-full w-full object-cover"
+        />
       ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-ink-3 to-black" />
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-black" />
       )}
-      <span className="absolute inset-0 grid place-items-center">
-        <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-ember text-on-ember shadow-lg transition group-hover:scale-105">
-          <svg viewBox="0 0 24 24" className="ml-0.5 h-7 w-7 fill-current" aria-hidden>
+
+      {/* Overlay gradient cinématique */}
+      <span className="kb-play-poster__overlay absolute inset-0" aria-hidden />
+
+      {/* Bouton play central */}
+      <span className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+        <span className="kb-play-btn relative inline-flex h-20 w-20 items-center justify-center rounded-full">
+          {/* Halo animé */}
+          <span className="kb-play-btn__halo absolute inset-0 rounded-full" aria-hidden />
+          {/* Icône */}
+          <svg viewBox="0 0 24 24" className="relative z-10 ml-1 h-8 w-8 fill-white drop-shadow-lg" aria-hidden>
             <path d="M8 5v14l11-7z" />
           </svg>
         </span>
+
+        {/* Titre sous le bouton */}
+        {title && (
+          <span className="kb-play-poster__title px-6 text-center text-sm font-semibold uppercase tracking-widest text-white/80">
+            {title}
+          </span>
+        )}
       </span>
     </button>
   );
