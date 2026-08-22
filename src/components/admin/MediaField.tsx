@@ -214,7 +214,7 @@ export function MediaField({
             {busy
               ? "Envoi en cours…"
               : kind === "video"
-                ? "Cliquez ou déposez la vidéo ici"
+                ? "Vidéo de l’émission"
                 : "Cliquez ou déposez la photo ici"}
           </span>
           <span className="mt-1 text-xs text-[#9aa3b5]">
