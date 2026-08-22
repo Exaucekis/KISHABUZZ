@@ -122,8 +122,8 @@ export function ArenaShowForm({
                 Vidéo de l’émission
               </p>
               <p className="mt-2 text-sm leading-relaxed text-[#c5ccd8]">
-                Téléversez directement la vidéo, puis sa miniature. Les deux apparaissent sur la
-                page publique Émissions.
+                Téléversez directement la vidéo, puis la miniature. L’upload peut prendre un peu
+                de temps, puis l’émission apparaît immédiatement sur la page Émissions.
               </p>
             </div>
             <MediaField

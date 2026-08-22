@@ -219,7 +219,11 @@ export function MediaField({
           }}
         >
           <span className="text-sm font-semibold text-[#eef1f6]">
-            {busy ? "Envoi en cours…" : kind === "video" ? "Cliquez ou déposez la vidéo ici" : "Cliquez ou déposez la photo ici"}
+            {busy
+              ? "Upload en cours…"
+              : kind === "video"
+                ? "Cliquez ou déposez la vidéo ici"
+                : "Cliquez ou déposez la photo ici"}
           </span>
           <span className="mt-1 text-xs text-[#9aa3b5]">
             {kind === "video" ? "Fichier MP4 / WebM" : "JPG, PNG ou WebP"}
@@ -292,7 +296,10 @@ export function MediaField({
         }}
         onClose={() => setLibraryOpen(false)}
       />
-      <p className="admin-hint">{hint || HINTS[kind]}</p>
+      <p className="admin-hint">
+        {hint || HINTS[kind]}
+        {kind === "video" ? " L’upload peut prendre quelques secondes à quelques minutes." : ""}
+      </p>
       {message ? (
         <p className={`mt-1 text-xs ${ok ? "text-emerald-300" : "text-red-300"}`}>{message}</p>
       ) : null}
