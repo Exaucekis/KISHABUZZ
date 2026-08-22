@@ -158,24 +158,16 @@ export function MediaField({
     if (!file) return;
     setBusy(true);
     setMessage("");
-    const isVideo = file.type.startsWith("video/");
 
-    if (isVideo && file.size > 3.5 * 1024 * 1024) {
-      try {
-        const blobUrl = await uploadViaBlob(file, folder);
-        await registerLibraryFile({
-          url: blobUrl,
-          kind: "VIDEO",
-          title: file.name.replace(/\.[^.]+$/, ""),
-          folder,
-        });
-        setBusy(false);
-        if (inputRef.current) inputRef.current.value = "";
-        await commitUrl(blobUrl);
-        return;
-      } catch {
-        // Local / sans token Blob : on retombe sur l’action serveur.
-      }
+    try {
+      const blobUrl = await uploadViaBlob(file, folder);
+      setBusy(false);
+      setOk(true);
+      if (inputRef.current) inputRef.current.value = "";
+      await commitUrl(blobUrl);
+      return;
+    } catch (error) {
+      console.warn("[media] direct blob upload failed, falling back to server upload", error);
     }
 
     const fd = new FormData();
@@ -220,7 +212,7 @@ export function MediaField({
         >
           <span className="text-sm font-semibold text-[#eef1f6]">
             {busy
-              ? "Upload en cours…"
+              ? "Envoi en cours…"
               : kind === "video"
                 ? "Cliquez ou déposez la vidéo ici"
                 : "Cliquez ou déposez la photo ici"}
@@ -298,7 +290,7 @@ export function MediaField({
       />
       <p className="admin-hint">
         {hint || HINTS[kind]}
-        {kind === "video" ? " L’upload peut prendre quelques secondes à quelques minutes." : ""}
+        {kind === "video" ? " La mise en ligne se fait en arrière-plan, puis la vidéo est prête." : ""}
       </p>
       {message ? (
         <p className={`mt-1 text-xs ${ok ? "text-emerald-300" : "text-red-300"}`}>{message}</p>
