@@ -4,7 +4,6 @@ import { AdminPageIntro } from "@/components/admin/AdminHint";
 import { ArenaShowForm } from "@/components/admin/ArenaShowForm";
 import { ArenaShowsTable } from "@/components/admin/ArenaShowsTable";
 import { prisma } from "@/lib/prisma";
-import { videoPoster } from "@/lib/media";
 
 export const metadata = { title: "Émissions Arena" };
 
@@ -34,7 +33,7 @@ export default async function AdminArenaShowsPage() {
     <div>
       <AdminPageIntro
         title="Émissions"
-        hint="Nom de l’invité, domaine, vidéo et miniature. Publier ici met la vidéo en ligne tout de suite sur Émissions."
+        hint="Nom de l’invité, thème, vidéo et miniature. L’envoi de la vidéo se fait avec une barre de progression — vous pouvez remplir le reste pendant ce temps."
         actions={
           <Link href="/arena-culture/emissions" className="admin-btn admin-btn-ghost" target="_blank" rel="noreferrer">
             Voir la page
@@ -60,7 +59,7 @@ export default async function AdminArenaShowsPage() {
           <div className="grid gap-3 md:grid-cols-2">
             {live.map((show) => {
               const guest = show.guests[0]?.guest;
-              const cover = videoPoster(show.videoUrl, show.videoThumbnail) || show.poster;
+              const cover = String(show.videoThumbnail || "").trim();
               return (
                 <article key={show.id} className="admin-card flex gap-3">
                   {cover ? (

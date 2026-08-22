@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { registerLibraryFile } from "@/actions/admin/library";
-import { attachMediaUrl, uploadMedia, type MediaAttachTarget } from "@/actions/admin/upload";
+import { attachMediaUrl, type MediaAttachTarget } from "@/actions/admin/upload";
 import { AdminHint } from "@/components/admin/AdminHint";
 import { CoverCropper } from "@/components/admin/CoverCropper";
 import { IconPicker } from "@/components/admin/IconPicker";
 import { LibraryPicker } from "@/components/admin/LibraryPicker";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { coverFocusStyle } from "@/lib/cover-focus";
+import { IMAGE_MAX_BYTES, VIDEO_MAX_BYTES, mediaExtension } from "@/lib/media-limits";
 import { isDirectVideo, isImageSrc, isPlayableMedia } from "@/lib/media";
 
 export type MediaFieldKind = "image" | "video" | "logo" | "icon" | "any";
@@ -37,25 +37,57 @@ const PLACEHOLDERS: Record<MediaFieldKind, string> = {
   any: "Lien réseau social ou fichier",
 };
 
-function extOf(file: File) {
-  const name = file.name.toLowerCase();
-  const match = name.match(/\.[a-z0-9]+$/);
-  if (match) return match[0];
-  if (file.type === "image/png") return ".png";
-  if (file.type === "image/webp") return ".webp";
-  if (file.type === "image/gif") return ".gif";
-  if (file.type === "video/webm") return ".webm";
-  if (file.type.startsWith("video/")) return ".mp4";
-  return ".jpg";
+function xhrUpload(file: File, folder: string, onProgress: (pct: number) => void) {
+  return new Promise<string>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/admin/upload");
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        onProgress(Math.max(1, Math.round((event.loaded / event.total) * 100)));
+      }
+    };
+    xhr.onload = () => {
+      try {
+        const data = JSON.parse(xhr.responseText) as {
+          ok?: boolean;
+          url?: string;
+          message?: string;
+        };
+        if (xhr.status >= 200 && xhr.status < 300 && data.ok && data.url) {
+          resolve(data.url);
+          return;
+        }
+        reject(new Error(data.message || "Échec de l’envoi."));
+      } catch {
+        reject(new Error("Échec de l’envoi."));
+      }
+    };
+    xhr.onerror = () => reject(new Error("Connexion interrompue pendant l’envoi."));
+    xhr.onabort = () => reject(new Error("Envoi annulé."));
+    const fd = new FormData();
+    fd.set("file", file);
+    fd.set("folder", folder);
+    xhr.send(fd);
+  });
 }
 
-async function uploadViaBlob(file: File, folder: string) {
+async function uploadViaBlob(file: File, folder: string, onProgress: (pct: number) => void) {
   const { upload } = await import("@vercel/blob/client");
-  const pathname = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}${extOf(file)}`;
+  const pathname = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}${mediaExtension(file.type, file.name)}`;
   const blob = await upload(pathname, file, {
     access: "public",
     handleUploadUrl: "/api/admin/blob",
-  });
+    multipart: true,
+    onUploadProgress: (event: { percentage?: number; loaded?: number; total?: number }) => {
+      if (typeof event.percentage === "number") {
+        onProgress(Math.max(1, Math.round(event.percentage)));
+        return;
+      }
+      if (event.total) {
+        onProgress(Math.max(1, Math.round(((event.loaded || 0) / event.total) * 100)));
+      }
+    },
+  } as never);
   return blob.url;
 }
 
@@ -96,6 +128,7 @@ export function MediaField({
   const [alt, setAlt] = useState(defaultAlt);
   const [focus, setFocus] = useState(defaultFocus);
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
   const [ok, setOk] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -113,6 +146,7 @@ export function MediaField({
       setAlt(defaultAlt);
       setFocus(defaultFocus);
       setBusy(false);
+      setProgress(0);
       setMessage("");
       setOk(false);
       setDragOver(false);
@@ -156,31 +190,45 @@ export function MediaField({
 
   async function onFile(file: File | undefined) {
     if (!file) return;
-    setBusy(true);
-    setMessage("");
-
-    try {
-      const blobUrl = await uploadViaBlob(file, folder);
-      setBusy(false);
-      setOk(true);
-      if (inputRef.current) inputRef.current.value = "";
-      await commitUrl(blobUrl);
+    const isVideo = kind === "video" || file.type.startsWith("video/");
+    if (isVideo && file.size > VIDEO_MAX_BYTES) {
+      setOk(false);
+      setMessage("Vidéo trop lourde (200 Mo max). Compressez-la ou collez un lien.");
       return;
-    } catch (error) {
-      console.warn("[media] direct blob upload failed, falling back to server upload", error);
+    }
+    if (!isVideo && file.size > IMAGE_MAX_BYTES) {
+      setOk(false);
+      setMessage("Image trop lourde (4 Mo max).");
+      return;
     }
 
-    const fd = new FormData();
-    fd.set("file", file);
-    fd.set("folder", folder);
-    const result = await uploadMedia(fd);
-    setBusy(false);
-    setOk(result.ok);
-    if (inputRef.current) inputRef.current.value = "";
-    if (result.ok && result.url) {
-      await commitUrl(result.url);
-    } else {
-      setMessage(result.message);
+    setBusy(true);
+    setProgress(1);
+    setMessage(isVideo ? "Envoi de la vidéo… le formulaire reste utilisable." : "Envoi en cours…");
+    setOk(false);
+
+    try {
+      let uploaded = "";
+      try {
+        uploaded = await uploadViaBlob(file, folder, setProgress);
+      } catch (error) {
+        console.warn("[media] envoi Blob, bascule vers /api/admin/upload", error);
+        const localHost = /localhost|127\.0\.0\.1/.test(window.location.hostname);
+        if (!localHost && file.size > IMAGE_MAX_BYTES) {
+          throw new Error(
+            "L’envoi direct a échoué. Réessayez, ou collez un lien YouTube / Facebook / TikTok."
+          );
+        }
+        uploaded = await xhrUpload(file, folder, setProgress);
+      }
+      setProgress(100);
+      if (inputRef.current) inputRef.current.value = "";
+      await commitUrl(uploaded);
+    } catch (error) {
+      setOk(false);
+      setMessage(error instanceof Error ? error.message : "Échec de l’envoi.");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -212,14 +260,24 @@ export function MediaField({
         >
           <span className="text-sm font-semibold text-[#eef1f6]">
             {busy
-              ? "Envoi en cours…"
+              ? kind === "video"
+                ? `Envoi de la vidéo… ${progress}%`
+                : `Envoi… ${progress}%`
               : kind === "video"
-                ? "Vidéo de l’émission"
+                ? "Déposez la vidéo ici"
                 : "Cliquez ou déposez la photo ici"}
           </span>
           <span className="mt-1 text-xs text-[#9aa3b5]">
-            {kind === "video" ? "Fichier MP4 / WebM" : "JPG, PNG ou WebP"}
+            {kind === "video" ? "MP4 / WebM, jusqu’à 200 Mo — sans bloquer la page" : "JPG, PNG ou WebP"}
           </span>
+          {busy ? (
+            <span className="mt-3 block h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-white/10">
+              <span
+                className="block h-full rounded-full bg-amber-300 transition-[width]"
+                style={{ width: `${Math.min(100, progress)}%` }}
+              />
+            </span>
+          ) : null}
           <input
             ref={inputRef}
             type="file"
@@ -290,7 +348,9 @@ export function MediaField({
       />
       <p className="admin-hint">
         {hint || HINTS[kind]}
-        {kind === "video" ? " La mise en ligne se fait en arrière-plan, puis la vidéo est prête." : ""}
+        {kind === "video"
+          ? " L’envoi affiche une progression et n’empêche pas de remplir le nom et le thème."
+          : ""}
       </p>
       {message ? (
         <p className={`mt-1 text-xs ${ok ? "text-emerald-300" : "text-red-300"}`}>{message}</p>

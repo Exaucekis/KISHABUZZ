@@ -22,7 +22,7 @@ export default async function NewArenaShowPage() {
     <div>
       <AdminPageIntro
         title="Nouvelle émission"
-        hint="Nom de l’invité, domaine, vidéo et miniature. L’émission est lancée tout de suite sur la page publique."
+        hint="Nom de l’invité, thème, vidéo et miniature. L’émission est lancée tout de suite sur la page publique."
       />
       <ArenaAdminNav current="/admin/arena/emissions" />
       <ArenaShowForm guests={guests} domains={domains} />

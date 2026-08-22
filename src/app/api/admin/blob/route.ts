@@ -2,9 +2,11 @@ import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { VIDEO_MAX_BYTES } from "@/lib/media-limits";
 import { canAccessAdmin } from "@/lib/roles";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -30,9 +32,10 @@ export async function POST(request: Request) {
           "video/webm",
           "video/ogg",
           "video/quicktime",
+          "video/x-m4v",
         ],
         addRandomSuffix: true,
-        maximumSizeInBytes: 80 * 1024 * 1024,
+        maximumSizeInBytes: VIDEO_MAX_BYTES,
       }),
       onUploadCompleted: async ({ blob }) => {
         const kind = /\.(mp4|webm|ogg|mov)(\?|$)/i.test(blob.pathname || blob.url) ? "VIDEO" : "IMAGE";

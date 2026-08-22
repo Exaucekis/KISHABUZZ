@@ -61,9 +61,8 @@ export function ArenaShowForm({
               {show?.id ? "Modifier l’émission" : "Nouvelle émission"}
             </p>
             <p className="mt-1 text-sm text-[#9aa3b5]">
-              Ici seulement : nom de l’invité, domaine, vidéo, miniature. Pas d’affiche, ni date,
-              ni heure — c’est lancé tout de suite. Le prochain invité et la une se gèrent dans
-              leurs onglets.
+              Ici seulement : nom de l’invité, thème, vidéo, miniature. Pas d’affiche. L’émission
+              est lancée tout de suite. Le prochain invité se gère dans son onglet.
             </p>
           </div>
 
@@ -92,7 +91,7 @@ export function ArenaShowForm({
           </div>
 
           <div className="admin-field">
-            <label htmlFor="theme">Domaine</label>
+            <label htmlFor="theme">Thème de l’émission</label>
             <input
               id="theme"
               name="theme"
@@ -113,7 +112,7 @@ export function ArenaShowForm({
                   <option key={value} value={value} />
                 ))}
             </datalist>
-            <AdminHint>Le domaine s’affiche sous le nom, sur la page Émissions.</AdminHint>
+            <AdminHint>Le thème s’affiche sous le nom, sur la page Émissions.</AdminHint>
           </div>
 
           <div className="admin-card md:col-span-2 space-y-4 border-amber-400/25 bg-amber-400/5">
@@ -122,8 +121,8 @@ export function ArenaShowForm({
                 Vidéo de l’émission
               </p>
               <p className="mt-2 text-sm leading-relaxed text-[#c5ccd8]">
-                Téléversez directement la vidéo, puis la miniature. L’envoi peut prendre quelques
-                secondes, puis l’émission est publiée sur la page Émissions.
+                Déposez la vidéo : une barre de progression s’affiche, sans bloquer le formulaire.
+                Ensuite ajoutez la miniature. Publier met l’émission en ligne tout de suite.
               </p>
             </div>
             <MediaField
@@ -134,7 +133,7 @@ export function ArenaShowForm({
               folder="media"
               dropzone
               required
-              hint="Fichier MP4 / WebM, ou lien YouTube / Facebook / Instagram / TikTok."
+              hint="Fichier MP4 / WebM jusqu’à 200 Mo, ou lien YouTube / Facebook / Instagram / TikTok. L’envoi ne bloque pas la page."
               persist={show?.id ? { target: "arenaShow", id: show.id, field: "videoUrl" } : undefined}
             />
             <MediaField
@@ -144,7 +143,7 @@ export function ArenaShowForm({
               kind="image"
               folder="media"
               dropzone
-              hint="Image avant lecture, sur la page Émissions. Ce n’est pas l’affiche du prochain invité."
+              hint="Miniature de la vidéo, avant lecture. Pas d’affiche ni photo d’invité ici."
               persist={
                 show?.id ? { target: "arenaShow", id: show.id, field: "videoThumbnail" } : undefined
               }
