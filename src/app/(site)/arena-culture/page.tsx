@@ -3,8 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaMediaRow } from "@/components/arena/ArenaMediaRow";
-import { VideoEmbed } from "@/components/media/VideoEmbed";
-import { arenaShowVideo, videoPoster } from "@/lib/media";
+
 import {
   getArenaHome,
   getArenaPhotoAlbums,
@@ -34,7 +33,7 @@ export default async function ArenaCulturePage() {
   const spotlight = stage.announced;
   const guest = arenaSpotlightGuest(spotlight);
   const headlineGuest = arenaSpotlightGuest(headline);
-  const headlineVideo = headline ? arenaShowVideo(headline) : "";
+
   const heroPoster = home.hero.poster;
 
   const photoTiles = albums
@@ -71,24 +70,7 @@ export default async function ArenaCulturePage() {
         }
       />
 
-      {headline && headlineVideo ? (
-        <section className="ac-page">
-          <p className="ac-kicker">Nouvelle émission</p>
-          <h2 className="font-display text-3xl md:text-4xl">{headlineGuest?.name || headline.title}</h2>
-          {headline.theme || headlineGuest?.profession ? (
-            <p className="mt-2 mb-6 text-lg text-paper-muted">
-              {headline.theme || headlineGuest?.profession}
-            </p>
-          ) : (
-            <div className="mb-6" />
-          )}
-          <VideoEmbed
-            url={headlineVideo}
-            title={headlineGuest?.name || headline.title}
-            poster={videoPoster(headlineVideo, headline.videoThumbnail)}
-          />
-        </section>
-      ) : null}
+
 
       <section className="ac-spotlight">
         <div className="ac-spotlight__grid">
