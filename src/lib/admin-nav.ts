@@ -31,7 +31,6 @@ export { ARENA_ADMIN_LINKS };
 
 export const ADMIN_NAV: AdminNavItem[] = [
   { href: "/admin", label: "Tableau de bord", exact: true, group: "overview" },
-  { href: "/admin/articles", label: "Articles & chroniques", group: "editorial" },
   { href: "/admin/categories", label: "Catégories", group: "editorial" },
   { href: "/admin/pages", label: "Pages", group: "editorial" },
   { href: "/admin/arena", label: "Arena Culture", group: "arena" },
