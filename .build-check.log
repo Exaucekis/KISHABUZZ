@@ -1,0 +1,150 @@
+
+> kishabuzz@0.1.0 build
+> prisma generate && prisma migrate deploy && next build
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to .\node_modules\@prisma\client in 6.66s
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Easily identify and fix slow SQL queries in your app. Optimize helps you enhance your visibility: https://pris.ly/--optimize
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "postgres", schema "public" at "db.prisma.io:5432"
+
+14 migrations found in prisma/migrations
+
+
+No pending migrations to apply.
+┌─────────────────────────────────────────────────────────┐
+│  Update available 5.22.0 -> 7.9.1                       │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+▲ Next.js 16.3.0 (Turbopack)
+- Environments: .env.local, .env
+✓ Running next.config.ts took 34.7s
+- Experiments (use with caution):
+  · optimizePackageImports
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 10.5min
+✓ Finished writing to filesystem cache in 32.3s
+  Running TypeScript ...
+✓ Finished filesystem cache database compaction in 3.3min
+  Finished TypeScript in 4.1min ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/5) ...
+  Generating static pages using 3 workers (1/5) 
+  Generating static pages using 3 workers (2/5) 
+  Generating static pages using 3 workers (3/5) 
+✓ Generating static pages using 3 workers (5/5) in 2.1s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /a-propos
+├ ƒ /admin
+├ ƒ /admin/arena
+├ ƒ /admin/arena/[id]
+├ ƒ /admin/arena/albums
+├ ƒ /admin/arena/albums/[slug]
+├ ƒ /admin/arena/alertes
+├ ƒ /admin/arena/archives
+├ ƒ /admin/arena/emissions
+├ ƒ /admin/arena/guests
+├ ƒ /admin/arena/new
+├ ƒ /admin/arena/prochain-invite
+├ ƒ /admin/arena/seasons
+├ ƒ /admin/arena/videos
+├ ƒ /admin/articles
+├ ƒ /admin/articles/[id]
+├ ƒ /admin/articles/new
+├ ƒ /admin/artists
+├ ƒ /admin/categories
+├ ƒ /admin/contacts
+├ ƒ /admin/domains
+├ ƒ /admin/evenements
+├ ƒ /admin/evenements/[id]
+├ ƒ /admin/evenements/categories
+├ ƒ /admin/evenements/new
+├ ƒ /admin/login
+├ ƒ /admin/media
+├ ƒ /admin/newsletter
+├ ƒ /admin/pages
+├ ƒ /admin/partners
+├ ƒ /admin/portfolio
+├ ƒ /admin/settings
+├ ƒ /admin/users
+├ ƒ /api/admin/arena-alerts
+├ ƒ /api/admin/blob
+├ ƒ /api/admin/newsletter
+├ ƒ /api/admin/upload
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/cron/publish
+├ ƒ /api/cron/tickets
+├ ƒ /api/payments/cinetpay/notify
+├ ƒ /api/scan/ticket
+├ ƒ /arena-culture
+├ ƒ /arena-culture/affiches
+├ ƒ /arena-culture/albums
+├ ƒ /arena-culture/albums/[slug]
+├ ƒ /arena-culture/alertes/desinscription
+├ ƒ /arena-culture/archives
+├ ƒ /arena-culture/calendrier
+├ ƒ /arena-culture/emissions
+├ ƒ /arena-culture/emissions/[slug]
+├ ƒ /arena-culture/invites
+├ ƒ /arena-culture/invites/[slug]
+├ ƒ /arena-culture/photos
+├ ƒ /arena-culture/photos/[slug]
+├ ƒ /arena-culture/videos
+├ ƒ /chroniques
+├ ƒ /chroniques/[slug]
+├ ƒ /collaborations
+├ ƒ /compte
+├ ƒ /compte/billets
+├ ƒ /compte/billets/[ticketId]
+├ ƒ /compte/billets/[ticketId]/pdf
+├ ƒ /conditions-d-utilisation
+├ ƒ /connexion
+├ ƒ /contact
+├ ƒ /evenements
+├ ƒ /evenements/[slug]
+├ ƒ /evenements/[slug]/commander
+├ ƒ /galerie
+├ ƒ /inscription
+├ ƒ /mentions-legales
+├ ƒ /newsletter/desinscription
+├ ƒ /organisateur
+├ ƒ /organisateur/evenements/[id]
+├ ƒ /paiement/[orderId]
+├ ƒ /paiement/[orderId]/confirmation
+├ ƒ /paiement/[orderId]/retour
+├ ƒ /politique-de-confidentialite
+├ ƒ /portfolio
+├ ƒ /portfolio/[slug]
+├ ƒ /publications
+├ ƒ /publications/[slug]
+├ ƒ /recherche
+├ ○ /robots.txt
+├ ƒ /s/[code]
+├ ƒ /scan
+└ ƒ /sitemap.xml
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
