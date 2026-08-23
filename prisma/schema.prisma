@@ -9,23 +9,23 @@ datasource db {
 }
 
 model User {
-  id              String        @id @default(cuid())
-  email           String        @unique
+  id              String          @id @default(cuid())
+  email           String          @unique
   name            String
-  phone           String        @default("")
   passwordHash    String
-  role            String        @default("USER") // SUPERADMIN | ADMIN | EDITOR | AUTHOR | USER
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  role            String          @default("USER")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  phone           String          @default("")
   articles        Article[]
-  organizedEvents Event[]       @relation("EventOrganizer")
-  eventStaff      EventStaff[]
-  ticketOrders    TicketOrder[]
-  tickets         Ticket[]      @relation("TicketBuyer")
-  ticketScans     TicketScan[]  @relation("TicketScanStaff")
-  usedTickets     Ticket[]      @relation("TicketUsedBy")
+  organizedEvents Event[]         @relation("EventOrganizer")
   eventAuditLogs  EventAuditLog[]
+  eventStaff      EventStaff[]
   refunds         Refund[]
+  usedTickets     Ticket[]        @relation("TicketUsedBy")
+  tickets         Ticket[]        @relation("TicketBuyer")
+  ticketOrders    TicketOrder[]
+  ticketScans     TicketScan[]    @relation("TicketScanStaff")
 }
 
 model SiteSetting {
@@ -47,8 +47,8 @@ model SiteSetting {
   metaDescription String   @default("Plateforme media professionnelle : chroniques, publications, portfolio et Arena Culture.")
   heroImage       String   @default("")
   heroVideo       String   @default("")
-  heroAlt         String   @default("")
   updatedAt       DateTime @updatedAt
+  heroAlt         String   @default("")
 }
 
 model Category {
@@ -57,8 +57,8 @@ model Category {
   slug        String    @unique
   description String    @default("")
   type        String    @default("publication")
-  articles    Article[]
   createdAt   DateTime  @default(now())
+  articles    Article[]
 }
 
 model Tag {
@@ -75,23 +75,23 @@ model Article {
   excerpt         String       @default("")
   content         String       @default("")
   coverImage      String       @default("")
-  coverAlt        String       @default("")
-  coverFocus      String       @default("50% 50%")
-  contentType     String       @default("ARTICLE") // ARTICLE | CHRONIQUE | ANALYSIS | ...
-  status          String       @default("DRAFT") // DRAFT | SCHEDULED | PUBLISHED | ARCHIVED
+  contentType     String       @default("ARTICLE")
+  status          String       @default("DRAFT")
   publishedAt     DateTime?
   scheduledAt     DateTime?
   metaTitle       String       @default("")
   metaDescription String       @default("")
   views           Int          @default(0)
   authorId        String?
-  author          User?        @relation(fields: [authorId], references: [id])
   authorName      String       @default("KISHA BUZZ")
   categoryId      String?
-  category        Category?    @relation(fields: [categoryId], references: [id])
-  tags            ArticleTag[]
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+  coverAlt        String       @default("")
+  coverFocus      String       @default("50% 50%")
+  author          User?        @relation(fields: [authorId], references: [id])
+  category        Category?    @relation(fields: [categoryId], references: [id])
+  tags            ArticleTag[]
 }
 
 model ArticleTag {
@@ -109,8 +109,8 @@ model ArenaSeason {
   title       String
   year        Int
   description String      @default("")
-  shows       ArenaShow[]
   createdAt   DateTime    @default(now())
+  shows       ArenaShow[]
 
   @@unique([number, year])
 }
@@ -122,41 +122,41 @@ model ArenaGuest {
   profession  String           @default("")
   bio         String           @default("")
   photo       String           @default("")
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   visible     Boolean          @default(true)
   featured    Boolean          @default(false)
   appearances ArenaShowGuest[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
 
   @@index([visible, featured])
 }
 
 model ArenaShow {
-  id            String           @id @default(cuid())
-  number        Int
-  title         String
-  slug          String           @unique
-  theme         String           @default("")
-  description   String           @default("")
-  airDate       DateTime?
-  airTime       String           @default("")
-  poster         String           @default("")
-  videoUrl       String           @default("")
-  videoThumbnail String           @default("")
-  status         String           @default("DRAFT")
-  isFeatured    Boolean          @default(false)
-  isGuestOfWeek Boolean          @default(false)
-  seasonId      String?
-  season        ArenaSeason?     @relation(fields: [seasonId], references: [id])
-  guests        ArenaShowGuest[]
-  media         MediaAsset[]
-  venueName     String           @default("")
-  eventId       String?
-  event         Event?           @relation(fields: [eventId], references: [id], onDelete: SetNull)
-  views         Int              @default(0)
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  id              String               @id @default(cuid())
+  number          Int
+  title           String
+  slug            String               @unique
+  theme           String               @default("")
+  description     String               @default("")
+  airDate         DateTime?
+  airTime         String               @default("")
+  poster          String               @default("")
+  videoUrl        String               @default("")
+  status          String               @default("DRAFT")
+  isFeatured      Boolean              @default(false)
+  isGuestOfWeek   Boolean              @default(false)
+  seasonId        String?
+  views           Int                  @default(0)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  videoThumbnail  String               @default("")
+  venueName       String               @default("")
+  eventId         String?
   alertDispatches ArenaAlertDispatch[]
+  event           Event?               @relation(fields: [eventId], references: [id])
+  season          ArenaSeason?         @relation(fields: [seasonId], references: [id])
+  guests          ArenaShowGuest[]
+  media           MediaAsset[]
 
   @@index([status, airDate])
   @@index([eventId])
@@ -165,9 +165,9 @@ model ArenaShow {
 model ArenaShowGuest {
   showId  String
   guestId String
-  role    String     @default("invité")
-  show    ArenaShow  @relation(fields: [showId], references: [id], onDelete: Cascade)
+  role    String     @default("invite")
   guest   ArenaGuest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  show    ArenaShow  @relation(fields: [showId], references: [id], onDelete: Cascade)
 
   @@id([showId, guestId])
 }
@@ -182,40 +182,39 @@ model PortfolioItem {
   location    String       @default("")
   client      String       @default("")
   coverImage  String       @default("")
-  coverAlt    String       @default("")
-  coverFocus  String       @default("50% 50%")
   link        String       @default("")
   status      String       @default("DRAFT")
-  media       MediaAsset[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  coverAlt    String       @default("")
+  coverFocus  String       @default("50% 50%")
+  media       MediaAsset[]
 }
 
 model MediaAsset {
   id              String         @id @default(cuid())
   title           String
   description     String         @default("")
-  kind            String         @default("IMAGE") // IMAGE | VIDEO
+  kind            String         @default("IMAGE")
   url             String
   thumbnail       String         @default("")
-  alt             String         @default("")
-  category        String         @default("") // ACTIVITES | EMISSIONS | ...
+  category        String         @default("")
   visible         Boolean        @default(true)
-  featured        Boolean        @default(false)
   date            DateTime?
   arenaShowId     String?
-  arenaShow       ArenaShow?     @relation(fields: [arenaShowId], references: [id])
   portfolioItemId String?
-  portfolioItem   PortfolioItem? @relation(fields: [portfolioItemId], references: [id])
   albumId         String?
-  album           PhotoAlbum?    @relation(fields: [albumId], references: [id], onDelete: SetNull)
-  eventId         String?
-  event           Event?         @relation(fields: [eventId], references: [id], onDelete: SetNull)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+  alt             String         @default("")
+  featured        Boolean        @default(false)
+  eventId         String?
+  album           PhotoAlbum?    @relation(fields: [albumId], references: [id])
+  arenaShow       ArenaShow?     @relation(fields: [arenaShowId], references: [id])
+  event           Event?         @relation(fields: [eventId], references: [id])
+  portfolioItem   PortfolioItem? @relation(fields: [portfolioItemId], references: [id])
 }
 
-// Album photos Arena Grand Culture — un album = un invité du jour
 model PhotoAlbum {
   id            String       @id @default(cuid())
   title         String
@@ -227,9 +226,9 @@ model PhotoAlbum {
   date          DateTime?
   visible       Boolean      @default(true)
   order         Int          @default(0)
-  photos        MediaAsset[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  photos        MediaAsset[]
 }
 
 model Partner {
@@ -306,7 +305,7 @@ model SpotlightArtist {
 model NewsletterSubscriber {
   id               String   @id @default(cuid())
   email            String   @unique
-  status           String   @default("ACTIVE") // ACTIVE | UNSUBSCRIBED
+  status           String   @default("ACTIVE")
   source           String   @default("footer")
   unsubscribeToken String   @unique
   createdAt        DateTime @default(now())
@@ -319,12 +318,12 @@ model NewsletterCampaign {
   id         String   @id @default(cuid())
   subject    String
   body       String
-  kind       String   @default("NEWSLETTER") // NEWSLETTER | NOTICE
-  audience   String   @default("ALL") // ALL | CUSTOM
+  kind       String   @default("NEWSLETTER")
+  audience   String   @default("ALL")
   recipients String   @default("")
   sentCount  Int      @default(0)
   failCount  Int      @default(0)
-  status     String   @default("SENT") // SENT | PARTIAL | FAILED
+  status     String   @default("SENT")
   errorNote  String   @default("")
   createdBy  String   @default("")
   createdAt  DateTime @default(now())
@@ -336,8 +335,8 @@ model ArenaAlertSubscriber {
   id               String   @id @default(cuid())
   email            String?  @unique
   whatsapp         String   @default("")
-  emailStatus      String   @default("NONE") // NONE | ACTIVE | UNSUBSCRIBED
-  whatsappStatus   String   @default("NONE") // NONE | ACTIVE | UNSUBSCRIBED
+  emailStatus      String   @default("NONE")
+  whatsappStatus   String   @default("NONE")
   source           String   @default("arena")
   unsubscribeToken String   @unique
   createdAt        DateTime @default(now())
@@ -350,16 +349,16 @@ model ArenaAlertSubscriber {
 model ArenaAlertDispatch {
   id             String    @id @default(cuid())
   showId         String
-  show           ArenaShow @relation(fields: [showId], references: [id], onDelete: Cascade)
   kind           String
   emailSent      Int       @default(0)
   emailFailed    Int       @default(0)
   whatsappSent   Int       @default(0)
   whatsappFailed Int       @default(0)
-  status         String    @default("PENDING") // PENDING | SENT | PARTIAL | FAILED | SKIPPED
+  status         String    @default("PENDING")
   errorNote      String    @default("")
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+  show           ArenaShow @relation(fields: [showId], references: [id], onDelete: Cascade)
 
   @@unique([showId, kind])
   @@index([createdAt])
@@ -377,52 +376,52 @@ model AdminNotice {
 }
 
 model EventCategory {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
-  slug        String  @unique
-  description String  @default("")
-  order       Int     @default(0)
-  visible     Boolean @default(true)
-  events      Event[]
+  slug        String   @unique
+  description String   @default("")
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  events      Event[]
 }
 
 model Event {
-  id            String         @id @default(cuid())
+  id            String          @id @default(cuid())
   title         String
-  slug          String         @unique
-  summary       String         @default("")
-  description   String         @default("")
-  poster        String         @default("")
+  slug          String          @unique
+  summary       String          @default("")
+  description   String          @default("")
+  poster        String          @default("")
   startsAt      DateTime
   endsAt        DateTime?
-  venueName     String         @default("")
-  address       String         @default("")
-  city          String         @default("")
+  venueName     String          @default("")
+  address       String          @default("")
+  city          String          @default("")
   categoryId    String?
-  category      EventCategory? @relation(fields: [categoryId], references: [id])
   organizerId   String?
-  organizer     User?          @relation("EventOrganizer", fields: [organizerId], references: [id])
-  capacity      Int            @default(0)
-  status        String         @default("DRAFT") // DRAFT | PUBLISHED | SOLD_OUT | ENDED | CANCELLED
-  currency      String         @default("CDF")
+  capacity      Int             @default(0)
+  status        String          @default("DRAFT")
+  currency      String          @default("CDF")
   salesOpensAt  DateTime?
   salesClosesAt DateTime?
-  featured      Boolean        @default(false)
-  views         Int            @default(0)
-  sessions      EventSession[]
-  ticketTypes   TicketType[]
-  media         MediaAsset[]
-  orders        TicketOrder[]
-  staff         EventStaff[]
-  tickets       Ticket[]
-  scans         TicketScan[]
-  refunds       Refund[]
-  auditLogs     EventAuditLog[]
+  featured      Boolean         @default(false)
+  views         Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   arenaShows    ArenaShow[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  category      EventCategory?  @relation(fields: [categoryId], references: [id])
+  organizer     User?           @relation("EventOrganizer", fields: [organizerId], references: [id])
+  auditLogs     EventAuditLog[]
+  sessions      EventSession[]
+  staff         EventStaff[]
+  media         MediaAsset[]
+  refunds       Refund[]
+  tickets       Ticket[]
+  orders        TicketOrder[]
+  scans         TicketScan[]
+  ticketTypes   TicketType[]
 
   @@index([status, startsAt])
   @@index([featured, status])
@@ -431,15 +430,15 @@ model Event {
 model EventSession {
   id          String              @id @default(cuid())
   eventId     String
-  event       Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
   startsAt    DateTime
   endsAt      DateTime?
   label       String              @default("")
-  access      String              @default("PAID") // PAID | FREE
+  access      String              @default("PAID")
   sortOrder   Int                 @default(0)
-  ticketTypes TicketTypeSession[]
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
+  event       Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  ticketTypes TicketTypeSession[]
 
   @@index([eventId, sortOrder])
 }
@@ -447,7 +446,6 @@ model EventSession {
 model TicketType {
   id            String              @id @default(cuid())
   eventId       String
-  event         Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
   name          String
   description   String              @default("")
   benefits      String              @default("")
@@ -460,11 +458,12 @@ model TicketType {
   salesClosesAt DateTime?
   visible       Boolean             @default(true)
   sortOrder     Int                 @default(0)
-  sessions      TicketTypeSession[]
-  orderItems    OrderItem[]
-  tickets       Ticket[]
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
+  orderItems    OrderItem[]
+  tickets       Ticket[]
+  event         Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  sessions      TicketTypeSession[]
 
   @@index([eventId, sortOrder])
 }
@@ -472,8 +471,8 @@ model TicketType {
 model TicketTypeSession {
   ticketTypeId String
   sessionId    String
-  ticketType   TicketType   @relation(fields: [ticketTypeId], references: [id], onDelete: Cascade)
   session      EventSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  ticketType   TicketType   @relation(fields: [ticketTypeId], references: [id], onDelete: Cascade)
 
   @@id([ticketTypeId, sessionId])
   @@index([sessionId])
@@ -482,7 +481,7 @@ model TicketTypeSession {
 model EventStaff {
   eventId String
   userId  String
-  role    String @default("MANAGER") // MANAGER | SCANNER
+  role    String @default("MANAGER")
   event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -493,62 +492,62 @@ model TicketOrder {
   id            String      @id @default(cuid())
   orderNumber   String      @unique
   userId        String
-  user          User        @relation(fields: [userId], references: [id])
   eventId       String
-  event         Event       @relation(fields: [eventId], references: [id])
   buyerName     String
   buyerEmail    String
   buyerPhone    String      @default("")
-  status        String      @default("PENDING") // PENDING | AWAITING_PAYMENT | PAID | FAILED | EXPIRED | CANCELLED | REFUNDED
+  status        String      @default("PENDING")
   reservedUntil DateTime?
   amount        Int         @default(0)
   currency      String      @default("CDF")
-  items         OrderItem[]
-  payment       Payment?
-  tickets       Ticket[]
-  refund        Refund?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+  payment       Payment?
+  refund        Refund?
+  tickets       Ticket[]
+  event         Event       @relation(fields: [eventId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
 
   @@index([userId, status])
   @@index([eventId, status])
 }
 
 model OrderItem {
-  id           String     @id @default(cuid())
+  id           String      @id @default(cuid())
   orderId      String
-  order        TicketOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
   ticketTypeId String
-  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
   quantity     Int
   unitPrice    Int
+  order        TicketOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  ticketType   TicketType  @relation(fields: [ticketTypeId], references: [id])
 }
 
 model Payment {
-  id             String         @id @default(cuid())
-  orderId        String         @unique
-  order          TicketOrder    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  provider       String         @default("CINETPAY")
-  transactionId  String         @unique
-  providerToken  String         @default("")
-  status         String         @default("INITIATED") // INITIATED | ACCEPTED | REFUSED | CANCELLED | EXPIRED
-  amount         Int
-  currency       String         @default("CDF")
-  paymentMethod  String         @default("")
-  rawCheckJson   String         @default("")
-  checkedAt      DateTime?
-  events         PaymentEvent[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id            String         @id @default(cuid())
+  orderId       String         @unique
+  provider      String         @default("CINETPAY")
+  transactionId String         @unique
+  providerToken String         @default("")
+  status        String         @default("INITIATED")
+  amount        Int
+  currency      String         @default("CDF")
+  paymentMethod String         @default("")
+  rawCheckJson  String         @default("")
+  checkedAt     DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  order         TicketOrder    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  events        PaymentEvent[]
 }
 
 model PaymentEvent {
   id        String   @id @default(cuid())
   paymentId String
-  payment   Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  kind      String   @default("NOTIFY") // NOTIFY | CHECK | RETURN
+  kind      String   @default("NOTIFY")
   payload   String   @default("")
   createdAt DateTime @default(now())
+  payment   Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
 
   @@index([paymentId, createdAt])
 }
@@ -556,23 +555,23 @@ model PaymentEvent {
 model Ticket {
   id            String       @id @default(cuid())
   orderId       String
-  order         TicketOrder  @relation(fields: [orderId], references: [id])
   ticketTypeId  String
-  ticketType    TicketType   @relation(fields: [ticketTypeId], references: [id])
   eventId       String
-  event         Event        @relation(fields: [eventId], references: [id])
   userId        String
-  user          User         @relation("TicketBuyer", fields: [userId], references: [id])
   publicCode    String       @unique
   secretHash    String
   holderName    String
-  status        String       @default("VALID") // VALID | USED | CANCELLED | REFUNDED
+  status        String       @default("VALID")
   usedAt        DateTime?
   usedByStaffId String?
-  usedByStaff   User?        @relation("TicketUsedBy", fields: [usedByStaffId], references: [id])
-  scans         TicketScan[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  event         Event        @relation(fields: [eventId], references: [id])
+  order         TicketOrder  @relation(fields: [orderId], references: [id])
+  ticketType    TicketType   @relation(fields: [ticketTypeId], references: [id])
+  usedByStaff   User?        @relation("TicketUsedBy", fields: [usedByStaffId], references: [id])
+  user          User         @relation("TicketBuyer", fields: [userId], references: [id])
+  scans         TicketScan[]
 
   @@index([eventId, status])
   @@index([userId, status])
@@ -581,14 +580,14 @@ model Ticket {
 model TicketScan {
   id          String   @id @default(cuid())
   ticketId    String
-  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   eventId     String
-  event       Event    @relation(fields: [eventId], references: [id])
   staffUserId String?
-  staff       User?    @relation("TicketScanStaff", fields: [staffUserId], references: [id])
-  result      String   // OK | ALREADY_USED | INVALID | WRONG_EVENT | UNPAID | CANCELLED | REFUNDED
+  result      String
   deviceNote  String   @default("")
   scannedAt   DateTime @default(now())
+  event       Event    @relation(fields: [eventId], references: [id])
+  staff       User?    @relation("TicketScanStaff", fields: [staffUserId], references: [id])
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
   @@index([eventId, scannedAt])
 }
@@ -596,17 +595,17 @@ model TicketScan {
 model Refund {
   id          String      @id @default(cuid())
   orderId     String      @unique
-  order       TicketOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
   eventId     String
-  event       Event       @relation(fields: [eventId], references: [id], onDelete: Restrict)
   actorId     String?
-  actor       User?       @relation(fields: [actorId], references: [id], onDelete: SetNull)
   amount      Int
   currency    String      @default("CDF")
   reason      String
   restock     Boolean     @default(true)
   ticketCount Int         @default(0)
   createdAt   DateTime    @default(now())
+  actor       User?       @relation(fields: [actorId], references: [id])
+  event       Event       @relation(fields: [eventId], references: [id])
+  order       TicketOrder @relation(fields: [orderId], references: [id])
 
   @@index([eventId, createdAt])
 }
@@ -614,14 +613,14 @@ model Refund {
 model EventAuditLog {
   id         String   @id @default(cuid())
   eventId    String
-  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   actorId    String?
-  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
   action     String
   summary    String   @default("")
   beforeJson String   @default("")
   afterJson  String   @default("")
   createdAt  DateTime @default(now())
+  actor      User?    @relation(fields: [actorId], references: [id])
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([eventId, createdAt])
 }
