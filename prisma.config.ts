@@ -9,6 +9,4 @@ export default defineConfig({
   datasource: {
     url: process.env.DATABASE_URL,
   },
-  // Optional: specify the engine (required for Prisma 7+)
-  engine: "classic",
 });
