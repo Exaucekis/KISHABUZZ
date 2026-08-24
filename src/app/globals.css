@@ -5,46 +5,46 @@
    ========================================================= */
 
 :root {
-  /* Dark‑green design system */
-  --color-bg: #0a3d2e;                /* dark green background */
-  --color-primary: #1abc9c;           /* accent teal */
-  --color-text: #f0f0f0;              /* light grey text */
-  --color-muted: #8fa3a3;             /* muted grey */
-  --color-ink: var(--color-bg);
-  --color-ink-2: #0e4a36;
-  --color-ink-3: #0c3b28;
-  --color-paper: var(--color-text); /* use light text for paper (text color) */
-  --color-paper-muted: rgba(240,240,240,0.62);
-  --color-line: rgba(255,255,255,0.12);
-  --color-line-strong: rgba(255,255,255,0.28);
-  --color-ember: #1abc9c;            /* teal accent */
-  --color-ember-text: #1abc9c;
-  --color-arena: var(--color-bg);
-  --color-arena-accent: #1abc9c;
-  --font-syne: var(--font-syne), sans-serif;
-  --font-figtree: var(--font-figtree), sans-serif;
+  /* ─── Premium Black & White Design System ─── */
+  --color-bg:           #080808;          /* noir profond */
+  --color-primary:      #f5c842;          /* or chaud — accent signature */
+  --color-text:         #f2f2f2;          /* blanc cassé — lisible */
+  --color-muted:        #888888;          /* gris neutre */
+  --color-ink:          #080808;
+  --color-ink-2:        #111111;
+  --color-ink-3:        #1a1a1a;
+  --color-paper:        #f2f2f2;          /* texte clair sur fond sombre */
+  --color-paper-muted:  rgba(242, 242, 242, 0.55);
+  --color-line:         rgba(255, 255, 255, 0.09);
+  --color-line-strong:  rgba(255, 255, 255, 0.22);
+  --color-ember:        #f5c842;          /* accent or */
+  --color-ember-text:   #f5c842;
+  --color-arena:        #080808;
+  --color-arena-accent: #f5c842;
+  --font-syne:       var(--font-syne), sans-serif;
+  --font-figtree:    var(--font-figtree), sans-serif;
   --font-newsreader: var(--font-newsreader), serif;
-  --font-inter: var(--font-inter), sans-serif; /* Inter font */
+  --font-inter:      var(--font-inter), sans-serif;
 }
 
 @theme {
-    /* ─── Dark‑green palette ─── */
-    --color-ink:          #0a3d2e;
-    --color-ink-2:        #0e4a36;
-    --color-ink-3:        #0c3b28;
-    --color-paper:        #f0f0f0;
-    --color-paper-muted:  rgba(240, 240, 240, 0.62);
-    --color-line:         rgba(255, 255, 255, 0.12);
-    --color-line-strong:  rgba(255, 255, 255, 0.28);
-    --color-ember:        #1abc9c;
-    --color-ember-text:   #1abc9c;
-    --color-arena:        #0a3d2e;
-    --color-arena-accent: #1abc9c;
+  /* ─── Premium Black & White Palette ─── */
+  --color-ink:          #080808;
+  --color-ink-2:        #111111;
+  --color-ink-3:        #1a1a1a;
+  --color-paper:        #f2f2f2;
+  --color-paper-muted:  rgba(242, 242, 242, 0.55);
+  --color-line:         rgba(255, 255, 255, 0.09);
+  --color-line-strong:  rgba(255, 255, 255, 0.22);
+  --color-ember:        #f5c842;
+  --color-ember-text:   #f5c842;
+  --color-arena:        #080808;
+  --color-arena-accent: #f5c842;
 
-    --font-syne:       var(--font-syne), sans-serif;
-    --font-figtree:    var(--font-figtree), sans-serif;
-    --font-newsreader: var(--font-newsreader), serif;
-    --font-inter:      var(--font-inter), sans-serif;
+  --font-syne:       var(--font-syne), sans-serif;
+  --font-figtree:    var(--font-figtree), sans-serif;
+  --font-newsreader: var(--font-newsreader), serif;
+  --font-inter:      var(--font-inter), sans-serif;
 }
 
 /* ——— Base ——— */
@@ -53,7 +53,12 @@ html {
 }
 
 body {
-    font-family: 'Inter', system-ui, sans-serif; /* modern Inter font */
+    font-family: var(--font-inter), var(--font-figtree), system-ui, sans-serif;
+    background-color: #080808;
+    color: #f2f2f2;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
 }
 
 :focus-visible {
@@ -544,9 +549,9 @@ body {
 
 .admin-shell {
     min-height: 100vh;
-    background: #0e1118;
-    color: #e7eaf0;
-    font-family: var(--font-figtree), system-ui, sans-serif;
+    background: #080808;
+    color: #f2f2f2;
+    font-family: var(--font-inter), var(--font-figtree), system-ui, sans-serif;
 }
 
 .admin-sidebar-desktop {
@@ -562,8 +567,8 @@ body {
         height: 100vh;
         width: 16rem;
         flex-shrink: 0;
-        background: #0b0e14;
-        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        background: #0a0a0a;
+        border-right: 1px solid rgba(255, 255, 255, 0.07);
     }
 }
 

@@ -1,7 +1,20 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
+import "dotenv/config";
 
-const prisma = new PrismaClient();
+function withConnectionParams(url: string) {
+  if (!url) return url;
+  const extra: string[] = [];
+  if (!url.includes("connect_timeout=")) extra.push("connect_timeout=15");
+  if (!url.includes("pool_timeout=")) extra.push("pool_timeout=30");
+  if (!extra.length) return url;
+  return `${url}${url.includes("?") ? "&" : "?"}${extra.join("&")}`;
+}
+
+const url = withConnectionParams(process.env.DATABASE_URL || "");
+const adapter = new PrismaPg({ connectionString: url });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const email = process.env.ADMIN_EMAIL || "superadmin@kishabuzz.com";
