@@ -7,6 +7,7 @@ import { signOut } from "next-auth/react";
 import { Menu, X } from "lucide-react";
 import { AdminNoticeMenu, type AdminNoticeDto } from "@/components/admin/AdminNoticeMenu";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { CssDebugProbe } from "@/components/debug/CssDebugProbe";
 import { ADMIN_NAV, ADMIN_NAV_GROUPS, adminNavTitle, isAdminNavActive } from "@/lib/admin-nav";
 import { canManageUsers, roleLabel } from "@/lib/roles";
 
@@ -49,6 +50,9 @@ export function AdminShell({
 
   return (
     <div className="admin-shell flex min-h-screen">
+      {/* #region agent log */}
+      <CssDebugProbe surface="admin" />
+      {/* #endregion */}
       <AdminSidebar
         role={role}
         userName={userName}

@@ -12,6 +12,7 @@ import {
   LogIn,
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { CssDebugProbe } from "@/components/debug/CssDebugProbe";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserAccountMenu } from "@/components/layout/UserAccountMenu";
 import { useIsClient } from "@/lib/use-is-client";
@@ -277,6 +278,9 @@ export function SiteHeader({
           </div>
         </div>
       </header>
+      {/* #region agent log */}
+      <CssDebugProbe surface="site" />
+      {/* #endregion */}
       {drawer}
     </>
   );
