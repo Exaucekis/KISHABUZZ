@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Figtree, Newsreader, Syne, Inter } from "next/font/google";
+import { Syne, Inter } from "next/font/google";
 import { getSettings } from "@/lib/data";
 import "./globals.css";
 
@@ -19,23 +19,9 @@ const inter = Inter({
   preload: true,
 });
 
-const figtree = Figtree({
-  variable: "--font-figtree",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  display: "swap",
-  preload: true,
-});
 
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
-  subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal", "italic"],
-  display: "swap",
-  preload: false,
-  adjustFontFallback: true,
-});
+
+
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -75,7 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="fr"
-      className={`${syne.variable} ${figtree.variable} ${newsreader.variable} ${inter.variable} dark h-full antialiased`}
+      className={`${syne.variable} ${inter.variable} dark h-full antialiased`}
       data-theme="dark"
       suppressHydrationWarning
     >
