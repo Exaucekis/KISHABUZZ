@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = globalThis as unknown as {
   __kishaBuzzPrisma?: PrismaClient;
@@ -17,9 +18,10 @@ function withConnectionParams(url: string) {
 function getClient() {
   if (globalForPrisma.__kishaBuzzPrisma) return globalForPrisma.__kishaBuzzPrisma;
   const url = withConnectionParams(process.env.DATABASE_URL || "");
+  const adapter = new PrismaPg({ connectionString: url });
   const client = new PrismaClient({
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-    datasources: url ? { db: { url } } : undefined,
+    adapter,
   });
   globalForPrisma.__kishaBuzzPrisma = client;
   return client;

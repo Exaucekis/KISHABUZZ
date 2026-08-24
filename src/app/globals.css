@@ -1,27 +1,50 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* =========================================================
    KISHA BUZZ — Thème global & composant vidéo premium
    ========================================================= */
 
-@theme {
-    --color-ink: #050505;
-    --color-ink-2: #121212;
-    --color-ink-3: #1a1a1a;
-    --color-paper: #ffffff;
-    --color-paper-muted: rgba(255, 255, 255, 0.62);
-    --color-line: rgba(255, 255, 255, 0.12);
-    --color-line-strong: rgba(255, 255, 255, 0.28);
-    --color-ember: #f59e0b;
-    --color-ember-text: #f59e0b;
-    --color-arena: #050505;
-    --color-arena-accent: #f59e0b;
+:root {
+  /* Dark‑green design system */
+  --color-bg: #0a3d2e;                /* dark green background */
+  --color-primary: #1abc9c;           /* accent teal */
+  --color-text: #f0f0f0;              /* light grey text */
+  --color-muted: #8fa3a3;             /* muted grey */
+  --color-ink: var(--color-bg);
+  --color-ink-2: #0e4a36;
+  --color-ink-3: #0c3b28;
+  --color-paper: var(--color-text); /* use light text for paper (text color) */
+  --color-paper-muted: rgba(240,240,240,0.62);
+  --color-line: rgba(255,255,255,0.12);
+  --color-line-strong: rgba(255,255,255,0.28);
+  --color-ember: #1abc9c;            /* teal accent */
+  --color-ember-text: #1abc9c;
+  --color-arena: var(--color-bg);
+  --color-arena-accent: #1abc9c;
+  --font-syne: var(--font-syne), sans-serif;
+  --font-figtree: var(--font-figtree), sans-serif;
+  --font-newsreader: var(--font-newsreader), serif;
+  --font-inter: var(--font-inter), sans-serif; /* Inter font */
+}
 
-    --font-syne: var(--font-syne), sans-serif;
-    --font-figtree: var(--font-figtree), sans-serif;
+@theme {
+    /* ─── Dark‑green palette ─── */
+    --color-ink:          #0a3d2e;
+    --color-ink-2:        #0e4a36;
+    --color-ink-3:        #0c3b28;
+    --color-paper:        #f0f0f0;
+    --color-paper-muted:  rgba(240, 240, 240, 0.62);
+    --color-line:         rgba(255, 255, 255, 0.12);
+    --color-line-strong:  rgba(255, 255, 255, 0.28);
+    --color-ember:        #1abc9c;
+    --color-ember-text:   #1abc9c;
+    --color-arena:        #0a3d2e;
+    --color-arena-accent: #1abc9c;
+
+    --font-syne:       var(--font-syne), sans-serif;
+    --font-figtree:    var(--font-figtree), sans-serif;
     --font-newsreader: var(--font-newsreader), serif;
+    --font-inter:      var(--font-inter), sans-serif;
 }
 
 /* ——— Base ——— */
@@ -30,7 +53,7 @@ html {
 }
 
 body {
-    font-family: var(--font-figtree), system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif; /* modern Inter font */
 }
 
 :focus-visible {
