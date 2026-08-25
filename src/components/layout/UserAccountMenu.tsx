@@ -3,7 +3,20 @@
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { BarChart3, ChevronDown, LayoutDashboard, LogOut, ScanLine, Sparkles, Ticket, User } from "lucide-react";
+import {
+  BarChart3,
+  ChevronDown,
+  ChevronRight,
+  Crown,
+  LayoutDashboard,
+  LogOut,
+  ScanLine,
+  ShieldCheck,
+  Sparkles,
+  Ticket,
+  User,
+  Users,
+} from "lucide-react";
 import { signOutAction } from "@/actions/auth";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useIsClient } from "@/lib/use-is-client";
@@ -23,29 +36,6 @@ function userInitials(name: string | null, role: string) {
   return source.slice(0, 2).toUpperCase();
 }
 
-function roleBadgeClass(role: string) {
-  switch (role) {
-    case "SUPERADMIN":
-      return "user-role-badge user-role-badge--super";
-    case "ADMIN":
-      return "user-role-badge user-role-badge--admin";
-    case "EDITOR":
-    case "AUTHOR":
-      return "user-role-badge user-role-badge--staff";
-    default:
-      return "user-role-badge";
-  }
-}
-
-function menuPosition(trigger: HTMLElement | null) {
-  const rect = trigger?.getBoundingClientRect();
-  if (!rect) return { top: 64, right: 12 };
-  return {
-    top: rect.bottom + 10,
-    right: Math.max(12, window.innerWidth - rect.right),
-  };
-}
-
 export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props) {
   const [open, setOpen] = useState(false);
   const [confirmOut, setConfirmOut] = useState(false);
@@ -60,10 +50,22 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
   const showUsers = canManageUsers(user.role);
   const initials = userInitials(user.name, user.role);
 
+  const isSuperAdmin = user.role === "SUPERADMIN";
+  const isAdmin = user.role === "ADMIN" || isSuperAdmin;
+
   const close = () => {
     setOpen(false);
     onNavigate?.();
   };
+
+  function menuPosition(trigger: HTMLElement | null) {
+    const rect = trigger?.getBoundingClientRect();
+    if (!rect) return { top: 64, right: 12 };
+    return {
+      top: rect.bottom + 10,
+      right: Math.max(12, window.innerWidth - rect.right),
+    };
+  }
 
   useEffect(() => {
     if (!open || variant !== "desktop") return;
@@ -99,114 +101,221 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
     };
   }, [open]);
 
+  // ─── Profil Header Card Premium ───
   const profileCard = (
-    <div className="user-menu-profile-card">
-      <span className="user-menu-avatar user-menu-avatar--live" aria-hidden>
-        {initials}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-paper">{label}</p>
-        <span className={roleBadgeClass(user.role)}>{roleLabel(user.role)}</span>
-        <p className="mt-1 truncate text-[0.72rem] text-paper-muted">Espace membre KISHA BUZZ</p>
+    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-[#1a1f2c] via-[#121622] to-[#0a0d14] p-3.5 shadow-xl">
+      {/* Halo lumineux de fond */}
+      <div
+        className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-amber-500/10 blur-2xl"
+        aria-hidden="true"
+      />
+      <div className="relative z-10 flex items-center gap-3">
+        <div className="relative">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 via-amber-600 to-amber-800 text-sm font-black text-black shadow-lg shadow-amber-500/20 ring-2 ring-amber-400/40">
+            {initials}
+          </div>
+          {isSuperAdmin ? (
+            <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-black shadow">
+              <Crown className="h-2.5 w-2.5" />
+            </div>
+          ) : isAdmin ? (
+            <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-white shadow">
+              <ShieldCheck className="h-2.5 w-2.5" />
+            </div>
+          ) : null}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="truncate text-sm font-bold tracking-tight text-white">{label}</p>
+          </div>
+
+          <div className="mt-1 flex items-center gap-1.5">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.65rem] font-extrabold uppercase tracking-wider",
+                isSuperAdmin
+                  ? "bg-amber-400/20 text-amber-300 border border-amber-400/30"
+                  : isAdmin
+                    ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                    : "bg-white/10 text-gray-300 border border-white/10"
+              )}
+            >
+              <Sparkles className="h-2.5 w-2.5 opacity-80" />
+              {roleLabel(user.role)}
+            </span>
+            <span className="text-[0.68rem] text-white/40">· Espace membre</span>
+          </div>
+        </div>
       </div>
     </div>
   );
 
+  // ─── Menu Navigation Items ───
   const menuItems = (
-    <div className="space-y-0.5">
-      <Link href="/compte" role="menuitem" className="user-menu-item group" onClick={close}>
-        <span className="user-menu-icon">
-          <User className="h-4 w-4" aria-hidden />
-        </span>
-        <span className="flex-1 text-left">
-          <span className="block">Mon compte</span>
-          <span className="block text-[0.72rem] font-normal text-paper-muted">Profil et mot de passe</span>
-        </span>
-      </Link>
+    <div className="space-y-3 pt-2">
+      {/* Groupe : Compte Personnel */}
+      <div>
+        <p className="px-2 pb-1 text-[0.65rem] font-bold uppercase tracking-widest text-white/40">
+          Mon Espace
+        </p>
+        <div className="space-y-1">
+          <Link
+            href="/compte"
+            role="menuitem"
+            className="group flex items-center justify-between rounded-xl border border-transparent p-2.5 text-sm transition-all hover:border-white/10 hover:bg-white/[0.06]"
+            onClick={close}
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/70 transition-colors group-hover:border-amber-400/40 group-hover:bg-amber-400/10 group-hover:text-amber-300">
+                <User className="h-4 w-4" />
+              </div>
+              <div className="text-left">
+                <p className="font-semibold text-white group-hover:text-amber-300 transition-colors">
+                  Mon compte
+                </p>
+                <p className="text-[0.72rem] text-white/50">Profil et mot de passe</p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-white/30 transition-transform group-hover:translate-x-0.5 group-hover:text-amber-300" />
+          </Link>
 
-      <Link href="/compte/billets" role="menuitem" className="user-menu-item group" onClick={close}>
-        <span className="user-menu-icon">
-          <Ticket className="h-4 w-4" aria-hidden />
-        </span>
-        <span className="flex-1 text-left">
-          <span className="block">Mes billets</span>
-          <span className="block text-[0.72rem] font-normal text-paper-muted">Événements et QR code</span>
-        </span>
-      </Link>
+          <Link
+            href="/compte/billets"
+            role="menuitem"
+            className="group flex items-center justify-between rounded-xl border border-transparent p-2.5 text-sm transition-all hover:border-white/10 hover:bg-white/[0.06]"
+            onClick={close}
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/70 transition-colors group-hover:border-amber-400/40 group-hover:bg-amber-400/10 group-hover:text-amber-300">
+                <Ticket className="h-4 w-4" />
+              </div>
+              <div className="text-left">
+                <p className="font-semibold text-white group-hover:text-amber-300 transition-colors">
+                  Mes billets
+                </p>
+                <p className="text-[0.72rem] text-white/50">Événements et QR code</p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-white/30 transition-transform group-hover:translate-x-0.5 group-hover:text-amber-300" />
+          </Link>
+        </div>
+      </div>
 
+      {/* Groupe : Outils & Administration */}
       {showDashboard ? (
-        <Link href="/organisateur" role="menuitem" className="user-menu-item group" onClick={close}>
-          <span className="user-menu-icon">
-            <BarChart3 className="h-4 w-4" aria-hidden />
-          </span>
-          <span className="flex-1 text-left">
-            <span className="block">Espace organisateur</span>
-            <span className="block text-[0.72rem] font-normal text-paper-muted">Ventes et contrôles</span>
-          </span>
-        </Link>
+        <div>
+          <p className="px-2 pb-1 text-[0.65rem] font-bold uppercase tracking-widest text-amber-400/60">
+            Gestion & Administration
+          </p>
+          <div className="space-y-1">
+            <Link
+              href="/organisateur"
+              role="menuitem"
+              className="group flex items-center justify-between rounded-xl border border-transparent p-2.5 text-sm transition-all hover:border-white/10 hover:bg-white/[0.06]"
+              onClick={close}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/70 transition-colors group-hover:border-amber-400/40 group-hover:bg-amber-400/10 group-hover:text-amber-300">
+                  <BarChart3 className="h-4 w-4" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-white group-hover:text-amber-300 transition-colors">
+                    Espace organisateur
+                  </p>
+                  <p className="text-[0.72rem] text-white/50">Ventes et billetterie</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-white/30 transition-transform group-hover:translate-x-0.5 group-hover:text-amber-300" />
+            </Link>
+
+            <Link
+              href="/scan"
+              role="menuitem"
+              className="group flex items-center justify-between rounded-xl border border-transparent p-2.5 text-sm transition-all hover:border-white/10 hover:bg-white/[0.06]"
+              onClick={close}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/70 transition-colors group-hover:border-amber-400/40 group-hover:bg-amber-400/10 group-hover:text-amber-300">
+                  <ScanLine className="h-4 w-4" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-white group-hover:text-amber-300 transition-colors">
+                    Contrôle d’entrée
+                  </p>
+                  <p className="text-[0.72rem] text-white/50">Scanner les billets</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-white/30 transition-transform group-hover:translate-x-0.5 group-hover:text-amber-300" />
+            </Link>
+
+            <Link
+              href="/admin"
+              role="menuitem"
+              className="group flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-2.5 text-sm transition-all hover:border-amber-500/40 hover:bg-amber-500/[0.1]"
+              onClick={close}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-400/30 bg-amber-400/15 text-amber-300">
+                  <LayoutDashboard className="h-4 w-4" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-amber-300">Tableau de bord CMS</p>
+                  <p className="text-[0.72rem] text-amber-200/60">Gestion générale & contenus</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-amber-300 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+
+            {showUsers ? (
+              <Link
+                href="/admin/users"
+                role="menuitem"
+                className="group flex items-center justify-between rounded-xl border border-transparent p-2.5 text-sm transition-all hover:border-white/10 hover:bg-white/[0.06]"
+                onClick={close}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/70 transition-colors group-hover:border-amber-400/40 group-hover:bg-amber-400/10 group-hover:text-amber-300">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-white group-hover:text-amber-300 transition-colors">
+                      Utilisateurs & rôles
+                    </p>
+                    <p className="text-[0.72rem] text-white/50">Comptes et autorisations</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-white/30 transition-transform group-hover:translate-x-0.5 group-hover:text-amber-300" />
+              </Link>
+            ) : null}
+          </div>
+        </div>
       ) : null}
 
-      {showDashboard ? (
-        <Link href="/scan" role="menuitem" className="user-menu-item group" onClick={close}>
-          <span className="user-menu-icon">
-            <ScanLine className="h-4 w-4" aria-hidden />
-          </span>
-          <span className="flex-1 text-left">
-            <span className="block">Contrôle d’entrée</span>
-            <span className="block text-[0.72rem] font-normal text-paper-muted">Scanner les billets</span>
-          </span>
-        </Link>
-      ) : null}
-
-      {showDashboard ? (
-        <Link
-          href="/admin"
+      {/* Séparateur & Bouton Déconnexion */}
+      <div className="pt-1">
+        <button
+          type="button"
           role="menuitem"
-          className="user-menu-item group user-menu-item--accent"
-          onClick={close}
+          className="group flex w-full items-center justify-between rounded-xl border border-red-500/20 bg-red-500/[0.05] p-2.5 text-sm transition-all hover:border-red-500/40 hover:bg-red-500/[0.12]"
+          onClick={() => {
+            setOpen(false);
+            onNavigate?.();
+            setConfirmOut(true);
+          }}
         >
-          <span className="user-menu-icon user-menu-icon--accent">
-            <LayoutDashboard className="h-4 w-4" aria-hidden />
-          </span>
-          <span className="flex-1 text-left">
-            <span className="block">Tableau de bord</span>
-            <span className="block text-[0.72rem] font-normal text-paper-muted">CMS et contenus</span>
-          </span>
-        </Link>
-      ) : null}
-
-      {showUsers ? (
-        <Link href="/admin/users" role="menuitem" className="user-menu-item group" onClick={close}>
-          <span className="user-menu-icon">
-            <Sparkles className="h-4 w-4" aria-hidden />
-          </span>
-          <span className="flex-1 text-left">
-            <span className="block">Utilisateurs</span>
-            <span className="block text-[0.72rem] font-normal text-paper-muted">Rôles et comptes</span>
-          </span>
-        </Link>
-      ) : null}
-
-      <div className="my-1.5 h-px bg-line/80" role="separator" />
-
-      <button
-        type="button"
-        role="menuitem"
-        className="user-menu-item group user-menu-item--danger w-full"
-        onClick={() => {
-          setOpen(false);
-          onNavigate?.();
-          setConfirmOut(true);
-        }}
-      >
-        <span className="user-menu-icon user-menu-icon--danger">
-          <LogOut className="h-4 w-4" aria-hidden />
-        </span>
-        <span className="flex-1 text-left">
-          <span className="block">Déconnexion</span>
-          <span className="block text-[0.72rem] font-normal text-red-200/70">Quitter la session</span>
-        </span>
-      </button>
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/15 text-red-400 transition-colors group-hover:bg-red-500/25 group-hover:text-red-300">
+              <LogOut className="h-4 w-4" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-red-300">Déconnexion</p>
+              <p className="text-[0.72rem] text-red-300/60">Fermer la session en toute sécurité</p>
+            </div>
+          </div>
+          <ChevronRight className="h-4 w-4 text-red-400/40 transition-transform group-hover:translate-x-0.5 group-hover:text-red-300" />
+        </button>
+      </div>
     </div>
   );
 
@@ -230,9 +339,10 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
     />
   );
 
+  // ─── Vue Mobile (Dans le tiroir de navigation) ───
   if (variant === "mobile") {
     return (
-      <div className="user-menu-mobile space-y-1.5">
+      <div className="user-menu-mobile rounded-2xl border border-white/10 bg-black/40 p-3 shadow-inner">
         {profileCard}
         {menuItems}
         {confirm}
@@ -240,6 +350,7 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
     );
   }
 
+  // ─── Vue Desktop (Dropdown Popover) ───
   const dropdown =
     mounted &&
     open &&
@@ -248,11 +359,11 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
         ref={panelRef}
         id={menuId}
         role="menu"
-        className="user-menu-panel user-menu-panel--open fixed z-[240] w-[min(calc(100vw-1.5rem),18rem)]"
+        className="user-menu-panel user-menu-panel--open fixed z-[240] w-[min(calc(100vw-1.5rem),21rem)] rounded-2xl border border-white/15 bg-[#0e121a]/95 p-3.5 shadow-2xl backdrop-blur-2xl"
         style={{ top: coords.top, right: coords.right }}
       >
-        <div className="border-b border-line/80">{profileCard}</div>
-        <div className="p-1.5">{menuItems}</div>
+        {profileCard}
+        {menuItems}
       </div>,
       document.body
     );
@@ -263,8 +374,8 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
         ref={triggerRef}
         type="button"
         className={cn(
-          "user-menu-trigger inline-flex max-w-[12rem] items-center gap-2 rounded-full border border-line/80 bg-ink-2/80 py-1.5 pl-1.5 pr-2.5 text-[0.8rem] font-semibold text-paper shadow-sm backdrop-blur-sm transition hover:border-ember-text/30 hover:bg-ink-3 xl:max-w-[14rem] xl:text-sm",
-          open && "border-ember-text/40 bg-ink-3 ring-2 ring-ember-text/15"
+          "user-menu-trigger inline-flex max-w-[13rem] items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] py-1.5 pl-1.5 pr-3 text-[0.8rem] font-semibold text-white shadow-sm backdrop-blur-md transition-all hover:border-amber-400/50 hover:bg-white/[0.08] xl:max-w-[15rem] xl:text-sm",
+          open && "border-amber-400/60 bg-white/[0.1] ring-2 ring-amber-400/20"
         )}
         aria-expanded={open}
         aria-haspopup="menu"
@@ -274,12 +385,12 @@ export function UserAccountMenu({ user, variant = "desktop", onNavigate }: Props
           setOpen((value) => !value);
         }}
       >
-        <span className="user-menu-avatar user-menu-avatar--sm" aria-hidden>
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 text-xs font-black text-black shadow-md ring-1 ring-white/30" aria-hidden>
           {initials}
         </span>
         <span className="truncate">{label.split(" ")[0]}</span>
         <ChevronDown
-          className={cn("h-3.5 w-3.5 shrink-0 text-paper-muted transition-transform duration-200", open && "rotate-180")}
+          className={cn("h-3.5 w-3.5 shrink-0 text-white/50 transition-transform duration-200", open && "rotate-180 text-amber-300")}
           aria-hidden
         />
       </button>
