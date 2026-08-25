@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
+import { Archive, ArrowRight, Handshake, Play, Sparkles } from "lucide-react";
 import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaMediaRow } from "@/components/arena/ArenaMediaRow";
 
@@ -70,8 +71,6 @@ export default async function ArenaCulturePage() {
         }
       />
 
-
-
       <section className="ac-spotlight">
         <div className="ac-spotlight__grid">
           {spotlight?.poster || guest?.photo ? (
@@ -135,17 +134,48 @@ export default async function ArenaCulturePage() {
         variant="square"
       />
 
-      <section className="ac-close">
-        <p className="ac-kicker">{home.memory.eyebrow}</p>
-        <h2>{home.memory.title}</h2>
-        <p>{home.memory.body}</p>
-        <div className="ac-close__actions">
-          <Link href="/arena-culture/archives" className="ac-btn ac-btn--primary">
-            {home.memory.cta}
-          </Link>
-          <Link href="/contact" className="ac-btn ac-btn--ghost">
-            {home.memory.secondary}
-          </Link>
+      {/* Section Mémoire & Archives Redessinée Ultra-Premium */}
+      <section className="relative my-16 overflow-hidden rounded-3xl border border-amber-500/20 bg-gradient-to-b from-[#121624] via-[#0d101a] to-[#060810] p-8 text-center shadow-2xl sm:p-12 md:p-16">
+        {/* Glow ambiant */}
+        <div
+          className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-64 w-96 rounded-full bg-amber-500/10 blur-3xl"
+          aria-hidden="true"
+        />
+
+        <div className="relative z-10 mx-auto max-w-3xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-1.5 backdrop-blur-md">
+            <Archive className="h-3.5 w-3.5 text-amber-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
+              {home.memory.eyebrow || "Archives"}
+            </span>
+          </div>
+
+          <h2 className="mt-4 font-display text-3xl font-extrabold text-white sm:text-4xl md:text-5xl">
+            {home.memory.title || "La mémoire de l'Arena"}
+          </h2>
+
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-white/70 sm:text-base">
+            {home.memory.body || "Retrouvez l’ensemble des saisons, épisodes, visuels et grands moments déjà diffusés sur le plateau."}
+          </p>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/arena-culture/archives"
+              className="group inline-flex items-center gap-2.5 rounded-xl border border-amber-400/40 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 px-7 py-3.5 text-xs font-black uppercase tracking-wider text-black shadow-lg shadow-amber-500/25 transition-all hover:scale-105 hover:shadow-amber-500/40 sm:text-sm"
+            >
+              <Archive className="h-4 w-4 fill-black text-black transition-transform group-hover:scale-110" />
+              <span>{home.memory.cta || "Ouvrir les archives"}</span>
+              <ArrowRight className="h-4 w-4 text-black transition-transform group-hover:translate-x-1" />
+            </Link>
+
+            <Link
+              href="/contact"
+              className="group inline-flex items-center gap-2 rounded-xl border border-white/20 bg-black/40 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md transition-all hover:border-amber-400/40 hover:bg-white/10 hover:text-amber-300 sm:text-sm"
+            >
+              <Handshake className="h-4 w-4 text-amber-400 transition-transform group-hover:scale-110" />
+              <span>{home.memory.secondary || "Collaborer"}</span>
+            </Link>
+          </div>
         </div>
       </section>
     </>

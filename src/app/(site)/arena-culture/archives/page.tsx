@@ -1,5 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import {
+  Archive,
+  Calendar,
+  ChevronRight,
+  Film,
+  Image as ImageIcon,
+  Play,
+  Sparkles,
+  Tv,
+} from "lucide-react";
 import { ArenaPageIntro } from "@/components/arena/ArenaPageIntro";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
@@ -37,120 +47,201 @@ export default async function ArenaArchivesPage({ searchParams }: Props) {
   return (
     <>
       <ArenaPageIntro
-        title="Archives"
-        description="Émissions, vidéos et affiches qui ont quitté la une. Quand un contenu n’y figure plus, l’équipe l’a retiré."
+        title="Archives & Mémoire"
+        description="Retrouvez toutes les émissions, vidéos exclusives et affiches officielles qui ont marqué l'histoire d'Arena Culture."
       />
 
       <section className="ac-page">
-        <div className="ac-archive-toolbar">
-          <div>
-            <p className="ac-kicker mb-3">Année</p>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/arena-culture/archives"
-                className={cn(
-                  "rounded-full border px-4 py-2.5 text-sm",
-                  !year && !seasonId
-                    ? "border-[var(--ac-amber)] bg-[var(--ac-amber)] text-black"
-                    : "border-line text-paper-muted hover:text-paper"
-                )}
-              >
-                Toutes
-              </Link>
-              {years.map((y) => (
+        {/* Barre de filtres stylée */}
+        <div className="mb-8 rounded-2xl border border-amber-500/20 bg-gradient-to-r from-[#121622] via-[#0d1017] to-[#07090e] p-5 backdrop-blur-xl sm:p-6">
+          <div className="grid gap-5 md:grid-cols-2">
+            {/* Filtre Année */}
+            <div>
+              <p className="mb-2.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-300">
+                <Calendar className="h-3.5 w-3.5" />
+                <span>Année</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
                 <Link
-                  key={y}
-                  href={`/arena-culture/archives?annee=${y}`}
+                  href="/arena-culture/archives"
                   className={cn(
-                    "rounded-full border px-4 py-2.5 text-sm",
-                    year === y
-                      ? "border-[var(--ac-amber)] bg-[var(--ac-amber)] text-black"
-                      : "border-line text-paper-muted hover:text-paper"
+                    "rounded-xl px-4 py-2 text-xs font-bold transition-all duration-300 sm:text-sm",
+                    !year && !seasonId
+                      ? "bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-md shadow-amber-500/20 font-extrabold scale-102"
+                      : "border border-white/10 bg-black/40 text-white/70 hover:border-amber-400/40 hover:text-white"
                   )}
                 >
-                  {y}
+                  Toutes
                 </Link>
-              ))}
-            </div>
-          </div>
-
-          {seasons.length ? (
-            <div>
-              <p className="ac-kicker mb-3">Saison</p>
-              <div className="flex flex-wrap gap-2">
-                {seasons.map((s) => (
+                {years.map((y) => (
                   <Link
-                    key={s.id}
-                    href={`/arena-culture/archives?saison=${s.id}`}
+                    key={y}
+                    href={`/arena-culture/archives?annee=${y}`}
                     className={cn(
-                      "rounded-full border px-4 py-2.5 text-sm",
-                      seasonId === s.id
-                        ? "border-[var(--ac-amber)] bg-[var(--ac-amber)] text-black"
-                        : "border-line text-paper-muted hover:text-paper"
+                      "rounded-xl px-4 py-2 text-xs font-bold transition-all duration-300 sm:text-sm",
+                      year === y
+                        ? "bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-md shadow-amber-500/20 font-extrabold scale-102"
+                        : "border border-white/10 bg-black/40 text-white/70 hover:border-amber-400/40 hover:text-white"
                     )}
                   >
-                    {s.title || `Saison ${s.number}`} ({s.year})
+                    {y}
                   </Link>
                 ))}
               </div>
             </div>
-          ) : null}
+
+            {/* Filtre Saison */}
+            {seasons.length ? (
+              <div>
+                <p className="mb-2.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-300">
+                  <Tv className="h-3.5 w-3.5" />
+                  <span>Saisons</span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {seasons.map((s) => (
+                    <Link
+                      key={s.id}
+                      href={`/arena-culture/archives?saison=${s.id}`}
+                      className={cn(
+                        "rounded-xl px-4 py-2 text-xs font-bold transition-all duration-300 sm:text-sm",
+                        seasonId === s.id
+                          ? "bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-md shadow-amber-500/20 font-extrabold scale-102"
+                          : "border border-white/10 bg-black/40 text-white/70 hover:border-amber-400/40 hover:text-white"
+                      )}
+                    >
+                      {s.title || `Saison ${s.number}`} ({s.year})
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
 
-        <div className="ac-archive-stats" aria-label="Contenu des archives">
-          <span>
-            <strong>{shows.length}</strong> émission{shows.length > 1 ? "s" : ""}
-          </span>
-          <span>
-            <strong>{videos.length}</strong> vidéo{videos.length > 1 ? "s" : ""}
-          </span>
-          <span>
-            <strong>{visuals.length}</strong> visuel{visuals.length > 1 ? "s" : ""}
-          </span>
+        {/* Compteurs / Stats */}
+        <div className="mb-6 flex flex-wrap items-center gap-3 text-xs sm:text-sm">
+          <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#10141f] px-3.5 py-2">
+            <Tv className="h-4 w-4 text-amber-400" />
+            <span className="text-white/60">Émissions :</span>
+            <strong className="font-bold text-white">{shows.length}</strong>
+          </div>
+          <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#10141f] px-3.5 py-2">
+            <Film className="h-4 w-4 text-amber-400" />
+            <span className="text-white/60">Vidéos :</span>
+            <strong className="font-bold text-white">{videos.length}</strong>
+          </div>
+          <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#10141f] px-3.5 py-2">
+            <ImageIcon className="h-4 w-4 text-amber-400" />
+            <span className="text-white/60">Affiches :</span>
+            <strong className="font-bold text-white">{visuals.length}</strong>
+          </div>
         </div>
 
+        {/* Navigation d'ancrage */}
         {total ? (
-          <nav className="ac-archive-nav" aria-label="Parcourir les archives">
-            <a href="#emissions">Émissions</a>
-            <a href="#videos">Vidéos</a>
-            <a href="#visuels">Affiches</a>
+          <nav className="sticky top-28 z-30 mb-10 flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-[#07090e]/90 p-2 backdrop-blur-xl" aria-label="Parcourir les archives">
+            <a
+              href="#emissions"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-transparent px-4 py-2 text-xs font-bold text-white/80 transition-all hover:border-amber-400/30 hover:bg-amber-400/10 hover:text-amber-300"
+            >
+              <Tv className="h-3.5 w-3.5 text-amber-400" />
+              <span>Émissions ({shows.length})</span>
+            </a>
+            <a
+              href="#videos"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-transparent px-4 py-2 text-xs font-bold text-white/80 transition-all hover:border-amber-400/30 hover:bg-amber-400/10 hover:text-amber-300"
+            >
+              <Film className="h-3.5 w-3.5 text-amber-400" />
+              <span>Vidéos ({videos.length})</span>
+            </a>
+            <a
+              href="#visuels"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-transparent px-4 py-2 text-xs font-bold text-white/80 transition-all hover:border-amber-400/30 hover:bg-amber-400/10 hover:text-amber-300"
+            >
+              <ImageIcon className="h-3.5 w-3.5 text-amber-400" />
+              <span>Affiches ({visuals.length})</span>
+            </a>
           </nav>
         ) : null}
 
-        <div className="ac-archive-stack">
-          <section id="emissions" className="ac-archive-block">
-            <header className="ac-archive-block__head">
-              <p className="ac-kicker">01 · Émissions</p>
-              <h2>Épisodes archivés</h2>
+        <div className="grid gap-16">
+          {/* Section 01 : Émissions */}
+          <section id="emissions" className="scroll-mt-36">
+            <header className="mb-6 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-amber-400">01 · Émissions</p>
+                <h2 className="mt-1 font-display text-2xl font-extrabold text-white sm:text-3xl">
+                  Épisodes archivés
+                </h2>
+              </div>
             </header>
+
             {shows.length ? (
-              <ul className="ac-archive-shows">
+              <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {shows.map((show) => {
                   const guest = show.guests[0]?.guest?.name;
                   const cover = show.poster || show.videoThumbnail;
                   return (
                     <li key={show.id}>
-                      <Link href={`/arena-culture/emissions/${show.slug}`} className="ac-archive-card">
-                        <div className="ac-archive-card__media">
+                      <Link
+                        href={`/arena-culture/emissions/${show.slug}`}
+                        className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-[#121624] to-[#0a0d15] transition-all duration-300 hover:-translate-y-1 hover:border-amber-400/50 hover:shadow-[0_12px_30px_rgba(245,158,11,0.15)]"
+                      >
+                        <div className="relative aspect-[16/9] w-full overflow-hidden bg-black/60">
                           {cover ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={cover} alt="" loading="lazy" />
+                            <img
+                              src={cover}
+                              alt=""
+                              loading="lazy"
+                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
                           ) : (
-                            <div className="ac-archive-card__fallback" />
+                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-950/40 to-black">
+                              <Tv className="h-10 w-10 text-amber-500/40" />
+                            </div>
                           )}
-                          {show.videoUrl ? <span className="ac-archive-card__badge">Vidéo</span> : null}
-                        </div>
-                        <div className="ac-archive-card__body">
-                          <p className="ac-kicker">
-                            Ép. {String(show.number).padStart(2, "0")}
-                            {show.season ? ` · ${show.season.title || `S${show.season.number}`}` : ""}
-                          </p>
-                          <h3>{show.title}</h3>
-                          {guest ? <p className="ac-archive-card__guest">{guest}</p> : null}
-                          {show.theme ? <p className="ac-archive-card__theme">{show.theme}</p> : null}
-                          {show.airDate ? (
-                            <p className="ac-archive-card__date">{formatDate(show.airDate)}</p>
+
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
+                          {show.videoUrl ? (
+                            <span className="absolute bottom-2.5 right-2.5 inline-flex items-center gap-1 rounded-md bg-amber-500 px-2 py-1 text-[0.65rem] font-black uppercase tracking-wider text-black shadow">
+                              <Play className="h-2.5 w-2.5 fill-black" />
+                              Vidéo
+                            </span>
                           ) : null}
+
+                          <span className="absolute top-2.5 left-2.5 rounded-md border border-white/20 bg-black/60 px-2 py-0.5 text-[0.7rem] font-extrabold text-amber-300 backdrop-blur-md">
+                            Ép. {String(show.number).padStart(2, "0")}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-1 flex-col p-4">
+                          <p className="text-[0.75rem] font-bold text-white/50">
+                            {show.season ? show.season.title || `Saison ${show.season.number}` : "Hors-saison"}
+                            {show.airDate ? ` · ${formatDate(show.airDate)}` : ""}
+                          </p>
+
+                          <h3 className="mt-1 font-display text-base font-bold text-white transition-colors group-hover:text-amber-300">
+                            {show.title}
+                          </h3>
+
+                          {guest ? (
+                            <p className="mt-1 text-xs font-semibold text-amber-400/90">
+                              Invité : {guest}
+                            </p>
+                          ) : null}
+
+                          {show.theme ? (
+                            <p className="mt-2 line-clamp-2 text-xs text-white/60">
+                              {show.theme}
+                            </p>
+                          ) : null}
+
+                          <div className="mt-auto pt-4 flex items-center justify-between text-xs font-bold text-amber-400 group-hover:text-amber-300">
+                            <span>Voir la fiche</span>
+                            <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                          </div>
                         </div>
                       </Link>
                     </li>
@@ -162,68 +253,100 @@ export default async function ArenaArchivesPage({ searchParams }: Props) {
                 title="Aucune émission archivée pour ce filtre"
                 description={
                   years.length || seasons.length
-                    ? "Modifiez l'année ou la saison, ou revenez à toutes les archives."
+                    ? "Modifiez l'année ou la saison sélectionnée pour voir les archives."
                     : "Les archives se remplissent dès qu’une émission quitte la une."
                 }
               />
             )}
           </section>
 
-          <section id="videos" className="ac-archive-block">
-            <header className="ac-archive-block__head">
-              <p className="ac-kicker">02 · Vidéos</p>
-              <h2>Anciennes vidéos</h2>
+          {/* Section 02 : Vidéos */}
+          <section id="videos" className="scroll-mt-36">
+            <header className="mb-6 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-amber-400">02 · Vidéos</p>
+                <h2 className="mt-1 font-display text-2xl font-extrabold text-white sm:text-3xl">
+                  Anciennes vidéos
+                </h2>
+              </div>
             </header>
+
             {videos.length ? (
-              <div className="ac-archive-videos">
+              <div className="grid gap-6 md:grid-cols-2">
                 {videos.map((video) => (
-                  <article key={video.id} className="ac-archive-video">
-                    <VideoEmbed
-                      url={video.url}
-                      title={archiveLabel(video.title)}
-                      poster={videoPoster(video.url, video.thumbnail)}
-                      lazy
-                    />
-                    <h3>{archiveLabel(video.title)}</h3>
+                  <article
+                    key={video.id}
+                    className="overflow-hidden rounded-2xl border border-white/10 bg-[#121624] p-4 transition-all duration-300 hover:border-amber-400/40"
+                  >
+                    <div className="overflow-hidden rounded-xl">
+                      <VideoEmbed
+                        url={video.url}
+                        title={archiveLabel(video.title)}
+                        poster={videoPoster(video.url, video.thumbnail)}
+                        lazy
+                      />
+                    </div>
+                    <h3 className="mt-3.5 font-display text-base font-bold text-white">
+                      {archiveLabel(video.title)}
+                    </h3>
                     {video.arenaShow?.slug ? (
                       <Link
                         href={`/arena-culture/emissions/${video.arenaShow.slug}`}
-                        className="ac-archive-video__link"
+                        className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-amber-400 hover:underline"
                       >
-                        {video.arenaShow.title}
+                        <span>Émission liée : {video.arenaShow.title}</span>
+                        <ChevronRight className="h-3 w-3" />
                       </Link>
                     ) : video.date ? (
-                      <p className="ac-archive-card__date">{formatDate(video.date)}</p>
+                      <p className="mt-1 text-xs text-white/50">{formatDate(video.date)}</p>
                     ) : null}
                   </article>
                 ))}
               </div>
             ) : (
-              <p className="text-paper-muted">Pas encore d’ancienne vidéo dans ce filtre.</p>
+              <div className="rounded-2xl border border-white/5 bg-[#0a0d15] p-8 text-center text-sm text-white/50">
+                Pas encore d’ancienne vidéo dans ce filtre.
+              </div>
             )}
           </section>
 
-          <section id="visuels" className="ac-archive-block">
-            <header className="ac-archive-block__head">
-              <p className="ac-kicker">03 · Affiches & visuels</p>
-              <h2>Anciens visuels</h2>
+          {/* Section 03 : Affiches & Visuels */}
+          <section id="visuels" className="scroll-mt-36">
+            <header className="mb-6 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-amber-400">03 · Affiches &amp; Visuels</p>
+                <h2 className="mt-1 font-display text-2xl font-extrabold text-white sm:text-3xl">
+                  Anciens visuels
+                </h2>
+              </div>
             </header>
+
             {visuals.length ? (
-              <div className="ac-archive-posters">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                 {visuals.map((item) => (
-                  <figure key={item.id} className="ac-archive-poster">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={item.thumbnail || item.url}
-                      alt={item.alt || archiveLabel(item.title)}
-                      loading="lazy"
-                    />
-                    <figcaption>{archiveLabel(item.title)}</figcaption>
+                  <figure
+                    key={item.id}
+                    className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#121624] transition-all duration-300 hover:-translate-y-1 hover:border-amber-400/50 hover:shadow-lg"
+                  >
+                    <div className="aspect-[3/4] w-full overflow-hidden bg-black/60">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.thumbnail || item.url}
+                        alt={item.alt || archiveLabel(item.title)}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                    <figcaption className="p-3 text-center text-xs font-bold text-white transition-colors group-hover:text-amber-300">
+                      {archiveLabel(item.title)}
+                    </figcaption>
                   </figure>
                 ))}
               </div>
             ) : (
-              <p className="text-paper-muted">Pas encore d’affiche archivée dans ce filtre.</p>
+              <div className="rounded-2xl border border-white/5 bg-[#0a0d15] p-8 text-center text-sm text-white/50">
+                Pas encore d’affiche archivée dans ce filtre.
+              </div>
             )}
           </section>
         </div>
