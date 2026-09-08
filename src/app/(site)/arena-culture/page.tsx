@@ -4,14 +4,17 @@ import { connection } from "next/server";
 import { Archive, ArrowRight, Handshake, Play, Sparkles } from "lucide-react";
 import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaMediaRow } from "@/components/arena/ArenaMediaRow";
+import { ArenaShowEngagement } from "@/components/arena/ArenaShowEngagement";
 
 import {
   getArenaHome,
   getArenaPhotoAlbums,
   getArenaStage,
+  getArenaShowEngagement,
 } from "@/lib/data";
 import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Arena Culture",
@@ -24,16 +27,20 @@ export const revalidate = 0;
 
 export default async function ArenaCulturePage() {
   await connection();
-  const [home, stage, albums] = await Promise.all([
+  const [home, stage, albums, session] = await Promise.all([
     getArenaHome(),
     getArenaStage(),
     getArenaPhotoAlbums(),
+    auth(),
   ]);
 
   const headline = stage.headline;
   const spotlight = stage.announced;
   const guest = arenaSpotlightGuest(spotlight);
   const headlineGuest = arenaSpotlightGuest(headline);
+  const spotlightEngagement = spotlight
+    ? await getArenaShowEngagement(spotlight.id, session?.user?.id)
+    : null;
 
   const heroPoster = home.hero.poster;
 
@@ -107,6 +114,16 @@ export default async function ArenaCulturePage() {
                     {home.spotlight.emptySecondary}
                   </Link>
                 </div>
+                {spotlightEngagement ? (
+                  <ArenaShowEngagement
+                    showId={spotlight.id}
+                    initialLikes={spotlightEngagement.likes}
+                    initialLiked={spotlightEngagement.liked}
+                    initialComments={spotlightEngagement.comments}
+                    initialCommentsCount={spotlightEngagement.commentsCount}
+                    compact
+                  />
+                ) : null}
               </>
             ) : (
               <>

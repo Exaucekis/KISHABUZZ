@@ -24,6 +24,8 @@ model User {
   tickets         Ticket[]        @relation("TicketBuyer")
   ticketOrders    TicketOrder[]
   ticketScans     TicketScan[]    @relation("TicketScanStaff")
+  arenaShowLikes  ArenaShowLike[]
+  arenaShowComments ArenaShowComment[]
 }
 
 model SiteSetting {
@@ -155,9 +157,36 @@ model ArenaShow {
   season          ArenaSeason?         @relation(fields: [seasonId], references: [id])
   guests          ArenaShowGuest[]
   media           MediaAsset[]
+  likes           ArenaShowLike[]
+  comments        ArenaShowComment[]
 
   @@index([status, airDate])
   @@index([eventId])
+}
+
+model ArenaShowLike {
+  showId    String
+  userId    String
+  createdAt DateTime  @default(now())
+  show      ArenaShow @relation(fields: [showId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([showId, userId])
+  @@index([userId, createdAt])
+}
+
+model ArenaShowComment {
+  id        String    @id @default(cuid())
+  showId    String
+  userId    String
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  show      ArenaShow @relation(fields: [showId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([showId, createdAt])
+  @@index([userId, createdAt])
 }
 
 model ArenaShowGuest {

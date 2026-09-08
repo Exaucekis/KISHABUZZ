@@ -889,6 +889,83 @@
   color: var(--ac-amber);
 }
 
+/* ——— Réactions et commentaires ——— */
+.ac-engagement {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ac-line);
+}
+
+.ac-engagement--compact {
+  margin-top: 1.4rem;
+  padding-top: 1rem;
+}
+
+.ac-engagement__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem 1rem;
+}
+
+.ac-engagement__like,
+.ac-engagement__comments-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.ac-engagement__like {
+  border: 1px solid var(--ac-line);
+  background: transparent;
+  color: var(--paper);
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.ac-engagement__like:hover,
+.ac-engagement__like.is-liked {
+  border-color: var(--ac-amber);
+  background: color-mix(in srgb, var(--ac-amber) 14%, transparent);
+  color: var(--ac-amber);
+}
+
+.ac-engagement__like:disabled { cursor: wait; opacity: 0.65; }
+
+.ac-engagement__comments-count { color: var(--ac-muted); }
+
+.ac-engagement__comments { margin-top: 1.75rem; }
+
+.ac-engagement__comments h2 {
+  margin: 0;
+  font-family: var(--font-syne), sans-serif;
+  font-size: 1.35rem;
+}
+
+.ac-engagement__list { display: grid; gap: 1rem; margin: 1.1rem 0 0; padding: 0; list-style: none; }
+
+.ac-engagement__list li { padding: 1rem; border: 1px solid var(--ac-line); border-radius: 0.75rem; background: var(--ac-panel); }
+.ac-engagement__list strong { font-size: 0.92rem; }
+.ac-engagement__list time { margin-left: 0.65rem; color: var(--ac-muted); font-size: 0.78rem; }
+.ac-engagement__list p, .ac-engagement__empty { margin: 0.55rem 0 0; color: var(--ac-muted); line-height: 1.6; white-space: pre-wrap; }
+
+.ac-engagement__form { margin-top: 1.5rem; }
+.ac-engagement__form label { display: block; margin-bottom: 0.55rem; font-size: 0.9rem; font-weight: 700; }
+.ac-engagement__field { display: grid; gap: 0.65rem; }
+.ac-engagement__field textarea { width: 100%; resize: vertical; border: 1px solid var(--ac-line); border-radius: 0.7rem; padding: 0.8rem; background: var(--ac-panel); color: var(--paper); font: inherit; }
+.ac-engagement__field textarea:focus { outline: 2px solid var(--ac-amber); outline-offset: 1px; }
+.ac-engagement__field button { justify-self: start; display: inline-flex; align-items: center; gap: 0.45rem; border: 0; border-radius: 999px; padding: 0.65rem 1rem; background: var(--ac-amber); color: #111; font-size: 0.85rem; font-weight: 800; cursor: pointer; }
+.ac-engagement__field button:disabled { cursor: wait; opacity: 0.65; }
+.ac-engagement__message { margin: 0.75rem 0 0; font-size: 0.88rem; }
+.ac-engagement__message a { color: inherit; text-decoration: underline; }
+.ac-engagement__message.is-ok { color: #6ee7b7; }
+.ac-engagement__message.is-error { color: #fca5a5; }
+
 .ac-episode-grid {
   display: grid;
   gap: clamp(1.5rem, 4vw, 2.5rem);

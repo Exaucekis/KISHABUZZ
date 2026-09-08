@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { ShareButtons } from "@/components/content/ShareButtons";
 import { PageViews } from "@/components/content/PageViews";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
-import { getShowBySlug } from "@/lib/data";
+import { ArenaShowEngagement } from "@/components/arena/ArenaShowEngagement";
+import { getArenaShowEngagement, getShowBySlug } from "@/lib/data";
+import { auth } from "@/lib/auth";
 import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { arenaShowVideo, videoPoster } from "@/lib/media";
 import { arenaShowPlace, arenaTicketCta } from "@/lib/arena-calendar";
@@ -29,6 +31,14 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
   const { slug } = await params;
   const show = await getShowBySlug(slug);
   if (!show) notFound();
+
+  const [session, engagement] = await Promise.all([
+    auth(),
+    getArenaShowEngagement(show.id),
+  ]);
+  const personalizedEngagement = session?.user?.id
+    ? await getArenaShowEngagement(show.id, session.user.id)
+    : engagement;
 
   const guests = show.guests.map((g) => g.guest).filter((g) => g.visible !== false);
   const lead = arenaSpotlightGuest(show);
@@ -89,6 +99,15 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
             title={show.title}
             poster={videoPoster(video, show.videoThumbnail)}
           />
+          {show.status !== "ARCHIVED" ? (
+            <ArenaShowEngagement
+              showId={show.id}
+              initialLikes={personalizedEngagement.likes}
+              initialLiked={personalizedEngagement.liked}
+              initialComments={personalizedEngagement.comments}
+              initialCommentsCount={personalizedEngagement.commentsCount}
+            />
+          ) : null}
         </div>
       ) : null}
 

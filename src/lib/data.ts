@@ -357,6 +357,39 @@ export async function getShowBySlug(slug: string) {
   });
 }
 
+export async function getArenaShowEngagement(showId: string, userId?: string) {
+  const [likes, commentsCount, comments, liked] = await Promise.all([
+    prisma.arenaShowLike.count({ where: { showId } }),
+    prisma.arenaShowComment.count({ where: { showId } }),
+    prisma.arenaShowComment.findMany({
+      where: { showId },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        user: { select: { name: true } },
+      },
+      orderBy: { createdAt: "asc" },
+      take: 50,
+    }),
+    userId
+      ? prisma.arenaShowLike.findUnique({ where: { showId_userId: { showId, userId } }, select: { showId: true } })
+      : null,
+  ]);
+
+  return {
+    likes,
+    commentsCount,
+    liked: Boolean(liked),
+    comments: comments.map((comment) => ({
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      authorName: comment.user.name || "Membre",
+    })),
+  };
+}
+
 const upcomingEventSelect = {
   slug: true,
   status: true,
