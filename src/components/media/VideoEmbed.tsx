@@ -21,7 +21,9 @@ type EmbedProvider = {
 const PROVIDERS: Record<string, EmbedProvider> = {
     youtube: {
         name: "youtube",
-        embed: (id) => `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&playsinline=1`,
+        // Le lecteur standard est plus fiable que l'endpoint no-cookie sur les réseaux partagés.
+        // La vidéo ne démarre qu'après le clic de l'utilisateur, sans lecture automatique.
+        embed: (id) => `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&playsinline=1`,
         thumbnail: (id) => `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`,
     },
     vimeo: {

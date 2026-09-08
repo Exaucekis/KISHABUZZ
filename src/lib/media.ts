@@ -62,7 +62,7 @@ export function parseMediaEmbed(raw: string): MediaEmbed | null {
     return {
       provider: "youtube",
       id: yt[1],
-      src: `https://www.youtube-nocookie.com/embed/${yt[1]}?rel=0`,
+      src: `https://www.youtube.com/embed/${yt[1]}?rel=0&modestbranding=1&playsinline=1`,
       ratio: "16/9",
       originalUrl: url,
     };
@@ -124,7 +124,7 @@ export function isPlayableMedia(url: string) {
 }
 
 export function youtubeBackgroundSrc(id: string) {
-  return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&playsinline=1&rel=0`;
+  return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&playsinline=1&rel=0`;
 }
 
 export function videoPoster(url: string, thumbnail?: string | null) {
