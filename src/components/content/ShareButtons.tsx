@@ -4,7 +4,15 @@ import { useMemo, useState } from "react";
 import { Check, Copy, MessageCircle, Share2 } from "lucide-react";
 import { absoluteUrl } from "@/lib/utils";
 
-export function ShareButtons({ title, path }: { title: string; path: string }) {
+export function ShareButtons({
+  title,
+  path,
+  compact = false,
+}: {
+  title: string;
+  path: string;
+  compact?: boolean;
+}) {
   const [copied, setCopied] = useState(false);
   const url = useMemo(() => absoluteUrl(path), [path]);
 
@@ -12,13 +20,38 @@ export function ShareButtons({ title, path }: { title: string; path: string }) {
   const text = encodeURIComponent(title);
 
   const copy = async () => {
-    await navigator.clipboard.writeText(url);
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const nativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text: title, url });
+        return;
+      } catch {
+        // L’utilisateur peut fermer le menu de partage sans que ce soit une erreur à afficher.
+        return;
+      }
+    }
+    await copy();
+  };
+
   return (
     <div className="flex flex-wrap gap-2">
+      <button
+        type="button"
+        onClick={nativeShare}
+        className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm hover:bg-ink-3"
+      >
+        <Share2 className="h-4 w-4" />
+        {compact ? "Partager" : "Partager / Story"}
+      </button>
+      {!compact ? (
+        <>
       <a
         href={`https://wa.me/?text=${text}%20${encoded}`}
         target="_blank"
@@ -53,6 +86,8 @@ export function ShareButtons({ title, path }: { title: string; path: string }) {
         {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
         {copied ? "Copié" : "Copier le lien"}
       </button>
+        </>
+      ) : null}
     </div>
   );
 }

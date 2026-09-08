@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Play, Sparkles } from "lucide-react";
+import { ShareButtons } from "@/components/content/ShareButtons";
 
 const BACKGROUNDS = [
   "/arena/albums/invitee-plateau/02-plateau.jpg",
@@ -20,6 +21,8 @@ type Props = {
   spotlightHref?: string;
   poster?: string;
   ctaLabel?: string;
+  shareTitle?: string;
+  sharePath?: string;
 };
 
 export function ArenaHero({
@@ -31,6 +34,8 @@ export function ArenaHero({
   spotlightHref,
   poster,
   ctaLabel,
+  shareTitle,
+  sharePath,
 }: Props) {
   const lead =
     description.length > 110 ? `${description.slice(0, 107).trim()}…` : description;
@@ -117,6 +122,7 @@ export function ArenaHero({
           >
             Galerie Photos
           </Link>
+          {shareTitle && sharePath ? <ShareButtons title={shareTitle} path={sharePath} compact /> : null}
         </div>
       </div>
 

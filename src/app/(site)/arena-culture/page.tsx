@@ -5,6 +5,7 @@ import { Archive, ArrowRight, Handshake, Play, Sparkles } from "lucide-react";
 import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaMediaRow } from "@/components/arena/ArenaMediaRow";
 import { ArenaShowEngagement } from "@/components/arena/ArenaShowEngagement";
+import { ShareButtons } from "@/components/content/ShareButtons";
 
 import {
   getArenaHome,
@@ -76,6 +77,14 @@ export default async function ArenaCulturePage() {
               ? `${home.spotlight.emptyLabel} · ${guest?.name || spotlight.title}`
               : "Voir les émissions"
         }
+        shareTitle={headlineGuest?.name || guest?.name || "Arena Culture"}
+        sharePath={
+          headline
+            ? `/arena-culture/emissions/${headline.slug}`
+            : spotlight
+              ? `/arena-culture/emissions/${spotlight.slug}`
+              : "/arena-culture"
+        }
       />
 
       <section className="ac-spotlight">
@@ -124,6 +133,13 @@ export default async function ArenaCulturePage() {
                     compact
                   />
                 ) : null}
+                <div className="mt-4">
+                  <ShareButtons
+                    title={`Prochain invité · ${guest?.name || spotlight.title}`}
+                    path={`/arena-culture/emissions/${spotlight.slug}`}
+                    compact
+                  />
+                </div>
               </>
             ) : (
               <>

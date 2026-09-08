@@ -99,6 +99,10 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
             title={show.title}
             poster={videoPoster(video, show.videoThumbnail)}
           />
+          <div className="mt-5">
+            <p className="mb-3 text-xs uppercase tracking-[0.2em] text-paper-muted">Partager cette vidéo</p>
+            <ShareButtons title={show.title} path={`/arena-culture/emissions/${show.slug}`} />
+          </div>
           {show.status !== "ARCHIVED" ? (
             <ArenaShowEngagement
               showId={show.id}
@@ -145,11 +149,6 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
             ))}
           </div>
         ) : null}
-
-        <div className="mt-12 border-t border-line pt-8">
-          <p className="mb-4 text-xs uppercase tracking-[0.2em] text-paper-muted">Partager</p>
-          <ShareButtons title={show.title} path={`/arena-culture/emissions/${show.slug}`} />
-        </div>
 
         <p className="mt-10">
           <Link href="/arena-culture/emissions" className="text-sm text-arena-accent">
