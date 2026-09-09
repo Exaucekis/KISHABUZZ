@@ -13,6 +13,16 @@ type Comment = { id: string; content: string; createdAt: string | Date; authorNa
 
 const initialState: ArenaCommentActionState = { ok: false, message: "" };
 
+function initials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
 export function ArenaShowEngagement({
   showId,
   initialLikes,
@@ -79,16 +89,24 @@ export function ArenaShowEngagement({
       {likeMessage ? <p className="ac-engagement__message is-error">{likeMessage} <Link href="/connexion">Se connecter</Link></p> : null}
 
       <div className="ac-engagement__comments">
-          <h2>{compact ? "Commentaires" : "Vos commentaires"}</h2>
+          <div className="ac-engagement__comments-heading">
+            <h2>{compact ? "Commentaires" : "Vos commentaires"}</h2>
+            <span>{commentsCount} {commentsCount > 1 ? "réactions" : "réaction"}</span>
+          </div>
           {displayedComments.length ? (
             <ul className="ac-engagement__list">
               {displayedComments.map((comment) => (
                 <li key={comment.id}>
-                  <strong>{comment.authorName}</strong>
-                  <time dateTime={new Date(comment.createdAt).toISOString()}>
-                    {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", year: "numeric" }).format(new Date(comment.createdAt))}
-                  </time>
-                  <p>{comment.content}</p>
+                  <span className="ac-engagement__avatar" aria-hidden="true">{initials(comment.authorName)}</span>
+                  <div className="ac-engagement__comment-copy">
+                    <div className="ac-engagement__comment-meta">
+                      <strong>{comment.authorName}</strong>
+                      <time dateTime={new Date(comment.createdAt).toISOString()}>
+                        {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", year: "numeric" }).format(new Date(comment.createdAt))}
+                      </time>
+                    </div>
+                    <p>{comment.content}</p>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -96,7 +114,7 @@ export function ArenaShowEngagement({
 
           <form ref={commentFormRef} action={action} className="ac-engagement__form">
             <input type="hidden" name="showId" value={showId} />
-            <label htmlFor={`arena-comment-${showId}`}>{compact ? "Commenter le prochain invité" : "Ajouter un commentaire"}</label>
+            <label htmlFor={`arena-comment-${showId}`}>{compact ? "Commenter le prochain invité" : "Écrire un commentaire"}</label>
             <div className="ac-engagement__field">
               <textarea id={`arena-comment-${showId}`} name="content" rows={3} maxLength={800} placeholder="Partagez votre avis…" required />
               <button type="submit" disabled={pending} aria-label="Publier le commentaire">
