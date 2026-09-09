@@ -390,6 +390,23 @@ export async function getArenaShowEngagement(showId: string, userId?: string) {
   };
 }
 
+export async function getFeaturedImageEngagement(
+  targetType: "HOME_HERO" | "ARENA_PHOTO",
+  targetId: string,
+  userId?: string
+) {
+  const [likes, ownLike] = await Promise.all([
+    prisma.featuredImageLike.count({ where: { targetType, targetId } }),
+    userId
+      ? prisma.featuredImageLike.findUnique({
+          where: { targetType_targetId_userId: { targetType, targetId, userId } },
+          select: { userId: true },
+        })
+      : null,
+  ]);
+  return { likes, liked: Boolean(ownLike) };
+}
+
 const upcomingEventSelect = {
   slug: true,
   status: true,

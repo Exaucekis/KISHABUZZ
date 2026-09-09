@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Mic2, Sparkles } from "lucide-react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { FeaturedImageActions } from "@/components/content/FeaturedImageActions";
 import { isDirectVideo, parseMediaEmbed, youtubeBackgroundSrc } from "@/lib/media";
 
 export function HomeHero({
@@ -8,11 +9,13 @@ export function HomeHero({
   heroImage,
   heroVideo,
   heroAlt,
+  imageEngagement,
 }: {
   tagline: string;
   heroImage?: string;
   heroVideo?: string;
   heroAlt?: string;
+  imageEngagement?: { likes: number; liked: boolean };
 }) {
   const embed = heroVideo ? parseMediaEmbed(heroVideo) : null;
   const fileVideo = Boolean(heroVideo && isDirectVideo(heroVideo));
@@ -132,6 +135,19 @@ export function HomeHero({
               <span>Arena Culture</span>
             </Link>
           </div>
+          {heroImage && imageEngagement ? (
+            <div className="mt-5 opacity-0 animate-fade-in-up [animation-delay:1100ms] [animation-fill-mode:forwards]">
+              <FeaturedImageActions
+                targetType="HOME_HERO"
+                targetId="main"
+                initialLikes={imageEngagement.likes}
+                initialLiked={imageEngagement.liked}
+                title="KISHA BUZZ"
+                path="/"
+                dark
+              />
+            </div>
+          ) : null}
         </div>
 
         {/* ─── Indicateur Scroll ─── */}

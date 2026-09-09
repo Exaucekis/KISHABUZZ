@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
+import { FeaturedImageActions } from "@/components/content/FeaturedImageActions";
 import { isPlayableMedia } from "@/lib/media";
 import { imageAlt } from "@/lib/image-alt";
 
@@ -12,15 +13,17 @@ type Photo = {
   url: string;
   description?: string;
   alt?: string;
+  engagement?: { likes: number; liked: boolean };
 };
 
 type Props = {
   guestName: string;
   emissionLabel?: string;
   photos: Photo[];
+  albumPath: string;
 };
 
-export function ArenaAlbumViewer({ guestName, emissionLabel, photos }: Props) {
+export function ArenaAlbumViewer({ guestName, emissionLabel, photos, albumPath }: Props) {
   const [index, setIndex] = useState(0);
   const total = photos.length;
   const current = photos[index];
@@ -51,7 +54,7 @@ export function ArenaAlbumViewer({ guestName, emissionLabel, photos }: Props) {
   }
 
   return (
-    <div className="ac-viewer">
+    <div id={`photo-${current.id}`} className="ac-viewer scroll-mt-28">
       <div className="ac-viewer__stage">
         {isPlayableMedia(current.url) ? (
           <div className="ac-viewer__video">
@@ -100,6 +103,17 @@ export function ArenaAlbumViewer({ guestName, emissionLabel, photos }: Props) {
           </p>
         </div>
       </div>
+
+      {!isPlayableMedia(current.url) && current.engagement ? (
+        <FeaturedImageActions
+          targetType="ARENA_PHOTO"
+          targetId={current.id}
+          initialLikes={current.engagement.likes}
+          initialLiked={current.engagement.liked}
+          title={`${guestName} · ${current.title}`}
+          path={`${albumPath}#photo-${current.id}`}
+        />
+      ) : null}
 
       {total > 1 ? (
         <div className="ac-viewer__controls">

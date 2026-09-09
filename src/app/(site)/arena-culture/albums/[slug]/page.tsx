@@ -3,8 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArenaAlbumViewer } from "@/components/arena/ArenaAlbumViewer";
 import { ArenaPageIntro } from "@/components/arena/ArenaPageIntro";
-import { getArenaPhotoAlbumBySlug } from "@/lib/data";
+import { getArenaPhotoAlbumBySlug, getFeaturedImageEngagement } from "@/lib/data";
 import { formatDate } from "@/lib/utils";
+import { auth } from "@/lib/auth";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -26,6 +27,10 @@ export default async function ArenaAlbumPage({ params }: Props) {
   const { slug } = await params;
   const album = await getArenaPhotoAlbumBySlug(slug);
   if (!album) notFound();
+  const session = await auth();
+  const photoEngagement = await Promise.all(
+    album.photos.map((photo) => getFeaturedImageEngagement("ARENA_PHOTO", photo.id, session?.user?.id))
+  );
 
   return (
     <>
@@ -50,12 +55,14 @@ export default async function ArenaAlbumPage({ params }: Props) {
         <ArenaAlbumViewer
           guestName={album.guestName}
           emissionLabel={album.emissionLabel}
-          photos={album.photos.map((p) => ({
+          photos={album.photos.map((p, index) => ({
             id: p.id,
             title: p.title,
             url: p.url,
             description: p.description,
+            engagement: photoEngagement[index],
           }))}
+          albumPath={`/arena-culture/albums/${album.slug}`}
         />
       </section>
     </>

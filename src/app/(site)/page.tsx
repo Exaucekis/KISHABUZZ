@@ -10,15 +10,17 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PublicImage } from "@/components/media/PublicImage";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
-import { getHomePageData } from "@/lib/data";
+import { getFeaturedImageEngagement, getHomePageData } from "@/lib/data";
 import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
+import { auth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function HomePage() {
   await connection();
+  const [home, session] = await Promise.all([getHomePageData(), auth()]);
   const {
     settings,
     feed,
@@ -31,7 +33,10 @@ export default async function HomePage() {
     partners,
     artists,
     arenaHome,
-  } = await getHomePageData();
+  } = home;
+  const heroEngagement = settings.heroImage
+    ? await getFeaturedImageEngagement("HOME_HERO", "main", session?.user?.id)
+    : null;
 
   const guest = arenaSpotlightGuest(announcedShow);
   const announced = Boolean(announcedShow);
@@ -44,6 +49,7 @@ export default async function HomePage() {
         heroImage={settings.heroImage}
         heroVideo={settings.heroVideo}
         heroAlt={settings.heroAlt}
+        imageEngagement={heroEngagement || undefined}
       />
 
       <DomainMarquee items={domains.map((d) => ({ name: d.name, icon: d.icon }))} />

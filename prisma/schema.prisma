@@ -26,6 +26,7 @@ model User {
   ticketScans     TicketScan[]    @relation("TicketScanStaff")
   arenaShowLikes  ArenaShowLike[]
   arenaShowComments ArenaShowComment[]
+  featuredImageLikes FeaturedImageLike[]
 }
 
 model SiteSetting {
@@ -186,6 +187,18 @@ model ArenaShowComment {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([showId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model FeaturedImageLike {
+  targetType String
+  targetId   String
+  userId     String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([targetType, targetId, userId])
+  @@index([targetType, targetId])
   @@index([userId, createdAt])
 }
 
