@@ -36,6 +36,7 @@ export function ArenaShowEngagement({
   const commentFormRef = useRef<HTMLFormElement>(null);
   const [isLiking, startLikeTransition] = useTransition();
   const [state, action, pending] = useActionState(addArenaShowComment, initialState);
+  const displayedComments = compact ? comments.slice(-3) : comments;
 
   useEffect(() => {
     if (!state.ok || !state.comment) return;
@@ -77,12 +78,11 @@ export function ArenaShowEngagement({
 
       {likeMessage ? <p className="ac-engagement__message is-error">{likeMessage} <Link href="/connexion">Se connecter</Link></p> : null}
 
-      {!compact ? (
-        <div className="ac-engagement__comments">
-          <h2>Vos commentaires</h2>
-          {comments.length ? (
+      <div className="ac-engagement__comments">
+          <h2>{compact ? "Commentaires" : "Vos commentaires"}</h2>
+          {displayedComments.length ? (
             <ul className="ac-engagement__list">
-              {comments.map((comment) => (
+              {displayedComments.map((comment) => (
                 <li key={comment.id}>
                   <strong>{comment.authorName}</strong>
                   <time dateTime={new Date(comment.createdAt).toISOString()}>
@@ -96,7 +96,7 @@ export function ArenaShowEngagement({
 
           <form ref={commentFormRef} action={action} className="ac-engagement__form">
             <input type="hidden" name="showId" value={showId} />
-            <label htmlFor={`arena-comment-${showId}`}>Ajouter un commentaire</label>
+            <label htmlFor={`arena-comment-${showId}`}>{compact ? "Commenter le prochain invité" : "Ajouter un commentaire"}</label>
             <div className="ac-engagement__field">
               <textarea id={`arena-comment-${showId}`} name="content" rows={3} maxLength={800} placeholder="Partagez votre avis…" required />
               <button type="submit" disabled={pending} aria-label="Publier le commentaire">
@@ -106,7 +106,6 @@ export function ArenaShowEngagement({
             {state.message ? <p className={`ac-engagement__message ${state.ok ? "is-ok" : "is-error"}`}>{state.message}{!state.ok && state.message.startsWith("Connectez-vous") ? <> <Link href="/connexion">Se connecter</Link></> : null}</p> : null}
           </form>
         </div>
-      ) : null}
     </section>
   );
 }

@@ -901,6 +901,27 @@
   padding-top: 1rem;
 }
 
+.ac-engagement--compact .ac-engagement__comments {
+  margin-top: 1.2rem;
+}
+
+.ac-engagement--compact .ac-engagement__comments h2 {
+  font-size: 1.1rem;
+}
+
+.ac-engagement--compact .ac-engagement__list {
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.ac-engagement--compact .ac-engagement__list li {
+  padding: 0.75rem;
+}
+
+.ac-engagement--compact .ac-engagement__form {
+  margin-top: 1rem;
+}
+
 .ac-engagement__actions {
   display: flex;
   flex-wrap: wrap;
