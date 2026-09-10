@@ -17,7 +17,7 @@ import { prisma } from "@/lib/prisma";
 import { createSlug } from "@/lib/utils";
 import { snapshotArenaMedia, snapshotShowForArchive } from "@/lib/arena-archive";
 import { queueArenaAlert } from "@/lib/arena-alert-dispatch";
-import { applyArenaSpotlight, isArenaLiveStatus } from "@/lib/arena-spotlight";
+import { applyArenaSpotlight } from "@/lib/arena-spotlight";
 import { formatEventClock } from "@/lib/event-schedule";
 import { videoPoster } from "@/lib/media";
 

@@ -126,6 +126,7 @@ export function formatSessionsSummary(
   fallbackStart: Date,
   _fallbackEnd?: Date | null
 ) {
+  void _fallbackEnd;
   if (!sessions.length) {
     return formatDate(fallbackStart, "EEEE d MMMM yyyy · HH:mm");
   }

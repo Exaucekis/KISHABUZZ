@@ -18,7 +18,8 @@ export function PageViews({
   const [count, setCount] = useState(initial);
 
   useEffect(() => {
-    setCount(initial);
+    const frame = window.requestAnimationFrame(() => setCount(initial));
+    return () => window.cancelAnimationFrame(frame);
   }, [initial]);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { Bell, Sparkles } from "lucide-react";
+import { Bell } from "lucide-react";
 import { ArenaAlertForm } from "@/components/arena/ArenaAlertForm";
 
 export function ArenaAlertSignup({ source = "arena" }: { source?: string }) {

@@ -31,9 +31,10 @@ export function SortableOrderList({
   const rowsRef = useRef(items);
 
   useEffect(() => {
-    setRows(items);
     rowsRef.current = items;
     savedKey.current = items.map((item) => item.id).join("|");
+    const frame = window.requestAnimationFrame(() => setRows(items));
+    return () => window.cancelAnimationFrame(frame);
   }, [items]);
 
   function persist(next: SortableItem[]) {

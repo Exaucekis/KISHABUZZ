@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  Archive,
   Calendar,
   ChevronRight,
   Film,
   Image as ImageIcon,
   Play,
-  Sparkles,
   Tv,
 } from "lucide-react";
 import { ArenaPageIntro } from "@/components/arena/ArenaPageIntro";

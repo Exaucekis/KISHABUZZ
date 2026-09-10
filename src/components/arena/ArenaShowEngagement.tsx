@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Heart, MessageCircle, Send } from "lucide-react";
-import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   addArenaShowComment,
   toggleArenaShowLike,
@@ -43,19 +43,10 @@ export function ArenaShowEngagement({
   const [likeMessage, setLikeMessage] = useState("");
   const [comments, setComments] = useState(initialComments);
   const [commentsCount, setCommentsCount] = useState(initialCommentsCount);
-  const commentFormRef = useRef<HTMLFormElement>(null);
   const [isLiking, startLikeTransition] = useTransition();
-  const [state, action, pending] = useActionState(addArenaShowComment, initialState);
+  const [isCommenting, startCommentTransition] = useTransition();
+  const [commentState, setCommentState] = useState<ArenaCommentActionState>(initialState);
   const displayedComments = compact ? comments.slice(-3) : comments;
-
-  useEffect(() => {
-    if (!state.ok || !state.comment) return;
-    setComments((current) =>
-      current.some((comment) => comment.id === state.comment!.id) ? current : [...current, state.comment!]
-    );
-    setCommentsCount((current) => current + 1);
-    commentFormRef.current?.reset();
-  }, [state]);
 
   function handleLike() {
     setLikeMessage("");
@@ -67,6 +58,17 @@ export function ArenaShowEngagement({
       }
       setLiked(result.liked);
       setLikes(result.count);
+    });
+  }
+
+  function handleCommentSubmit(form: HTMLFormElement) {
+    startCommentTransition(async () => {
+      const next = await addArenaShowComment(initialState, new FormData(form));
+      setCommentState(next);
+      if (!next.ok || !next.comment) return;
+      setComments((current) => [...current, next.comment!]);
+      setCommentsCount((current) => current + 1);
+      form.reset();
     });
   }
 
@@ -112,16 +114,22 @@ export function ArenaShowEngagement({
             </ul>
           ) : <p className="ac-engagement__empty">Soyez le premier à réagir à cette émission.</p>}
 
-          <form ref={commentFormRef} action={action} className="ac-engagement__form">
+          <form
+            className="ac-engagement__form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleCommentSubmit(event.currentTarget);
+            }}
+          >
             <input type="hidden" name="showId" value={showId} />
             <label htmlFor={`arena-comment-${showId}`}>{compact ? "Commenter le prochain invité" : "Écrire un commentaire"}</label>
             <div className="ac-engagement__field">
               <textarea id={`arena-comment-${showId}`} name="content" rows={3} maxLength={800} placeholder="Partagez votre avis…" required />
-              <button type="submit" disabled={pending} aria-label="Publier le commentaire">
-                <Send size={17} /> {pending ? "Envoi…" : "Publier"}
+              <button type="submit" disabled={isCommenting} aria-label="Publier le commentaire">
+                <Send size={17} /> {isCommenting ? "Envoi…" : "Publier"}
               </button>
             </div>
-            {state.message ? <p className={`ac-engagement__message ${state.ok ? "is-ok" : "is-error"}`}>{state.message}{!state.ok && state.message.startsWith("Connectez-vous") ? <> <Link href="/connexion">Se connecter</Link></> : null}</p> : null}
+            {commentState.message ? <p className={`ac-engagement__message ${commentState.ok ? "is-ok" : "is-error"}`}>{commentState.message}{!commentState.ok && commentState.message.startsWith("Connectez-vous") ? <> <Link href="/connexion">Se connecter</Link></> : null}</p> : null}
           </form>
         </div>
     </section>

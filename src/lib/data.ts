@@ -185,8 +185,6 @@ async function loadHomePageData() {
 }
 
 
-const fallbackArenaHome = parseArenaHome(null, "");
-
 export const getHomePageData = cache(async () => {
   noStore();
   return loadHomePageData();

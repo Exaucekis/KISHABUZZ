@@ -27,7 +27,8 @@ export function AdminShell({
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    setOpen(false);
+    const frame = window.requestAnimationFrame(() => setOpen(false));
+    return () => window.cancelAnimationFrame(frame);
   }, [pathname]);
 
   useEffect(() => {

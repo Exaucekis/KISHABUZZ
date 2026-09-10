@@ -64,8 +64,11 @@ function SectionForm({
 
   useEffect(() => {
     if (!state.message) return;
-    setPopup(true);
-    if (state.ok) router.refresh();
+    const frame = window.requestAnimationFrame(() => {
+      setPopup(true);
+      if (state.ok) router.refresh();
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [state, router]);
 
   return (

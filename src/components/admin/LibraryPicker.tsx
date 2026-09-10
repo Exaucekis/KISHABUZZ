@@ -21,7 +21,10 @@ export function LibraryPicker({
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -31,13 +34,14 @@ export function LibraryPicker({
       if (e.key === "Escape") onCloseRef.current();
     };
     window.addEventListener("keydown", onKey);
-    setLoading(true);
+    const frame = window.requestAnimationFrame(() => setLoading(true));
     void listLibraryItems(kind)
       .then(setItems)
       .finally(() => setLoading(false));
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKey);
+      window.cancelAnimationFrame(frame);
     };
   }, [open, kind]);
 

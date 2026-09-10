@@ -22,7 +22,9 @@ export function CoverCropper({
   const dragging = useRef(false);
 
   useEffect(() => {
-    if (open) setFocus(parseCoverFocus(value));
+    if (!open) return;
+    const frame = window.requestAnimationFrame(() => setFocus(parseCoverFocus(value)));
+    return () => window.cancelAnimationFrame(frame);
   }, [open, value]);
 
   useEffect(() => {

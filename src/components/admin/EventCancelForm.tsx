@@ -14,7 +14,9 @@ export function EventCancelForm({ eventId, disabled }: { eventId: string; disabl
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (state.ok) setOpen(false);
+    if (!state.ok) return;
+    const frame = window.requestAnimationFrame(() => setOpen(false));
+    return () => window.cancelAnimationFrame(frame);
   }, [state.ok]);
 
   return (

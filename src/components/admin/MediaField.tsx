@@ -185,11 +185,13 @@ export function MediaField({
   }
 
   useEffect(() => {
-    setUrl(defaultValue);
+    const frame = window.requestAnimationFrame(() => setUrl(defaultValue));
+    return () => window.cancelAnimationFrame(frame);
   }, [defaultValue]);
 
   useEffect(() => {
-    setFocus(defaultFocus);
+    const frame = window.requestAnimationFrame(() => setFocus(defaultFocus));
+    return () => window.cancelAnimationFrame(frame);
   }, [defaultFocus]);
 
   async function onFile(file: File | undefined) {

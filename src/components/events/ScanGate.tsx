@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ScanOutcome } from "@/lib/ticket-scan-core";
 import { scanResultLabel } from "@/lib/ticket-scan-core";
@@ -15,19 +15,17 @@ export function ScanGate({ events, initialEventId }: { events: EventOption[]; in
   const [camError, setCamError] = useState("");
   const router = useRouter();
   const busyRef = useRef(false);
-  const eventRef = useRef(eventId);
-  eventRef.current = eventId;
 
-  async function submitPayload(payload: string) {
+  const submitPayload = useCallback(async (payload: string) => {
     const value = payload.trim();
-    if (!value || !eventRef.current || busyRef.current) return;
+    if (!value || !eventId || busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
     try {
       const response = await fetch("/api/scan/ticket", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payload: value, eventId: eventRef.current }),
+        body: JSON.stringify({ payload: value, eventId }),
       });
       const outcome = (await response.json()) as ScanOutcome;
       setLast(outcome);
@@ -40,7 +38,7 @@ export function ScanGate({ events, initialEventId }: { events: EventOption[]; in
         setBusy(false);
       }, 1400);
     }
-  }
+  }, [eventId, router]);
 
   useEffect(() => {
     if (!eventId) return;
@@ -72,7 +70,7 @@ export function ScanGate({ events, initialEventId }: { events: EventOption[]; in
         scanner.stop().then(() => scanner?.clear()).catch(() => undefined);
       }
     };
-  }, [eventId]);
+  }, [eventId, submitPayload]);
 
   const tone =
     last?.result === "OK"

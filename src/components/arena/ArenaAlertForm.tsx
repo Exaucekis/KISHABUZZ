@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { Bell, Lock, Mail, MessageSquare, Send, Sparkles } from "lucide-react";
+import { Lock, Mail, MessageSquare, Send } from "lucide-react";
 import { subscribeArenaAlert, type ArenaAlertActionState } from "@/actions/arena-alerts";
 import { EmailInput } from "@/components/auth/EmailInput";
 

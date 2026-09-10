@@ -24,7 +24,8 @@ export function AdminNoticeMenu({ notices }: { notices: AdminNoticeDto[] }) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setUnread(notices.filter((item) => !item.read).length);
+    const frame = window.requestAnimationFrame(() => setUnread(notices.filter((item) => !item.read).length));
+    return () => window.cancelAnimationFrame(frame);
   }, [notices]);
 
   useEffect(() => {

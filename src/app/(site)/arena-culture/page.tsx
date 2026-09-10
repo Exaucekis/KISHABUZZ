@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { Archive, ArrowRight, Handshake, Play, Sparkles } from "lucide-react";
+import { Archive, ArrowRight, Handshake } from "lucide-react";
 import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaMediaRow } from "@/components/arena/ArenaMediaRow";
 import { ArenaShowEngagement } from "@/components/arena/ArenaShowEngagement";

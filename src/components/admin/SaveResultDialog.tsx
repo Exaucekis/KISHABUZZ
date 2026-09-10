@@ -47,7 +47,7 @@ function partyPieces() {
 }
 
 function PartyBurst() {
-  const pieces = useMemo(partyPieces, []);
+  const pieces = useMemo(() => partyPieces(), []);
   return (
     <div className="confirm-party" aria-hidden>
       {pieces.map((piece) => (
@@ -153,15 +153,21 @@ export function SaveResultFromState({
   const hostRef = useRef<HTMLSpanElement>(null);
   const close = useCallback(() => setOpen(false), []);
   const onOkRef = useRef(onOk);
-  onOkRef.current = onOk;
+
+  useEffect(() => {
+    onOkRef.current = onOk;
+  }, [onOk]);
 
   useEffect(() => {
     if (!state.message) return;
-    setOpen(true);
-    if (!state.ok) return;
-    if (resetForm) hostRef.current?.closest("form")?.reset();
-    onOkRef.current?.();
-    router.refresh();
+    const frame = window.requestAnimationFrame(() => {
+      setOpen(true);
+      if (!state.ok) return;
+      if (resetForm) hostRef.current?.closest("form")?.reset();
+      onOkRef.current?.();
+      router.refresh();
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [state, resetForm, router]);
 
   return (
