@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BarChart3, LayoutDashboard, Mic2, ScanLine, Shield, Sparkles, Ticket } from "lucide-react";
+import { BarChart3, LayoutDashboard, MessageCircle, Mic2, ScanLine, Shield, Sparkles, Ticket } from "lucide-react";
 import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { auth } from "@/lib/auth";
@@ -60,6 +60,13 @@ export default async function ComptePage() {
         </div>
 
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <Link href="/compte/messages" className="account-action-card group">
+            <MessageCircle className="h-5 w-5 shrink-0 text-ember-text" aria-hidden />
+            <span>
+              <strong className="block font-semibold text-paper">Mes messages</strong>
+              <span className="mt-1 block text-sm text-paper-muted">Échanges privés avec l’équipe KISHA BUZZ</span>
+            </span>
+          </Link>
           <Link href="/compte/billets" className="account-action-card group">
             <Ticket className="h-5 w-5 shrink-0 text-ember-text" aria-hidden />
             <span>

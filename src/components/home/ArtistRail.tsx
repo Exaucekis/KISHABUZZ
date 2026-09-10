@@ -1,7 +1,9 @@
 "use client";
 
-import { Heart } from "lucide-react";
+import { Heart, MessageCircle, Send, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { sendSpotlightArtistMessage } from "@/actions/spotlight-messages";
 import { PublicImage } from "@/components/media/PublicImage";
 import type { SpotlightArtistCard } from "@/lib/spotlight-artists";
 
@@ -15,11 +17,13 @@ function ArtistSlide({
   artist,
   liked,
   onToggleLike,
+  onMessage,
   duplicate = false,
 }: {
   artist: ArtistCard;
   liked: boolean;
   onToggleLike: () => void;
+  onMessage: () => void;
   duplicate?: boolean;
 }) {
   return (
@@ -33,6 +37,13 @@ function ArtistSlide({
           className="object-cover"
         />
         <div className="artist-card-shade" />
+        {duplicate ? (
+          <span className="artist-message-button" aria-hidden="true"><MessageCircle size={17} /></span>
+        ) : (
+          <button type="button" className="artist-message-button" onClick={onMessage} aria-label={`Partager ${artist.name} avec KISHA BUZZ`}>
+            <MessageCircle size={17} />
+          </button>
+        )}
         {duplicate ? (
           <span className={`artist-like-button ${liked ? "is-liked" : ""}`} aria-hidden="true">
             <Heart size={18} fill={liked ? "currentColor" : "none"} />
@@ -57,8 +68,10 @@ function ArtistSlide({
   );
 }
 
-export function ArtistRail({ artists }: { artists: ArtistCard[] }) {
+export function ArtistRail({ artists, signedIn }: { artists: ArtistCard[]; signedIn: boolean }) {
   const [likedArtists, setLikedArtists] = useState<string[]>([]);
+  const [activeArtist, setActiveArtist] = useState<ArtistCard | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const saved = window.localStorage.getItem("kishabuzz-liked-spotlight-artists");
@@ -84,6 +97,14 @@ export function ArtistRail({ artists }: { artists: ArtistCard[] }) {
     });
   }
 
+  function openMessage(artist: ArtistCard) {
+    if (!signedIn) {
+      router.push("/connexion?callbackUrl=/");
+      return;
+    }
+    setActiveArtist(artist);
+  }
+
   return (
     <section className="border-y border-line bg-ink-2 py-10 md:py-14 kb-defer" aria-label="Artistes à la une">
       <div className="mx-auto mb-6 flex max-w-7xl items-end justify-between gap-4 px-4 md:px-6">
@@ -105,6 +126,7 @@ export function ArtistRail({ artists }: { artists: ArtistCard[] }) {
                 artist={artist}
                 liked={likedArtists.includes(artistKey(artist, i))}
                 onToggleLike={() => toggleLike(artistKey(artist, i))}
+                onMessage={() => openMessage(artist)}
               />
             ))}
           </div>
@@ -115,12 +137,40 @@ export function ArtistRail({ artists }: { artists: ArtistCard[] }) {
                 artist={artist}
                 liked={likedArtists.includes(artistKey(artist, i))}
                 onToggleLike={() => {}}
+                onMessage={() => {}}
                 duplicate
               />
             ))}
           </div>
         </div>
       </div>
+
+      {activeArtist?.id ? (
+        <div className="spotlight-message-modal" role="dialog" aria-modal="true" aria-labelledby="spotlight-message-title">
+          <button type="button" className="spotlight-message-modal__backdrop" aria-label="Fermer" onClick={() => setActiveArtist(null)} />
+          <div className="spotlight-message-modal__panel">
+            <button type="button" className="spotlight-message-modal__close" aria-label="Fermer" onClick={() => setActiveArtist(null)}>
+              <X size={18} />
+            </button>
+            <div className="spotlight-message-modal__artist">
+              <span className="spotlight-message-modal__portrait relative">
+                <PublicImage src={activeArtist.image} alt="" fill sizes="56px" className="object-cover" />
+              </span>
+              <div>
+                <p>Partage privé</p>
+                <h3 id="spotlight-message-title">{activeArtist.name}</h3>
+              </div>
+            </div>
+            <p className="spotlight-message-modal__intro">Partagez cette image et votre message avec l’équipe KISHA BUZZ. Il ne sera pas affiché publiquement.</p>
+            <form action={sendSpotlightArtistMessage} className="spotlight-message-modal__form">
+              <input type="hidden" name="artistId" value={activeArtist.id} />
+              <label htmlFor="spotlight-private-message">Votre message</label>
+              <textarea id="spotlight-private-message" name="body" required minLength={2} maxLength={1000} placeholder="Écrivez à l’équipe…" rows={4} />
+              <button type="submit"><Send size={16} /> Envoyer en privé</button>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

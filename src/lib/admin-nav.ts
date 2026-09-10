@@ -41,6 +41,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { href: "/admin/artists", label: "Artistes à la une", group: "site" },
   { href: "/admin/domains", label: "Domaines", group: "site" },
   { href: "/admin/contacts", label: "Contacts", group: "audience" },
+  { href: "/admin/messages", label: "Messagerie privée", group: "audience" },
   { href: "/admin/newsletter", label: "Newsletter", group: "audience" },
   { href: "/admin/users", label: "Utilisateurs", superadmin: true, group: "account" },
   { href: "/admin/settings", label: "Paramètres", group: "account" },

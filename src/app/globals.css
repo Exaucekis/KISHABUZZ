@@ -470,6 +470,92 @@ button.artist-like-button:focus-visible {
   color: #fff;
 }
 
+.artist-message-button {
+  position: absolute;
+  z-index: 2;
+  top: 0.7rem;
+  left: 0.7rem;
+  display: inline-grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 9999px;
+  background: rgba(10, 10, 12, 0.48);
+  color: #fff;
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.artist-message-button:hover,
+.artist-message-button:focus-visible {
+  transform: scale(1.08);
+  border-color: var(--ember-text);
+  background: rgba(10, 10, 12, 0.76);
+  outline: none;
+}
+
+.spotlight-message-modal {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.spotlight-message-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.spotlight-message-modal__panel {
+  position: relative;
+  width: min(100%, 31rem);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1.1rem;
+  background: #121212;
+  padding: 1.4rem;
+  box-shadow: 0 1.75rem 5rem rgba(0, 0, 0, 0.55);
+}
+
+.spotlight-message-modal__close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+}
+
+.spotlight-message-modal__artist { display: flex; align-items: center; gap: 0.8rem; padding-right: 2.25rem; }
+.spotlight-message-modal__portrait { display: block; width: 3.5rem; height: 3.5rem; flex: 0 0 auto; overflow: hidden; border-radius: 50%; }
+.spotlight-message-modal__artist p { margin: 0; color: var(--ember-text); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; }
+.spotlight-message-modal__artist h3 { margin: 0.2rem 0 0; font-family: var(--font-syne), sans-serif; font-size: 1.25rem; }
+.spotlight-message-modal__intro { margin: 1.1rem 0; color: var(--paper-muted); font-size: 0.92rem; line-height: 1.55; }
+.spotlight-message-modal__form { display: grid; gap: 0.55rem; }
+.spotlight-message-modal__form label { font-size: 0.82rem; font-weight: 800; }
+.spotlight-message-modal__form textarea { width: 100%; resize: vertical; border: 1px solid var(--line); border-radius: 0.75rem; padding: 0.75rem; background: #1a1a1a; color: #fff; font: inherit; }
+.spotlight-message-modal__form textarea:focus-visible { outline: 2px solid var(--ember-text); outline-offset: 2px; }
+.spotlight-message-modal__form button { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; justify-self: start; border: 0; border-radius: 999px; padding: 0.7rem 1rem; background: var(--ember-text); color: #16120a; font-weight: 800; cursor: pointer; }
+
+.private-message { max-width: 85%; margin-right: auto; border: 1px solid var(--line); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.75rem 0.9rem; background: var(--ink-2); }
+.private-message--admin { margin-right: 0; margin-left: auto; border-color: rgba(245, 158, 11, 0.4); border-radius: 0.9rem 0.9rem 0.2rem; background: rgba(245, 158, 11, 0.1); }
+.private-message__sender { margin: 0 0 0.3rem; color: var(--ember-text); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.private-message time { display: block; margin-top: 0.45rem; color: var(--paper-muted); font-size: 0.72rem; }
+.admin-private-message { max-width: 88%; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.75rem; padding: 0.75rem; background: rgba(255, 255, 255, 0.035); }
+.admin-private-message--admin { margin-left: auto; border-color: rgba(245, 158, 11, 0.32); background: rgba(245, 158, 11, 0.09); }
+
 .artist-card-meta {
   position: absolute;
   left: 0;

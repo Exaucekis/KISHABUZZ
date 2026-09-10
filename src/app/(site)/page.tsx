@@ -54,7 +54,7 @@ export default async function HomePage() {
 
       <DomainMarquee items={domains.map((d) => ({ name: d.name, icon: d.icon }))} />
 
-      <ArtistRail artists={artists} />
+      <ArtistRail artists={artists} signedIn={Boolean(session?.user?.id)} />
 
       {featuredVideo ? (
         <section className="kb-defer mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">

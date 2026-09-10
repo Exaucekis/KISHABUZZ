@@ -27,6 +27,7 @@ model User {
   arenaShowLikes  ArenaShowLike[]
   arenaShowComments ArenaShowComment[]
   featuredImageLikes FeaturedImageLike[]
+  spotlightArtistMessages SpotlightArtistMessage[]
 }
 
 model SiteSetting {
@@ -338,8 +339,25 @@ model SpotlightArtist {
   visible   Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  messages  SpotlightArtistMessage[]
 
   @@index([visible, order])
+}
+
+model SpotlightArtistMessage {
+  id        String   @id @default(cuid())
+  artistId  String
+  userId    String
+  body      String
+  image     String   @default("")
+  sender    String   @default("USER")
+  adminName String   @default("")
+  createdAt DateTime @default(now())
+  artist    SpotlightArtist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, artistId, createdAt])
+  @@index([artistId, createdAt])
 }
 
 model NewsletterSubscriber {
