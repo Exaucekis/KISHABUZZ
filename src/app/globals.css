@@ -437,9 +437,13 @@ html[data-theme="light"] .side-drawer {
   z-index: 2;
   top: 0.7rem;
   right: 0.7rem;
-  display: inline-grid;
-  width: 2.25rem;
-  height: 2.25rem;
+  display: inline-flex;
+  min-width: 2.7rem;
+  height: 2.4rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0 0.5rem;
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.42);
   border-radius: 9999px;
@@ -447,6 +451,12 @@ html[data-theme="light"] .side-drawer {
   color: #fff;
   backdrop-filter: blur(6px);
   transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.artist-like-button span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 button.artist-like-button {

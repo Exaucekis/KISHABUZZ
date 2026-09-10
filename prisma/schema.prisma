@@ -27,6 +27,7 @@ model User {
   arenaShowLikes  ArenaShowLike[]
   arenaShowComments ArenaShowComment[]
   featuredImageLikes FeaturedImageLike[]
+  spotlightArtistLikes SpotlightArtistLike[]
   spotlightArtistMessages SpotlightArtistMessage[]
 }
 
@@ -339,9 +340,21 @@ model SpotlightArtist {
   visible   Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  likes     SpotlightArtistLike[]
   messages  SpotlightArtistMessage[]
 
   @@index([visible, order])
+}
+
+model SpotlightArtistLike {
+  artistId  String
+  userId    String
+  createdAt DateTime         @default(now())
+  artist    SpotlightArtist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([artistId, userId])
+  @@index([userId, createdAt])
 }
 
 model SpotlightArtistMessage {

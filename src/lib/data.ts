@@ -50,7 +50,7 @@ export const getSettings = cache(async () => {
   return loadSettings();
 });
 
-async function loadHomePageData() {
+async function loadHomePageData(userId?: string) {
   try {
     await Promise.all([publishDueArticles(), publishDueArenaShows()]);
     const [settings, feed, stage, domains, galleryAlbums] = await Promise.all([
@@ -124,11 +124,22 @@ async function loadHomePageData() {
       }),
       prisma.spotlightArtist.findMany({
         where: { visible: true },
-        select: { id: true, name: true, role: true, image: true },
+        select: { id: true, name: true, role: true, image: true, _count: { select: { likes: true } } },
         orderBy: { order: "asc" },
       }),
       getArenaHome(),
     ]);
+
+    const likedArtistIds = userId
+      ? new Set(
+          (
+            await prisma.spotlightArtistLike.findMany({
+              where: { userId, artistId: { in: spotlightArtists.map((artist) => artist.id) } },
+              select: { artistId: true },
+            })
+          ).map((like) => like.artistId)
+        )
+      : new Set<string>();
 
     const featuredAlbum = galleryAlbums[0] || null;
     const headlineShow = stage.headline;
@@ -159,7 +170,9 @@ async function loadHomePageData() {
       about,
       portfolio,
       partners,
-      artists: toSpotlightArtistCards(spotlightArtists),
+      artists: toSpotlightArtistCards(
+        spotlightArtists.map((artist) => ({ ...artist, liked: likedArtistIds.has(artist.id) }))
+      ),
       arenaHome,
     };
   } catch (error) {
@@ -185,9 +198,9 @@ async function loadHomePageData() {
 }
 
 
-export const getHomePageData = cache(async () => {
+export const getHomePageData = cache(async (userId?: string) => {
   noStore();
-  return loadHomePageData();
+  return loadHomePageData(userId);
 });
 
 export async function getPageContent(key: string) {

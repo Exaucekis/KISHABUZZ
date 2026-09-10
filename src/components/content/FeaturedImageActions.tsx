@@ -49,8 +49,14 @@ export function FeaturedImageActions({
           className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition ${tone} ${liked ? "!border-rose-400 !text-rose-400" : ""}`}
         >
           <Heart className="h-4 w-4" fill={liked ? "currentColor" : "none"} />
-          {likes}
+          {liked ? "Aimé" : "J’aime"}
         </button>
+        <span
+          className={`inline-flex min-h-10 items-center rounded-full border px-3 py-2 text-sm font-semibold ${tone}`}
+          aria-label={`${likes} J’aime`}
+        >
+          {likes} J’aime
+        </span>
         <ShareButtons title={title} path={path} compact />
       </div>
       {message ? <p className={dark ? "text-xs text-white/80" : "text-xs text-paper-muted"}>{message}</p> : null}

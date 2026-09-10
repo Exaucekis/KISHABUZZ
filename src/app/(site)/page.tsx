@@ -20,7 +20,8 @@ export const revalidate = 0;
 
 export default async function HomePage() {
   await connection();
-  const [home, session] = await Promise.all([getHomePageData(), auth()]);
+  const session = await auth();
+  const home = await getHomePageData(session?.user?.id);
   const {
     settings,
     feed,

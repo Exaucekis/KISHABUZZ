@@ -3,10 +3,19 @@ export type SpotlightArtistCard = {
   name: string;
   role: string;
   image: string;
+  likes: number;
+  liked: boolean;
 };
 
 export function toSpotlightArtistCards(
-  rows: Array<{ id?: string; name: string; role?: string | null; image?: string | null }>
+  rows: Array<{
+    id?: string;
+    name: string;
+    role?: string | null;
+    image?: string | null;
+    _count?: { likes: number };
+    liked?: boolean;
+  }>
 ): SpotlightArtistCard[] {
   return rows
     .map((row) => ({
@@ -14,6 +23,8 @@ export function toSpotlightArtistCards(
       name: row.name.trim(),
       role: (row.role || "").trim() || "Artiste",
       image: (row.image || "").trim(),
+      likes: row._count?.likes || 0,
+      liked: Boolean(row.liked),
     }))
     .filter((row) => row.name && row.image);
 }

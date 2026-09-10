@@ -2,8 +2,9 @@
 
 import { Heart, MessageCircle, Send, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState, useTransition } from "react";
 import { sendSpotlightArtistMessage } from "@/actions/spotlight-messages";
+import { toggleSpotlightArtistLike } from "@/actions/spotlight-likes";
 import { PublicImage } from "@/components/media/PublicImage";
 import { ShareButtons } from "@/components/content/ShareButtons";
 import type { SpotlightArtistCard } from "@/lib/spotlight-artists";
@@ -17,14 +18,18 @@ function artistKey(artist: ArtistCard, index: number) {
 function ArtistSlide({
   artist,
   liked,
+  likes,
   onToggleLike,
   onMessage,
+  liking,
   duplicate = false,
 }: {
   artist: ArtistCard;
   liked: boolean;
+  likes: number;
   onToggleLike: () => void;
   onMessage: () => void;
+  liking: boolean;
   duplicate?: boolean;
 }) {
   return (
@@ -48,16 +53,19 @@ function ArtistSlide({
         {duplicate ? (
           <span className={`artist-like-button ${liked ? "is-liked" : ""}`} aria-hidden="true">
             <Heart size={18} fill={liked ? "currentColor" : "none"} />
+            <span>{likes}</span>
           </span>
         ) : (
           <button
             type="button"
             className={`artist-like-button ${liked ? "is-liked" : ""}`}
             onClick={onToggleLike}
-            aria-label={liked ? `Retirer ${artist.name} de vos favoris` : `Ajouter ${artist.name} à vos favoris`}
+            disabled={liking}
+            aria-label={`${likes} J’aime · ${liked ? `retirer votre like pour ${artist.name}` : `aimer ${artist.name}`}`}
             aria-pressed={liked}
           >
             <Heart size={18} fill={liked ? "currentColor" : "none"} />
+            <span>{likes}</span>
           </button>
         )}
       </div>
@@ -70,31 +78,30 @@ function ArtistSlide({
 }
 
 export function ArtistRail({ artists, signedIn }: { artists: ArtistCard[]; signedIn: boolean }) {
-  const [likedArtists, setLikedArtists] = useState<string[]>([]);
+  const [artistEngagement, setArtistEngagement] = useState(() =>
+    Object.fromEntries(artists.map((artist, index) => [artistKey(artist, index), { liked: artist.liked, likes: artist.likes }]))
+  );
   const [activeArtist, setActiveArtist] = useState<ArtistCard | null>(null);
+  const [likeMessage, setLikeMessage] = useState("");
+  const [isLiking, startLikeTransition] = useTransition();
   const router = useRouter();
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem("kishabuzz-liked-spotlight-artists");
-    if (!saved) return;
-
-    try {
-      const parsed = JSON.parse(saved);
-      if (!Array.isArray(parsed) || !parsed.every((id) => typeof id === "string")) return;
-      const frame = window.requestAnimationFrame(() => setLikedArtists(parsed));
-      return () => window.cancelAnimationFrame(frame);
-    } catch {
-      window.localStorage.removeItem("kishabuzz-liked-spotlight-artists");
-    }
-  }, []);
 
   if (!artists.length) return null;
 
-  function toggleLike(id: string) {
-    setLikedArtists((current) => {
-      const next = current.includes(id) ? current.filter((artistId) => artistId !== id) : [...current, id];
-      window.localStorage.setItem("kishabuzz-liked-spotlight-artists", JSON.stringify(next));
-      return next;
+  function toggleLike(artist: ArtistCard, index: number) {
+    if (!artist.id) return;
+    const key = artistKey(artist, index);
+    setLikeMessage("");
+    startLikeTransition(async () => {
+      const result = await toggleSpotlightArtistLike(artist.id!);
+      if (!result.ok) {
+        setLikeMessage(result.message);
+        return;
+      }
+      setArtistEngagement((current) => ({
+        ...current,
+        [key]: { liked: result.liked, likes: result.count },
+      }));
     });
   }
 
@@ -133,9 +140,11 @@ export function ArtistRail({ artists, signedIn }: { artists: ArtistCard[]; signe
               <ArtistSlide
                 key={artistKey(artist, i)}
                 artist={artist}
-                liked={likedArtists.includes(artistKey(artist, i))}
-                onToggleLike={() => toggleLike(artistKey(artist, i))}
+                liked={artistEngagement[artistKey(artist, i)]?.liked || false}
+                likes={artistEngagement[artistKey(artist, i)]?.likes || 0}
+                onToggleLike={() => toggleLike(artist, i)}
                 onMessage={() => openMessage(artist)}
+                liking={isLiking}
               />
             ))}
           </div>
@@ -144,15 +153,19 @@ export function ArtistRail({ artists, signedIn }: { artists: ArtistCard[]; signe
               <ArtistSlide
                 key={`dup-${artistKey(artist, i)}`}
                 artist={artist}
-                liked={likedArtists.includes(artistKey(artist, i))}
+                liked={artistEngagement[artistKey(artist, i)]?.liked || false}
+                likes={artistEngagement[artistKey(artist, i)]?.likes || 0}
                 onToggleLike={() => {}}
                 onMessage={() => {}}
+                liking={false}
                 duplicate
               />
             ))}
           </div>
         </div>
       </div>
+
+      {likeMessage ? <p className="mx-auto mt-4 max-w-7xl px-4 text-sm text-rose-300 md:px-6">{likeMessage}</p> : null}
 
       {activeArtist?.id ? (
         <div className="spotlight-message-modal" role="dialog" aria-modal="true" aria-labelledby="spotlight-message-title">
