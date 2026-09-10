@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { sendSpotlightArtistMessage } from "@/actions/spotlight-messages";
 import { PublicImage } from "@/components/media/PublicImage";
+import { ShareButtons } from "@/components/content/ShareButtons";
 import type { SpotlightArtistCard } from "@/lib/spotlight-artists";
 
 export type ArtistCard = SpotlightArtistCard;
@@ -106,7 +107,7 @@ export function ArtistRail({ artists, signedIn }: { artists: ArtistCard[]; signe
   }
 
   return (
-    <section className="border-y border-line bg-ink-2 py-10 md:py-14 kb-defer" aria-label="Artistes à la une">
+    <section id="artistes-a-la-une" className="border-y border-line bg-ink-2 py-10 md:py-14 kb-defer" aria-label="Artistes à la une">
       <div className="mx-auto mb-6 flex max-w-7xl items-end justify-between gap-4 px-4 md:px-6">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-ember-text">
@@ -114,7 +115,15 @@ export function ArtistRail({ artists, signedIn }: { artists: ArtistCard[]; signe
           </p>
           <h2 className="mt-2 font-display text-2xl md:text-4xl">Artistes à la une</h2>
         </div>
-        <p className="hidden text-sm text-paper-muted sm:block">Culture · Scène · Médias</p>
+        <div className="flex items-center gap-3">
+          <p className="hidden text-sm text-paper-muted sm:block">Culture · Scène · Médias</p>
+          <ShareButtons
+            title="Spotlight · Artistes à la une | KISHA BUZZ"
+            path="/#artistes-a-la-une"
+            compact
+            compactLabel="Partager"
+          />
+        </div>
       </div>
 
       <div className="artist-rail">

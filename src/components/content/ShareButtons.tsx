@@ -8,10 +8,12 @@ export function ShareButtons({
   title,
   path,
   compact = false,
+  compactLabel = "Partager",
 }: {
   title: string;
   path: string;
   compact?: boolean;
+  compactLabel?: string;
 }) {
   const [copied, setCopied] = useState(false);
   const url = useMemo(() => absoluteUrl(path), [path]);
@@ -48,7 +50,7 @@ export function ShareButtons({
         className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm hover:bg-ink-3"
       >
         <Share2 className="h-4 w-4" />
-        {compact ? "Partager" : "Partager / Story"}
+        {compact ? (copied ? "Lien copié" : compactLabel) : "Partager / Story"}
       </button>
       {!compact ? (
         <>
