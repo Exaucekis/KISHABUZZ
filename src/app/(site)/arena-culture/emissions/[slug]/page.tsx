@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ShareButtons } from "@/components/content/ShareButtons";
 import { PageViews } from "@/components/content/PageViews";
-import { VideoEmbed } from "@/components/media/VideoEmbed";
 import { ArenaShowEngagement } from "@/components/arena/ArenaShowEngagement";
+import { ArenaVideoChannel } from "@/components/arena/ArenaVideoChannel";
 import { getArenaShowEngagement, getShowBySlug } from "@/lib/data";
 import { auth } from "@/lib/auth";
 import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
@@ -12,23 +11,31 @@ import { arenaShowVideo, videoPoster } from "@/lib/media";
 import { arenaShowPlace, arenaTicketCta } from "@/lib/arena-calendar";
 import { formatDate } from "@/lib/utils";
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ video?: string | string[] }> };
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
   const show = await getShowBySlug(slug);
   if (!show) return { title: "Émission" };
   const guest = arenaSpotlightGuest(show);
+  const requestedVideo = (await searchParams).video;
+  const selectedVideo = typeof requestedVideo === "string" ? show.media.find((media) => media.id === requestedVideo && media.kind === "VIDEO") : null;
+  const title = selectedVideo?.title || `${guest?.name || show.title} · Arena Culture`;
+  const description = selectedVideo?.description || show.theme || guest?.profession || show.description || `Émission ${show.number} — Arena Culture`;
+  const poster = videoPoster(selectedVideo?.url || arenaShowVideo(show), selectedVideo?.thumbnail || show.videoThumbnail);
   return {
-    title: `${guest?.name || show.title} · Arena Culture`,
-    description: show.theme || guest?.profession || show.description || `Émission ${show.number} — Arena Culture`,
+    title,
+    description,
+    openGraph: poster ? { type: "website", title, description, images: [{ url: poster, alt: title }] } : undefined,
+    twitter: poster ? { card: "summary_large_image", title, description, images: [poster] } : undefined,
   };
 }
 
-export default async function ArenaEmissionDetailPage({ params }: Props) {
+export default async function ArenaEmissionDetailPage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const requestedVideo = (await searchParams).video;
   const show = await getShowBySlug(slug);
   if (!show) notFound();
 
@@ -44,6 +51,12 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
   const lead = arenaSpotlightGuest(show);
   const video = arenaShowVideo(show);
   const extraVideos = show.media.filter((m) => m.kind === "VIDEO" && m.url !== video);
+  const playlist = video
+    ? [
+        { id: "main", title: show.title, description: show.description || show.theme, url: video, thumbnail: videoPoster(video, show.videoThumbnail) },
+        ...extraVideos.map((media) => ({ id: media.id, title: media.title, description: media.description, url: media.url, thumbnail: videoPoster(media.url, media.thumbnail) })),
+      ]
+    : [];
   const place = arenaShowPlace(show, show.event);
   const ticket = arenaTicketCta(show.event);
 
@@ -94,15 +107,11 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
 
       {video ? (
         <div className="mx-auto max-w-4xl px-4 pt-8 md:px-6">
-          <VideoEmbed
-            url={video}
-            title={show.title}
-            poster={videoPoster(video, show.videoThumbnail)}
+          <ArenaVideoChannel
+            videos={playlist}
+            showPath={`/arena-culture/emissions/${show.slug}`}
+            initialVideoId={typeof requestedVideo === "string" ? requestedVideo : undefined}
           />
-          <div className="mt-5">
-            <p className="mb-3 text-xs uppercase tracking-[0.2em] text-paper-muted">Partager cette vidéo</p>
-            <ShareButtons title={show.title} path={`/arena-culture/emissions/${show.slug}`} />
-          </div>
           {show.status !== "ARCHIVED" ? (
             <ArenaShowEngagement
               showId={show.id}
@@ -135,18 +144,6 @@ export default async function ArenaEmissionDetailPage({ params }: Props) {
                 </li>
               ))}
             </ul>
-          </div>
-        ) : null}
-
-        {extraVideos.length ? (
-          <div className="mt-12 space-y-6">
-            <h2 className="font-display text-2xl">Autres vidéos</h2>
-            {extraVideos.map((v) => (
-              <div key={v.id}>
-                <VideoEmbed url={v.url} title={v.title} poster={videoPoster(v.url, v.thumbnail)} />
-                <p className="mt-2 text-sm text-paper-muted">{v.title}</p>
-              </div>
-            ))}
           </div>
         ) : null}
 

@@ -17,7 +17,7 @@ export default async function EditArenaShowPage({ params }: Props) {
   const [show, guests, domains] = await Promise.all([
     prisma.arenaShow.findUnique({
       where: { id },
-      include: { guests: true },
+      include: { guests: true, media: { where: { kind: "VIDEO" }, orderBy: { createdAt: "desc" } } },
     }),
     prisma.arenaGuest.findMany({
       orderBy: { name: "asc" },
@@ -38,7 +38,12 @@ export default async function EditArenaShowPage({ params }: Props) {
         hint="Nom de l’invité, thème, vidéo et miniature. Pas d’affiche ici — le prochain invité se gère dans son onglet."
       />
       <ArenaAdminNav current="/admin/arena/emissions" />
-      <ArenaShowForm show={show} guests={guests} domains={domains} />
+      <ArenaShowForm
+        show={show}
+        guests={guests}
+        domains={domains}
+        extraVideos={show.media.filter((media) => media.url !== show.videoUrl)}
+      />
     </div>
   );
 }

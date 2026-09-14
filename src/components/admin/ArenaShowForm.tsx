@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { archiveArenaShow, deleteArenaShow, saveArenaShow } from "@/actions/admin/arena";
 import { AdminConfirmForm } from "@/components/admin/AdminConfirmForm";
+import { ArenaAdditionalVideos } from "@/components/admin/ArenaAdditionalVideos";
 import { MediaField } from "@/components/admin/MediaField";
 import { AdminHint } from "@/components/admin/AdminHint";
 import { SubmitButton } from "@/components/admin/SubmitButton";
@@ -26,6 +27,7 @@ type Show = {
   description: string;
   guests: { guestId: string }[];
 };
+type ExtraVideo = { id: string; title: string; url: string; thumbnail: string; description: string };
 
 const initial: AdminActionState = { ok: false, message: "" };
 
@@ -33,10 +35,12 @@ export function ArenaShowForm({
   show,
   guests,
   domains = [],
+  extraVideos = [],
 }: {
   show?: Show;
   guests: Guest[];
   domains?: DomainOption[];
+  extraVideos?: ExtraVideo[];
 }) {
   const [state, action] = useActionState(saveArenaShow, initial);
   const primary = guests.find((guest) => guest.id === show?.guests[0]?.guestId);
@@ -165,6 +169,7 @@ export function ArenaShowForm({
           ) : null}
         </div>
       </form>
+      {show?.id ? <ArenaAdditionalVideos showId={show.id} videos={extraVideos} /> : null}
       {show?.id ? (
         <div className="admin-card flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-[#9aa3b5]">
