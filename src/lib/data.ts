@@ -124,7 +124,7 @@ async function loadHomePageData(userId?: string) {
       }),
       prisma.spotlightArtist.findMany({
         where: { visible: true },
-        select: { id: true, name: true, role: true, image: true, _count: { select: { likes: true } } },
+        select: { id: true, slug: true, name: true, role: true, image: true, _count: { select: { likes: true } } },
         orderBy: { order: "asc" },
       }),
       getArenaHome(),
@@ -201,6 +201,14 @@ async function loadHomePageData(userId?: string) {
 export const getHomePageData = cache(async (userId?: string) => {
   noStore();
   return loadHomePageData(userId);
+});
+
+export const getSpotlightArtistForShare = cache(async (slug: string) => {
+  noStore();
+  return prisma.spotlightArtist.findFirst({
+    where: { slug, visible: true },
+    select: { slug: true, name: true, role: true, image: true },
+  });
 });
 
 export async function getPageContent(key: string) {

@@ -9,11 +9,15 @@ export function ShareButtons({
   path,
   compact = false,
   compactLabel = "Partager",
+  iconOnly = false,
+  className = "",
 }: {
   title: string;
   path: string;
   compact?: boolean;
   compactLabel?: string;
+  iconOnly?: boolean;
+  className?: string;
 }) {
   const [copied, setCopied] = useState(false);
   const url = useMemo(() => absoluteUrl(path), [path]);
@@ -43,14 +47,14 @@ export function ShareButtons({
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className={`flex flex-wrap gap-2 ${className}`}>
       <button
         type="button"
         onClick={nativeShare}
         className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm hover:bg-ink-3"
       >
         <Share2 className="h-4 w-4" />
-        {compact ? (copied ? "Lien copié" : compactLabel) : "Partager / Story"}
+        {iconOnly ? <span className="sr-only">{copied ? "Lien copié" : compactLabel}</span> : compact ? (copied ? "Lien copié" : compactLabel) : "Partager / Story"}
       </button>
       {!compact ? (
         <>

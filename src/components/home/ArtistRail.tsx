@@ -68,6 +68,16 @@ function ArtistSlide({
             <span>{likes}</span>
           </button>
         )}
+        {!duplicate ? (
+          <ShareButtons
+            title={`${artist.name} · ${artist.role} | KISHA BUZZ`}
+            path={`/?spotlight=${encodeURIComponent(artist.slug)}#artistes-a-la-une`}
+            compact
+            compactLabel={`Partager ${artist.name}`}
+            iconOnly
+            className="artist-share-button"
+          />
+        ) : null}
       </div>
       <div className="artist-card-meta">
         <p className="artist-card-name">{artist.name}</p>

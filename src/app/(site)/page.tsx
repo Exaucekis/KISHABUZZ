@@ -10,13 +10,50 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PublicImage } from "@/components/media/PublicImage";
 import { VideoEmbed } from "@/components/media/VideoEmbed";
-import { getFeaturedImageEngagement, getHomePageData } from "@/lib/data";
+import { getFeaturedImageEngagement, getHomePageData, getSpotlightArtistForShare } from "@/lib/data";
 import { arenaSpotlightGuest } from "@/lib/arena-spotlight";
 import { formatDate } from "@/lib/utils";
 import { auth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+type HomePageProps = {
+  searchParams: Promise<{ spotlight?: string | string[] }>;
+};
+
+export async function generateMetadata({ searchParams }: HomePageProps): Promise<Metadata> {
+  const spotlight = (await searchParams).spotlight;
+  const slug = typeof spotlight === "string" ? spotlight : "";
+  if (!slug) return {};
+
+  const artist = await getSpotlightArtistForShare(slug);
+  if (!artist) return {};
+
+  const title = `${artist.name} · ${artist.role}`;
+  const description = `Découvrez ${artist.name}, artiste à la une sur KISHA BUZZ.`;
+  const sharePath = `/?spotlight=${encodeURIComponent(artist.slug)}#artistes-a-la-une`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: sharePath },
+    openGraph: {
+      type: "website",
+      locale: "fr_FR",
+      title,
+      description,
+      url: sharePath,
+      images: [{ url: artist.image, alt: artist.name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [artist.image],
+    },
+  };
+}
 
 export default async function HomePage() {
   await connection();
@@ -360,3 +397,4 @@ export default async function HomePage() {
     </>
   );
 }
+import type { Metadata } from "next";

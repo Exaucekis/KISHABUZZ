@@ -480,6 +480,32 @@ button.artist-like-button:focus-visible {
   color: #fff;
 }
 
+.artist-share-button {
+  position: absolute;
+  z-index: 2;
+  top: 0.7rem;
+  left: 0.7rem;
+}
+
+.artist-share-button button {
+  display: inline-grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  padding: 0;
+  border-color: rgba(255, 255, 255, 0.42);
+  border-radius: 9999px;
+  background: rgba(10, 10, 12, 0.48);
+  color: #fff;
+  backdrop-filter: blur(6px);
+}
+
+.artist-share-button button:hover,
+.artist-share-button button:focus-visible {
+  background: rgba(10, 10, 12, 0.76);
+  transform: scale(1.08);
+}
+
 .artist-message-button {
   position: absolute;
   z-index: 2;
