@@ -46,7 +46,7 @@ function ArtistSlide({
         {duplicate ? (
           <span className="artist-message-button" aria-hidden="true"><MessageCircle size={17} /></span>
         ) : (
-          <button type="button" className="artist-message-button" onClick={onMessage} aria-label={`Partager ${artist.name} avec KISHA BUZZ`}>
+          <button type="button" className="artist-message-button" onClick={onMessage} aria-label={`Commenter ${artist.name}`} title="Commenter">
             <MessageCircle size={17} />
           </button>
         )}
@@ -189,16 +189,16 @@ export function ArtistRail({ artists, signedIn }: { artists: ArtistCard[]; signe
                 <PublicImage src={activeArtist.image} alt="" fill sizes="56px" className="object-cover" />
               </span>
               <div>
-                <p>Partage privé</p>
+                <p>Commentaire privé</p>
                 <h3 id="spotlight-message-title">{activeArtist.name}</h3>
               </div>
             </div>
-            <p className="spotlight-message-modal__intro">Partagez cette image et votre message avec l’équipe KISHA BUZZ. Il ne sera pas affiché publiquement.</p>
+            <p className="spotlight-message-modal__intro">Envoyez votre commentaire à l’équipe KISHA BUZZ. Il ne sera pas affiché publiquement.</p>
             <form action={sendSpotlightArtistMessage} className="spotlight-message-modal__form">
               <input type="hidden" name="artistId" value={activeArtist.id} />
-              <label htmlFor="spotlight-private-message">Votre message</label>
-              <textarea id="spotlight-private-message" name="body" required minLength={2} maxLength={1000} placeholder="Écrivez à l’équipe…" rows={4} />
-              <button type="submit"><Send size={16} /> Envoyer en privé</button>
+              <label htmlFor="spotlight-private-message">Votre commentaire</label>
+              <textarea id="spotlight-private-message" name="body" required minLength={2} maxLength={1000} placeholder="Écrivez votre commentaire…" rows={4} />
+              <button type="submit"><Send size={16} /> Envoyer le commentaire</button>
             </form>
           </div>
         </div>

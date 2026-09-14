@@ -484,7 +484,7 @@ button.artist-like-button:focus-visible {
   position: absolute;
   z-index: 2;
   top: 0.7rem;
-  left: 0.7rem;
+  left: 3.45rem;
 }
 
 .artist-share-button button {
